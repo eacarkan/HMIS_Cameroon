@@ -1,18 +1,35 @@
 import "dotenv/config";
 
+import { prisma } from "@/server/db";
+import { DEMO_PASSWORD, SEQUENCE_YEAR, seedBaseData } from "@/prisma/seed-data";
+
 /**
- * Seed — PLACEHOLDER (build Step 3).
- *
- * The deterministic, fully fake demo dataset is implemented here once the Prisma
- * schema lands: one hospital (HRB-DEMO), five fictional users/roles, and the
- * reconciling 3 000 FCFA patient journey from 07_Demo_Scenario — with fixed
- * identifiers (e.g. HRB-DEMO-P-2026-000001) so the receipt, dashboard and audit
- * log always agree. Fake data only — no real patient data (A-001/D-008).
+ * Seed the deterministic fake demo base data (Step 3 — 07_Demo_Scenario).
+ * Idempotent: safe to run repeatedly. Fake data only (A-001/D-008).
  */
 async function seed() {
+  await seedBaseData(prisma);
+
+  const [hospitals, activeHospitals, roles, users, userRoles, sequences] =
+    await Promise.all([
+      prisma.hospital.count(),
+      prisma.hospital.count({ where: { isActive: true } }),
+      prisma.role.count(),
+      prisma.user.count(),
+      prisma.userRole.count(),
+      prisma.sequence.count(),
+    ]);
+
+  console.log("✓ Seed complete (fake demo data only):");
   console.log(
-    "Seed placeholder — demo dataset is implemented at build Step 3 (07_Demo_Scenario). Nothing to seed yet.",
+    `  hospitals=${hospitals} (active: ${activeHospitals} — HRB-DEMO) · roles=${roles} · users=${users} · userRoles=${userRoles} · sequences=${sequences} @ ${SEQUENCE_YEAR}`,
   );
+  console.log(`  Demo login password (all users): ${DEMO_PASSWORD}`);
 }
 
-void seed();
+seed()
+  .catch((error) => {
+    console.error("✗ Seed failed:", error);
+    process.exitCode = 1;
+  })
+  .finally(() => prisma.$disconnect());

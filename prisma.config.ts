@@ -16,4 +16,8 @@ export default defineConfig({
   datasource: {
     url: env("DATABASE_URL"),
   },
+  migrations: {
+    // Re-seed the deterministic demo data after `prisma migrate reset` (Step 3).
+    seed: "tsx scripts/seed.ts",
+  },
 });
