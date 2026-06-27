@@ -51,6 +51,10 @@ export {
   recordPayment,
 } from "./billing-service";
 export { getReceipt, recordReceiptPrint } from "./receipt-service";
+export {
+  type DashboardSummary,
+  getDashboardSummary,
+} from "./dashboard-service";
 
 /** Marker for a use-case that is intentionally not built yet. */
 export function notImplemented(useCase: string): never {

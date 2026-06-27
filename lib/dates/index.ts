@@ -29,6 +29,13 @@ export function formatDateTimeFr(value: Date): string {
   return FR_DATE_TIME.format(value).replace(", ", " ");
 }
 
+/** Midnight (local) at the start of today — for "today" KPI windows. */
+export function startOfToday(now: Date = new Date()): Date {
+  const d = new Date(now);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
 /** Whole years between `dob` and `now` (age). */
 export function ageInYears(dob: Date, now: Date = new Date()): number {
   let age = now.getFullYear() - dob.getFullYear();

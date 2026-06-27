@@ -38,3 +38,9 @@ export {
   markReceiptPrinted,
   findPaymentById,
 } from "./invoices";
+export {
+  countPatientsRegisteredSince,
+  countOpenEncounters,
+  sumCollectionsSince,
+  recentAuditEntries,
+} from "./dashboard";
