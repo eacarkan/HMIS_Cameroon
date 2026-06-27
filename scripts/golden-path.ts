@@ -46,6 +46,13 @@ async function main() {
   await clearOperationalData(prisma);
   await seedBaseData(prisma);
 
+  // Known starting state
+  const hospital = await prisma.hospital.findUnique({
+    where: { code: "HRB-DEMO" },
+  });
+  check("HRB-DEMO hospital exists and is active", hospital?.isActive === true);
+  check("five demo users seeded", (await prisma.user.count()) === 5);
+
   // Reception: patient + encounter
   const reception = await login("brigitte.mbarga@hrb-demo.cm");
   const patient = await createPatientForActor(reception.actor, reception.ctx, {
