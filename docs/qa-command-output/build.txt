@@ -1,0 +1,47 @@
+# $ npm run build
+# generated for mentor review — paths redacted, fake data only
+
+
+> hmis-cameroon@0.1.0 build
+> next build
+
+▲ Next.js 16.2.9 (Turbopack)
+- Environments: .env
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 2.2s
+  Running TypeScript ...
+  Finished TypeScript in 3.1s ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/12) ...
+  Generating static pages using 9 workers (3/12) 
+  Generating static pages using 9 workers (6/12) 
+  Generating static pages using 9 workers (9/12) 
+✓ Generating static pages using 9 workers (12/12) in 148ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ○ /_not-found
+├ ƒ /administration
+├ ƒ /api/auth/[...nextauth]
+├ ƒ /connexion
+├ ƒ /consultations
+├ ƒ /encounters/[id]
+├ ƒ /encounters/[id]/consultation/nouvelle
+├ ƒ /encounters/[id]/facturation
+├ ƒ /facturation
+├ ƒ /factures/[id]
+├ ƒ /journal-audit
+├ ƒ /patients
+├ ƒ /patients/[id]
+├ ƒ /patients/[id]/visite/nouvelle
+├ ƒ /patients/nouveau
+├ ƒ /recus/[id]
+└ ƒ /selection-hopital
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+# exit code: 0

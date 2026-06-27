@@ -9,6 +9,9 @@ are relative to `03_Software/HMIS_Cameroon/`. A zipped bundle of everything belo
 Quick verification: `npm run test:all` (typecheck → lint → unit → component → integration
 → build → e2e) · `npm run smoke:test` · `npm run check:arch` · `npm run check:privacy`.
 Tests use a dedicated `TEST_DATABASE_URL` (refuses non-test DB names). Fake data only.
+Captured command outputs are in [docs/qa-command-output/](qa-command-output/) (9 files,
+all exit 0). Review screenshots are recaptured in **production mode** (no dev overlay)
+and machine-validated (no 404 / prototype label present): `npm run screenshots:review`.
 
 ## Package / config
 
@@ -62,9 +65,22 @@ One representative file per layer (boundary proof: action → service → data-a
 - [scripts/check-architecture.ts](../scripts/check-architecture.ts)
 - [scripts/check-privacy.ts](../scripts/check-privacy.ts)
 
+## Screenshot capture (deterministic + self-validating)
+
+- [scripts/capture-review-screenshots.sh](../scripts/capture-review-screenshots.sh) — orchestrator: prod build + server on test DB → seed → capture
+- [scripts/seed-review-fixture.ts](../scripts/seed-review-fixture.ts) — deterministic golden-path fixture; emits the real route IDs
+- [scripts/capture-review-screenshots.mjs](../scripts/capture-review-screenshots.mjs) — captures + **refuses to save** any 404 / label-missing / empty page
+
+## QA command outputs
+
+- [docs/qa-command-output/](qa-command-output/) — actual output of the 9 commands
+  (`typecheck`, `lint`, `build`, `test`, `test-integration`, `test-e2e`, `smoke-test`,
+  `check-arch`, `check-privacy`), paths redacted, all exit 0.
+
 ## UAT checklist
 
-- [docs/testing/UAT_PHASE_0_WALKING_SKELETON.md](testing/UAT_PHASE_0_WALKING_SKELETON.md)
+- [docs/testing/UAT_PHASE_0_WALKING_SKELETON.md](testing/UAT_PHASE_0_WALKING_SKELETON.md) — blank template
+- [docs/testing/UAT_PHASE_0_WALKING_SKELETON_EXECUTED.md](testing/UAT_PHASE_0_WALKING_SKELETON_EXECUTED.md) — executed (Pass / Not executed)
 
 ## QA write-up
 
@@ -72,11 +88,13 @@ One representative file per layer (boundary proof: action → service → data-a
 
 ## Screenshots
 
-- [review-screenshots/README.md](review-screenshots/README.md) (index)
+Production mode (no dev overlay), machine-validated (no 404, prototype label present),
+fake data only — see [review-screenshots/README.md](review-screenshots/README.md).
+
 - 01 [login](review-screenshots/01-login.png) · 02 [dashboard](review-screenshots/02-dashboard.png) ·
   03 [patient-search](review-screenshots/03-patient-search.png) · 04 [patient-create](review-screenshots/04-patient-create.png) ·
   05 [patient-detail-banner](review-screenshots/05-patient-detail-banner.png) · 06 [encounter](review-screenshots/06-encounter.png) ·
   07 [consultation](review-screenshots/07-consultation.png) · 08 [billing](review-screenshots/08-billing.png) ·
   09 [payment-status](review-screenshots/09-payment-status.png) · 10 [receipt-preview](review-screenshots/10-receipt-preview.png) ·
   11 [audit-log](review-screenshots/11-audit-log.png) · 12 [rbac-denied](review-screenshots/12-rbac-denied.png) ·
-  13 [mobile-dashboard](review-screenshots/13-mobile-dashboard.png)
+  13 [mobile-dashboard](review-screenshots/13-mobile-dashboard.png) · 14 [rbac-audit-denied](review-screenshots/14-rbac-audit-denied.png)

@@ -1,0 +1,10 @@
+# $ npm run check:arch
+# generated for mentor review — paths redacted, fake data only
+
+
+> hmis-cameroon@0.1.0 check:arch
+> tsx scripts/check-architecture.ts
+
+✓ architecture guardrail: UI → server/actions → server/services → server/db → Prisma (no direct DB access in app/, components/, features/).
+
+# exit code: 0

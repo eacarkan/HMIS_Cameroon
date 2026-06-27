@@ -1,0 +1,17 @@
+# $ npm run test:integration
+# generated for mentor review — paths redacted, fake data only
+
+
+> hmis-cameroon@0.1.0 test:integration
+> vitest run --project integration
+
+
+ RUN  v4.1.9 <repo>
+
+
+ Test Files  9 passed (9)
+      Tests  26 passed (26)
+   Start at  21:54:21
+   Duration  10.59s (transform 134ms, setup 74ms, import 700ms, tests 9.01s, environment 0ms)
+
+# exit code: 0

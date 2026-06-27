@@ -1,0 +1,10 @@
+# $ npm run check:privacy
+# generated for mentor review — paths redacted, fake data only
+
+
+> hmis-cameroon@0.1.0 check:privacy
+> tsx scripts/check-privacy.ts
+
+✓ privacy/fake-data check: no secrets found; .env gitignored; prototype label present (app + receipt); 5 demo accounts all @hrb-demo.cm (fake).
+
+# exit code: 0

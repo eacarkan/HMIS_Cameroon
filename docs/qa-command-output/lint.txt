@@ -1,0 +1,8 @@
+# $ npm run lint
+# generated for mentor review — paths redacted, fake data only
+
+
+> hmis-cameroon@0.1.0 lint
+> eslint
+
+# exit code: 0
