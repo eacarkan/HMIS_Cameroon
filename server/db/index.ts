@@ -24,3 +24,7 @@ export {
   createEncounter,
   findEncounterById,
 } from "./encounters";
+export {
+  type CreateConsultationData,
+  createConsultation,
+} from "./consultations";

@@ -39,6 +39,10 @@ export {
   getEncounter,
   openEncounter,
 } from "./encounter-service";
+export {
+  type RecordConsultationInput,
+  recordConsultation,
+} from "./consultation-service";
 
 /** Marker for a use-case that is intentionally not built yet. */
 export function notImplemented(useCase: string): never {

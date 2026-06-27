@@ -152,6 +152,18 @@
     "createInvoice": "Créer la facture",
     "viewInvoice": "Voir la facture"
   },
+  "consultation": {
+    "newTitle": "Nouvelle consultation",
+    "newSubtitle": "Saisir la consultation pour cette visite.",
+    "reason": "Motif",
+    "clinicalNote": "Note clinique",
+    "clinicalNotePlaceholder": "État général, observations…",
+    "vitals": "Constantes",
+    "vitalsPlaceholder": "Température, tension, pouls, poids…",
+    "diagnosis": "Diagnostic provisoire",
+    "recommendation": "Conduite à tenir",
+    "save": "Enregistrer la consultation"
+  },
   "comingSoon": {
     "badge": "À venir",
     "title": "Module à venir",
