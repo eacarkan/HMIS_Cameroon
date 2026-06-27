@@ -17,6 +17,9 @@
 /blob-report
 /playwright/.cache
 
+# generated review bundle (regenerate from docs/MENTOR_REVIEW_PACKAGE.md file list)
+/docs/mentor-review-package.zip
+
 # next.js
 /.next/
 /out/
