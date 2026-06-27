@@ -1,16 +1,17 @@
 // Prisma schema — HMIS Cameroon (SIGH/DME prototype)
-// Registers: D-003 (PostgreSQL + Prisma), D-009 (FCFA stored as integers),
-//            D-011 (hospital-scoped data access from day 1).
+// Build Step 3: the first walking-skeleton data model (05_Logical_Data_Model_v0 §4).
 //
-// FOUNDATIONS STEP (build steps 1-2): the schema is intentionally MINIMAL/EMPTY.
-// No domain models yet — Hospital, User, Role, Patient, Encounter, Consultation,
-// Invoice, InvoiceItem, Payment, AuditLog and the numbering Sequence are added in
-// Step 3+ per 05_Logical_Data_Model_v0 and 07_Demo_Scenario_and_Fake_Dataset.
+// Rules embodied here:
+//  - Hospital-scoped operational records carry `hospitalId` (D-011, 05 §7).
+//  - Money is INTEGER FCFA — no floats anywhere (D-009, 05 §9).
+//  - Status stored as neutral codes (enums); French labels live in the UI (05 §5).
+//  - Soft-delete (`deletedAt`) on operational records; AuditLog is append-only.
+//  - Per-hospital human-readable numbers come from the Sequence counter (05 §6).
+//  - Fake data only — no real patient data (A-001/D-008).
 //
-// Architecture rule (09 §4/§8): money is stored as INTEGER FCFA (no floats); every
-// operational record will carry `hospital_id` and is only reachable within its
-// hospital context through the data-access layer (server/db). The UI never calls
-// Prisma directly.
+// Postponed per 05 §4 (NOT modelled yet): Permission, Practitioner, PatientIdentifier/
+// Contact, Diagnosis/Observation/Vitals entities, Tariff/PriceList, Department/
+// ServiceUnit, DocumentTemplate/Setting, lab, pharmacy.
 
 generator client {
   provider = "prisma-client-js"
@@ -18,4 +19,311 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+// ===================== Enums (neutral codes; FR labels in UI) =====================
+
+enum Sex {
+  male
+  female
+}
+
+enum UserStatus {
+  active
+  disabled
+}
+
+enum EncounterStatus {
+  open
+  closed
+  cancelled
+}
+
+enum ConsultationStatus {
+  draft
+  finalized
+}
+
+enum InvoiceStatus {
+  draft
+  issued
+  partially_paid
+  paid
+  cancelled
+}
+
+enum PaymentStatus {
+  recorded
+  cancelled
+}
+
+enum PaymentMethod {
+  cash
+  mobile_money
+  card
+  bank_transfer
+}
+
+enum SequenceType {
+  patient
+  encounter
+  invoice
+  receipt
+}
+
+// ===================== Organization =====================
+
+/// One of the regional hospitals; the tenant root. Not itself hospital-scoped.
+model Hospital {
+  id        String   @id
+  code      String   @unique
+  name      String
+  city      String
+  region    String
+  isActive  Boolean  @default(false)
+  isDemo    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userRoles     UserRole[]
+  patients      Patient[]
+  encounters    Encounter[]
+  consultations Consultation[]
+  invoices      Invoice[]
+  invoiceItems  InvoiceItem[]
+  payments      Payment[]
+  auditLogs     AuditLog[]
+  sequences     Sequence[]
+}
+
+// ===================== Users / RBAC =====================
+
+/// Named role (global definition); assigned to a user within a hospital via UserRole.
+model Role {
+  id        String   @id
+  code      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userRoles UserRole[]
+}
+
+/// Authenticated account (Auth.js identity). Identity is global; access is contextual.
+model User {
+  id           String     @id
+  displayName  String
+  email        String     @unique
+  /// bcrypt hash of the demo password (verification logic arrives at Step 4).
+  passwordHash String
+  status       UserStatus @default(active)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  userRoles          UserRole[]
+  auditLogs          AuditLog[]     @relation("AuditActor")
+  consultations      Consultation[] @relation("ConsultationPerformedBy")
+  encountersAssigned Encounter[]    @relation("EncounterAssignedTo")
+  payments           Payment[]      @relation("PaymentCashier")
+}
+
+/// Assignment of a Role to a User, scoped to a Hospital (minimal RBAC, 05 §4).
+model UserRole {
+  id         String   @id @default(cuid())
+  userId     String
+  roleId     String
+  hospitalId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id])
+  role     Role     @relation(fields: [roleId], references: [id])
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+
+  @@unique([userId, roleId, hospitalId])
+  @@index([hospitalId])
+}
+
+// ===================== Patient identity =====================
+
+/// A person receiving care. Minimal identity (05 §4): name, sex, DOB, number, 1 phone.
+model Patient {
+  id            String    @id @default(cuid())
+  hospitalId    String
+  patientNumber String
+  familyName    String
+  givenName     String
+  sex           Sex
+  dateOfBirth   DateTime  @db.Date
+  phone         String?
+  residence     String?
+  createdById   String?
+  updatedById   String?
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  hospital   Hospital    @relation(fields: [hospitalId], references: [id])
+  encounters Encounter[]
+
+  @@unique([hospitalId, patientNumber])
+  @@index([hospitalId, familyName, givenName])
+}
+
+// ===================== Encounter / visit =====================
+
+/// A visit bringing a patient into the hospital.
+model Encounter {
+  id              String          @id @default(cuid())
+  hospitalId      String
+  patientId       String
+  encounterNumber String
+  serviceLabel    String
+  reason          String
+  status          EncounterStatus @default(open)
+  assignedToId    String?
+  openedAt        DateTime        @default(now())
+  closedAt        DateTime?
+  createdById     String?
+  updatedById     String?
+  deletedAt       DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  hospital      Hospital       @relation(fields: [hospitalId], references: [id])
+  patient       Patient        @relation(fields: [patientId], references: [id])
+  assignedTo    User?          @relation("EncounterAssignedTo", fields: [assignedToId], references: [id])
+  consultations Consultation[]
+  invoices      Invoice[]
+
+  @@unique([hospitalId, encounterNumber])
+  @@index([hospitalId, patientId])
+}
+
+// ===================== Clinical =====================
+
+/// A clinical contact during an encounter. Minimal: reason + free-text fields (05 §4).
+model Consultation {
+  id                   String             @id @default(cuid())
+  hospitalId           String
+  encounterId          String
+  status               ConsultationStatus @default(draft)
+  reason               String
+  clinicalNote         String?
+  vitals               String?
+  provisionalDiagnosis String?
+  recommendation       String?
+  performedById        String?
+  createdById          String?
+  updatedById          String?
+  deletedAt            DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  hospital    Hospital  @relation(fields: [hospitalId], references: [id])
+  encounter   Encounter @relation(fields: [encounterId], references: [id])
+  performedBy User?     @relation("ConsultationPerformedBy", fields: [performedById], references: [id])
+
+  @@index([hospitalId, encounterId])
+}
+
+// ===================== Billing (integer FCFA) =====================
+
+/// A bill for an encounter. Total = sum of line totals (05 §9).
+model Invoice {
+  id            String        @id @default(cuid())
+  hospitalId    String
+  encounterId   String
+  invoiceNumber String
+  status        InvoiceStatus @default(draft)
+  totalAmount   Int           @default(0)
+  createdById   String?
+  updatedById   String?
+  deletedAt     DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  hospital  Hospital      @relation(fields: [hospitalId], references: [id])
+  encounter Encounter     @relation(fields: [encounterId], references: [id])
+  items     InvoiceItem[]
+  payments  Payment[]
+
+  @@unique([hospitalId, invoiceNumber])
+  @@index([hospitalId, encounterId])
+}
+
+/// One billed line. unitAmount/lineTotal are integer FCFA.
+model InvoiceItem {
+  id         String   @id @default(cuid())
+  hospitalId String
+  invoiceId  String
+  label      String
+  quantity   Int      @default(1)
+  unitAmount Int
+  lineTotal  Int
+  createdAt  DateTime @default(now())
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+  invoice  Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+/// Money received against an invoice. amount is integer FCFA. Partial payments allowed.
+model Payment {
+  id            String        @id @default(cuid())
+  hospitalId    String
+  invoiceId     String
+  receiptNumber String
+  amount        Int
+  method        PaymentMethod @default(cash)
+  status        PaymentStatus @default(recorded)
+  paidAt        DateTime      @default(now())
+  cashierId     String?
+  printedAt     DateTime?
+  createdById   String?
+  deletedAt     DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+  invoice  Invoice  @relation(fields: [invoiceId], references: [id])
+  cashier  User?    @relation("PaymentCashier", fields: [cashierId], references: [id])
+
+  @@unique([hospitalId, receiptNumber])
+  @@index([hospitalId, invoiceId])
+}
+
+// ===================== System =====================
+
+/// Immutable record of significant actions (append-only, 05 §8). hospitalId is
+/// nullable so pre-selection events (e.g. auth.login) can still be logged.
+model AuditLog {
+  id         String   @id @default(cuid())
+  hospitalId String?
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String?
+  summary    String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  hospital Hospital? @relation(fields: [hospitalId], references: [id])
+  actor    User?     @relation("AuditActor", fields: [actorId], references: [id])
+
+  @@index([hospitalId, createdAt])
+}
+
+/// Per-hospital, per-type, per-year counter for human-readable numbers (05 §6).
+model Sequence {
+  id         String       @id @default(cuid())
+  hospitalId String
+  type       SequenceType
+  year       Int
+  current    Int          @default(0)
+  updatedAt  DateTime     @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+
+  @@unique([hospitalId, type, year])
 }
