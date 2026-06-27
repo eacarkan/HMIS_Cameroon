@@ -33,8 +33,13 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const cookiesFor = (user) =>
   user ? [{ name: "authjs.session-token", value: SESSIONS[user] }] : null;
 
-// --- Pages to screenshot (validated, then saved). ---
-const PAGES = [
+// REVIEW_SET=review (default) — technical review (two patients, demo-accounts hint shown).
+// REVIEW_SET=stakeholder — approved one-patient golden path (dashboard 1/1/3 000 FCFA),
+// demo-accounts hint hidden. The login demo hint must be ABSENT in the stakeholder set.
+const SET = process.env.REVIEW_SET === "stakeholder" ? "stakeholder" : "review";
+
+// --- Technical review set (two patients; shows empty consultation/billing forms). ---
+const REVIEW_PAGES = [
   { file: "01-login", url: "/connexion", user: null, includes: ["Connexion", "@hrb-demo.cm"] },
   { file: "02-dashboard", url: "/", user: "admin", includes: ["Tableau de bord"] },
   { file: "03-patient-search", url: "/patients", user: "admin", includes: ["BELLO"] },
@@ -49,7 +54,23 @@ const PAGES = [
   { file: "12-rbac-denied", url: "/", user: "reception", includes: ["Tableau de bord", "Patients"], excludes: ["Facturation", "Journal d'audit", "Administration"] },
   { file: "13-mobile-dashboard", url: "/", user: "admin", vw: 390, vh: 844, includes: ["Tableau de bord"] },
   { file: "14-rbac-audit-denied", url: "/journal-audit?action=authz.denied", user: "director", includes: ["Action refusée", "payment.record"] },
+  { file: "15-receipt-full", url: `/recus/${IDS.payment1}`, user: "admin", full: true, vh: 2200, includes: [IDS.payment1Number, "Montant payé", "Caissier"] },
 ];
+
+// --- Stakeholder demo set (approved one-patient golden path; demo hint hidden). ---
+const STAKE_PAGES = [
+  { file: "01-connexion", url: "/connexion", user: null, includes: ["Connexion", "Identifiant"], excludes: ["demo1234", "Comptes de démonstration"] },
+  { file: "02-tableau-de-bord", url: "/", user: "admin", includes: ["Tableau de bord", "Encaissements du jour"] },
+  { file: "03-recherche-patient", url: "/patients", user: "admin", includes: ["BELLO"] },
+  { file: "04-dossier-patient", url: `/patients/${IDS.patient1}`, user: "admin", includes: [IDS.patient1Number, "BELLO"] },
+  { file: "05-visite", url: `/encounters/${IDS.encounter1}`, user: "admin", includes: [IDS.encounter1Number] },
+  { file: "06-facture-payee", url: `/factures/${IDS.invoice1}`, user: "admin", includes: [IDS.invoice1Number, "Payée"] },
+  { file: "07-recu", url: `/recus/${IDS.payment1}`, user: "admin", includes: [IDS.payment1Number, "République du Cameroun"] },
+  { file: "08-recu-complet", url: `/recus/${IDS.payment1}`, user: "admin", full: true, vh: 2200, includes: [IDS.payment1Number, "Montant payé", "Caissier"] },
+  { file: "09-journal-audit", url: "/journal-audit", user: "admin", includes: ["Journal d'audit"] },
+];
+
+const PAGES = SET === "stakeholder" ? STAKE_PAGES : REVIEW_PAGES;
 
 // --- Nav placeholder routes: validated only (no screenshot) — must be clean French
 //     pages with the prototype label, never a default 404 (item 5). ---
@@ -186,9 +207,11 @@ async function main() {
         console.log(`✗ ${e.message} — NOT saved`);
         continue;
       }
+      // Full pages (whole receipt) use a tall viewport (set via p.vh) so the entire
+      // document renders without the app shell's internal scroll clipping it.
       const { data } = await send("Page.captureScreenshot", { format: "png" });
       writeFileSync(`${OUTDIR}/${p.file}.png`, Buffer.from(data, "base64"));
-      console.log(`✓ ${p.file}.png`);
+      console.log(`✓ ${p.file}.png${p.full ? " (full receipt)" : ""}`);
     }
   } finally {
     close();

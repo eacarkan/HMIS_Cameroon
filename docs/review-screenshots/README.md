@@ -2,10 +2,16 @@
 
 > **« Prototype de démonstration fonctionnelle — non destiné à la production »**
 
+**Technical review set.** Two patients (Aïssatou BELLO + Marie NDIAYE) so the empty
+consultation and invoice forms are shown; the login demo-accounts hint is visible
+(`NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS=true`, internal). For the **stakeholder** one-patient
+golden path (dashboard 1 / 1 / 3 000 FCFA, demo hint hidden) see
+`docs/stakeholder-demo-screenshots/`.
+
 Captured in **production mode** (`next build` + `next start`, so **no Next.js dev
 overlay**) against the dedicated **test** database (`hmis_cameroon_test`) seeded with a
 deterministic golden-path fixture. **Fake data only** (HRB-DEMO). French-first UI; the
-prototype label is visible on every screen. Retina (2×) PNGs.
+prototype label is on every screen; the sidebar section label reads **MENU**. Retina (2×) PNGs.
 
 **Every screenshot here was machine-validated and visually reviewed.** The capture
 script refuses to save any page that shows `404` / "This page could not be found", that
@@ -33,6 +39,7 @@ validates): `npm run screenshots:review`
 | 12 | `12-rbac-denied.png` | RBAC — receptionist nav filtered to **only** Tableau de bord + Patients (no Facturation/Audit/Administration) | Agent d'accueil |
 | 13 | `13-mobile-dashboard.png` | Narrow/mobile dashboard (390 px) — sidebar collapses, tiles stack | Administrateur |
 | 14 | `14-rbac-audit-denied.png` | RBAC server-side denial — audit log filtered « Action refusée »: receptionist's blocked `payment.record` ("rôle non autorisé") | Directeur (lecture seule) |
+| 15 | `15-receipt-full.png` | **Full receipt** (tall viewport) — the entire official receipt incl. Montant payé 3 000 FCFA, Caissier, signature area, footer + prototype note | Administrateur |
 
 Notes:
 - The fixture seeds two patients: **Aïssatou BELLO** (`…P-2026-000001`) with a full

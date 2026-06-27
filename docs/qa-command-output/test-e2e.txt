@@ -12,16 +12,17 @@
 ✓ Reset complete — known starting state restored:
   operational records cleared (patients=0, encounters=0, invoices=0, payments=0); counters at 0; base demo data re-seeded.
 
-Running 7 tests using 1 worker
+Running 8 tests using 1 worker
 
   ✓  1 [chromium] › tests/e2e/golden-path.spec.ts:11:7 › golden path › E2E-01 login + hospital selection → dashboard (1.8s)
-  ✓  2 [chromium] › tests/e2e/golden-path.spec.ts:27:7 › golden path › E2E-02 patient search-before-create (2.2s)
-  ✓  3 [chromium] › tests/e2e/golden-path.spec.ts:56:7 › golden path › E2E-03 open a visit (2.0s)
-  ✓  4 [chromium] › tests/e2e/golden-path.spec.ts:73:7 › golden path › E2E-03b record the consultation (doctor) (1.7s)
-  ✓  5 [chromium] › tests/e2e/golden-path.spec.ts:94:7 › golden path › E2E-04 invoice + payment + receipt (cashier) (2.8s)
+  ✓  2 [chromium] › tests/e2e/golden-path.spec.ts:27:7 › golden path › E2E-02 patient search-before-create (2.3s)
+  ✓  3 [chromium] › tests/e2e/golden-path.spec.ts:56:7 › golden path › E2E-03 open a visit (2.2s)
+  ✓  4 [chromium] › tests/e2e/golden-path.spec.ts:73:7 › golden path › E2E-03b record the consultation (doctor) (1.8s)
+  ✓  5 [chromium] › tests/e2e/golden-path.spec.ts:94:7 › golden path › E2E-04 invoice + payment + receipt (cashier) (3.0s)
   ✓  6 [chromium] › tests/e2e/golden-path.spec.ts:127:7 › golden path › E2E-05 dashboard + audit (director) (1.1s)
-  ✓  7 [chromium] › tests/e2e/rbac.spec.ts:11:5 › E2E-06 receptionist nav is filtered and guarded routes redirect (1.1s)
+  ✓  7 [chromium] › tests/e2e/logout.spec.ts:9:5 › logout returns the user to the login screen (1.1s)
+  ✓  8 [chromium] › tests/e2e/rbac.spec.ts:11:5 › E2E-06 receptionist nav is filtered and guarded routes redirect (1.2s)
 
-  7 passed (16.0s)
+  8 passed (17.8s)
 
 # exit code: 0

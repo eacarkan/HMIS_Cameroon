@@ -8,9 +8,19 @@
 #   4. captures every screen and FAILS if any page is a 404 / missing the prototype
 #      label / missing expected content (scripts/capture-review-screenshots.mjs)
 #
-# Fake data only. Usage: npm run screenshots:review
+# Fake data only.
+#   npm run screenshots:review  — technical set (two patients, demo-accounts hint shown)
+#   npm run screenshots:demo     — stakeholder one-patient golden path (1/1/3 000 FCFA),
+#                                  demo-accounts hint hidden
+# Parameterised by env: REVIEW_SET (review|stakeholder), OUTDIR, SHOW_DEMO (true|false),
+# ONE_PATIENT (true|false).
 set -euo pipefail
 cd "$(dirname "$0")/.."
+
+REVIEW_SET="${REVIEW_SET:-review}"
+OUTDIR="${OUTDIR:-docs/review-screenshots}"
+SHOW_DEMO="${SHOW_DEMO:-true}"
+ONE_PATIENT="${ONE_PATIENT:-false}"
 
 # Read values straight from .env. NB: do NOT use `dotenv.config()` in a shell
 # command-substitution — dotenv v17 prints an informational banner to stdout that would
@@ -34,13 +44,16 @@ SRVLOG="$WORK/server.log"
 cleanup() { [ -n "${SRV:-}" ] && kill "$SRV" 2>/dev/null || true; }
 trap cleanup EXIT
 
-echo "== 1/4 build (production) =="
-npm run build
+echo "== set=$REVIEW_SET · outdir=$OUTDIR · show_demo=$SHOW_DEMO · one_patient=$ONE_PATIENT =="
+
+echo "== 1/4 build (production, NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS=$SHOW_DEMO) =="
+NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS="$SHOW_DEMO" npm run build
 
 echo "== 2/4 start production server on TEST db ($DBNAME), port $PORT =="
 lsof -ti tcp:"$PORT" | xargs kill -9 2>/dev/null || true
 DATABASE_URL="$TESTDB" AUTH_SECRET="$SECRET" AUTH_TRUST_HOST=true \
-  AUTH_URL="http://localhost:$PORT" npx next start -p "$PORT" >"$SRVLOG" 2>&1 &
+  AUTH_URL="http://localhost:$PORT" NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS="$SHOW_DEMO" \
+  npx next start -p "$PORT" >"$SRVLOG" 2>&1 &
 SRV=$!
 for i in $(seq 1 60); do
   curl -sf -o /dev/null "http://localhost:$PORT/connexion" && { echo "ready (~${i}s)"; break; }
@@ -48,8 +61,8 @@ for i in $(seq 1 60); do
   [ "$i" = 60 ] && { echo "server did not start"; cat "$SRVLOG"; exit 1; }
 done
 
-echo "== 3/4 seed deterministic review fixture =="
-tsx scripts/seed-review-fixture.ts "$IDS_FILE"
+echo "== 3/4 seed deterministic fixture (one_patient=$ONE_PATIENT) =="
+ONE_PATIENT="$ONE_PATIENT" tsx scripts/seed-review-fixture.ts "$IDS_FILE"
 
 # Mint a session token per demo user through the running server (credentials flow).
 login_token() {
@@ -70,8 +83,9 @@ SESS_FILE="$WORK/sessions.json"
 node -e "require('fs').writeFileSync(process.argv[1],JSON.stringify({admin:process.argv[2],reception:process.argv[3],director:process.argv[4]}))" \
   "$SESS_FILE" "$ADMIN_T" "$RECEP_T" "$DIR_T"
 
-echo "== 4/4 capture + validate screenshots =="
+echo "== 4/4 capture + validate screenshots ($REVIEW_SET -> $OUTDIR) =="
+mkdir -p "$OUTDIR"
 BASE_URL="http://localhost:$PORT" IDS_FILE="$IDS_FILE" SESSIONS_FILE="$SESS_FILE" \
-  OUTDIR="docs/review-screenshots" node scripts/capture-review-screenshots.mjs
+  REVIEW_SET="$REVIEW_SET" OUTDIR="$OUTDIR" node scripts/capture-review-screenshots.mjs
 
-echo "== done — docs/review-screenshots/ =="
+echo "== done — $OUTDIR =="

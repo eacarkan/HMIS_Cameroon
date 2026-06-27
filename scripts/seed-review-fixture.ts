@@ -124,24 +124,7 @@ async function main() {
     if (!(e instanceof AuthorizationError)) throw e;
   }
 
-  // Patient 2 (NDIAYE) — fresh open visit with NO consultation/invoice, so the empty
-  // consultation form and empty invoice form render cleanly for their screenshots.
-  const patient2 = await createPatientForActor(reception.actor, reception.ctx, {
-    familyName: "NDIAYE",
-    givenName: "Marie",
-    sex: "female",
-    dateOfBirth: new Date("1986-11-02"),
-    phone: "+237 6 99 00 00 02",
-    residence: "Bertoua — quartier Madagascar",
-  });
-  const encounter2 = await openEncounter(
-    reception.actor,
-    reception.ctx,
-    patient2.id,
-    { serviceLabel: "Médecine générale", reason: "Douleurs abdominales" },
-  );
-
-  const ids = {
+  const ids: Record<string, string> = {
     patient1: patient1.id,
     patient1Number: patient1.patientNumber,
     encounter1: encounter1.id,
@@ -150,11 +133,35 @@ async function main() {
     invoice1Number: invoice1.invoiceNumber,
     payment1: payment1.id,
     payment1Number: payment1.receiptNumber,
-    patient2: patient2.id,
-    patient2Number: patient2.patientNumber,
-    encounter2: encounter2.id,
-    encounter2Number: encounter2.encounterNumber,
   };
+
+  // One-patient mode (stakeholder demo): the approved golden path uses ONE patient only,
+  // so the dashboard reconciles to exactly 1 patient / 1 open encounter / 3 000 FCFA.
+  // Two-patient mode (technical review) adds a fresh visit (Marie NDIAYE) with no
+  // consultation/invoice so the empty consultation + invoice forms render cleanly.
+  const onePatient =
+    process.argv[3] === "one" || process.env.ONE_PATIENT === "true";
+  if (!onePatient) {
+    const patient2 = await createPatientForActor(reception.actor, reception.ctx, {
+      familyName: "NDIAYE",
+      givenName: "Marie",
+      sex: "female",
+      dateOfBirth: new Date("1986-11-02"),
+      phone: "+237 6 99 00 00 02",
+      residence: "Bertoua — quartier Madagascar",
+    });
+    const encounter2 = await openEncounter(
+      reception.actor,
+      reception.ctx,
+      patient2.id,
+      { serviceLabel: "Médecine générale", reason: "Douleurs abdominales" },
+    );
+    ids.patient2 = patient2.id;
+    ids.patient2Number = patient2.patientNumber;
+    ids.encounter2 = encounter2.id;
+    ids.encounter2Number = encounter2.encounterNumber;
+  }
+
   writeFileSync(out, JSON.stringify(ids, null, 2));
   console.log("review fixture seeded; ids ->", out);
   console.log(ids);

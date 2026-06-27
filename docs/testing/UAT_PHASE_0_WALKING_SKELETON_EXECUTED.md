@@ -15,13 +15,20 @@ All data is **fake** (HRB-DEMO). The blank template is kept for a fresh manual p
   Command outputs: `docs/qa-command-output/`.
 - A case not exercised in this pass is marked **Not executed** (never as Pass).
 
+**Two screenshot sets** back the visual evidence:
+- **Technical review** — `docs/review-screenshots/` (15): two patients (BELLO + NDIAYE) so the
+  empty consultation/billing forms are shown; demo-accounts hint visible (internal).
+- **Stakeholder demo** — `docs/stakeholder-demo-screenshots/` (9): the approved
+  one-patient golden path; dashboard reconciles to **1 / 1 / 3 000 FCFA**; demo-accounts
+  hint hidden.
+
 ## Result summary
 
 | Status | Count | Cases |
 |---|---|---|
-| Pass | 16 | 1–14, 17, 18 |
-| Pass (with caveat) | 1 | 15 (see note) |
-| Not executed | 1 | 16 (logout — no automated coverage this pass) |
+| Pass | 15 | 1–11, 13, 14, 16, 18 |
+| Pass (with caveat) | 3 | 12 (print dialog), 15 (RBAC redirect), 17 (mobile nav) |
+| Not executed | 0 | — |
 | Fail | 0 | — |
 
 ## Test cases
@@ -43,15 +50,15 @@ All data is **fake** (HRB-DEMO). The blank template is kept for a fresh manual p
 | 13 | Dashboard KPIs | **Pass** | E2E dashboard; smoke asserts **1 / 1 / 3 000 FCFA**; integration `dashboard.test.ts`; screenshots `02-dashboard.png` (admin), `12-rbac-denied.png` (KPIs + activity) |
 | 14 | Audit log | **Pass** | E2E audit assertions; integration `audit.test.ts`; screenshots `11-audit-log.png`, `14-rbac-audit-denied.png` (filter « Action refusée ») |
 | 15 | RBAC denied action | **Pass** (caveat) | Server-side denial proven: smoke "RBAC block (reception cannot encaisser)"; integration `scoping-rbac.test.ts` + `billing.test.ts` (reception → `AuthorizationError`); audited `authz.denied` shown in `14-rbac-audit-denied.png`; nav filtered in `12-rbac-denied.png`. *Caveat:* the direct-route guard **redirects** the receptionist from `/journal-audit` to `/` (no on-screen "Accès refusé" message — denial is enforced + audited server-side, surfaced via the audit log). |
-| 16 | Logout | **Not executed** | `signOutAction` is implemented and wired in the top-bar user menu, but logout is **not** covered by an automated test and was not manually exercised in this pass. |
-| 17 | Narrow screen | **Pass** | Screenshot `13-mobile-dashboard.png` at 390 px — sidebar collapses, tiles stack, top bar + prototype label remain visible |
+| 16 | Logout | **Pass** | E2E `tests/e2e/logout.spec.ts`: login → top-bar user menu → « Déconnexion » → redirected to `/connexion` (login screen shown). 1 test, passed. |
+| 17 | Narrow screen | **Pass with caveat** | Screenshot `13-mobile-dashboard.png` at 390 px — narrow layout **stacks correctly** (tiles stack; top bar + prototype label visible). *Caveat:* the desktop sidebar is hidden on mobile and **no mobile navigation/drawer is implemented yet** — not full mobile readiness. |
 | 18 | No real data | **Pass** | `check:privacy` (no secrets; 5 demo accounts all `@hrb-demo.cm`; fake); HRB-DEMO marked « Démo » across screenshots; no real national ID anywhere |
 
 ## Sign-off
 
-- [x] All automated suites green: typecheck, lint, build, unit/component (33), integration (26), E2E (7), smoke. See `docs/qa-command-output/`.
-- [x] All 14 review screenshots recaptured in production mode, validated (no 404, prototype label present), fake data only.
-- [ ] Logout (case 16) to be exercised in a manual pass.
+- [x] All automated suites green: typecheck, lint, build, unit/component (33), integration (26), E2E (8 incl. logout), smoke. See `docs/qa-command-output/`.
+- [x] 15 technical-review + 9 stakeholder-demo screenshots captured in production mode, validated (no 404, prototype label present), fake data only.
+- [x] Logout (case 16) covered by E2E.
 - [ ] Receipt printed to PDF/paper in a manual pass (case 12 caveat).
 - [x] No real patient data observed.
 - Reviewer (automated + visual, this pass): Claude / build pipeline — Date: 2026-06-27

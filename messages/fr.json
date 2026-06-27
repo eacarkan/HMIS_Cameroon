@@ -32,7 +32,7 @@
     "signedInAs": "Connecté en tant que {name}"
   },
   "nav": {
-    "sectionMain": "Navigation",
+    "sectionMain": "Menu",
     "dashboard": "Tableau de bord",
     "patients": "Patients",
     "consultations": "Consultations",
@@ -48,7 +48,7 @@
     "userFallbackName": "Utilisateur",
     "rolePending": "À connecter",
     "authPending": "Authentification — étape 4",
-    "signOut": "Se déconnecter"
+    "signOut": "Déconnexion"
   },
   "actions": {
     "save": "Enregistrer",

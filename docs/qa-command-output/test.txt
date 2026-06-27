@@ -11,7 +11,7 @@
 
  Test Files  10 passed (10)
       Tests  33 passed (33)
-   Start at  21:54:20
-   Duration  1.37s (transform 402ms, setup 925ms, import 951ms, tests 314ms, environment 3.36s)
+   Start at  22:18:16
+   Duration  1.29s (transform 371ms, setup 721ms, import 979ms, tests 336ms, environment 2.91s)
 
 # exit code: 0

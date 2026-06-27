@@ -20,6 +20,11 @@ export default async function ConnexionPage() {
   const tApp = await getTranslations("app");
   const tRoles = await getTranslations("roles");
 
+  // The demo-accounts hint (with the shared password) is hidden by default so it never
+  // appears on stakeholder-facing screenshots. Opt in for internal/dev use by building
+  // with NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS=true. The seeded accounts themselves are unchanged.
+  const showDemoAccounts = process.env.NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS === "true";
+
   return (
     <div className="bg-background flex min-h-screen flex-col">
       <PrototypeBanner />
@@ -47,28 +52,32 @@ export default async function ConnexionPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-muted/40 ring-0">
-            <CardContent className="space-y-2 py-4 text-xs">
-              <p className="text-foreground font-medium">{t("demoTitle")}</p>
-              <ul className="space-y-1">
-                {DEMO_ACCOUNTS.map((account) => (
-                  <li
-                    key={account.email}
-                    className="text-muted-foreground flex items-center justify-between gap-3"
-                  >
-                    <span className="truncate">{account.email}</span>
-                    <span className="shrink-0">{tRoles(account.roleCode)}</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="text-muted-foreground pt-1">
-                {t("demoPasswordLabel")} :{" "}
-                <code className="text-foreground font-semibold">
-                  {DEMO_PASSWORD}
-                </code>
-              </p>
-            </CardContent>
-          </Card>
+          {showDemoAccounts ? (
+            <Card className="bg-muted/40 ring-0">
+              <CardContent className="space-y-2 py-4 text-xs">
+                <p className="text-foreground font-medium">{t("demoTitle")}</p>
+                <ul className="space-y-1">
+                  {DEMO_ACCOUNTS.map((account) => (
+                    <li
+                      key={account.email}
+                      className="text-muted-foreground flex items-center justify-between gap-3"
+                    >
+                      <span className="truncate">{account.email}</span>
+                      <span className="shrink-0">
+                        {tRoles(account.roleCode)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-muted-foreground pt-1">
+                  {t("demoPasswordLabel")} :{" "}
+                  <code className="text-foreground font-semibold">
+                    {DEMO_PASSWORD}
+                  </code>
+                </p>
+              </CardContent>
+            </Card>
+          ) : null}
         </div>
       </main>
     </div>
