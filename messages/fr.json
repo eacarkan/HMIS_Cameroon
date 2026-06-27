@@ -185,6 +185,23 @@
     "noPayments": "Aucun paiement enregistré.",
     "date": "Date"
   },
+  "receipt": {
+    "title": "Reçu de paiement",
+    "number": "N° de reçu",
+    "patient": "Patient",
+    "patientNumber": "N° patient",
+    "invoiceNumber": "N° de facture",
+    "date": "Date",
+    "designation": "Désignation",
+    "quantity": "Qté",
+    "amount": "Montant",
+    "total": "Total",
+    "amountPaid": "Montant payé",
+    "method": "Mode de paiement",
+    "cashier": "Caissier",
+    "signature": "Signature / cachet",
+    "footerNote": "Document généré par le système — veuillez conserver ce reçu."
+  },
   "comingSoon": {
     "badge": "À venir",
     "title": "Module à venir",
