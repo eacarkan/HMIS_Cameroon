@@ -58,6 +58,25 @@ The schema is intentionally empty in this step; domain models arrive at Step 3+.
 | `npm run db:check` | Verify the live DB connection through the service layer |
 | `npm run db:seed` / `db:reset` | Demo data stubs (implemented at Step 3) |
 
+## Demo data (Step 3)
+
+`npm run db:seed` loads the deterministic fake base data (07_Demo_Scenario): the active
+demo hospital **HRB-DEMO** + 7 inactive regional hospitals, 5 roles, and 5 fictional
+users scoped to HRB-DEMO. No patients/visits/invoices are seeded — those are created
+live during the demo. `npm run db:reset` returns the data to this known starting state.
+
+Seeded demo users (all share the password **`demo1234`**):
+
+| Nom | Rôle | Identifiant |
+|---|---|---|
+| Awa NJOYA | Administrateur | awa.njoya@hrb-demo.cm |
+| Brigitte MBARGA | Agent d'accueil | brigitte.mbarga@hrb-demo.cm |
+| Dr Jean-Paul ETOA | Médecin | jeanpaul.etoa@hrb-demo.cm |
+| Solange ABENA | Caissier | solange.abena@hrb-demo.cm |
+| Dr Emmanuel TCHOUA | Directeur (lecture seule) | emmanuel.tchoua@hrb-demo.cm |
+
+_All data is fake. Login becomes functional at Step 4._
+
 ## Structure (09 §2)
 
 ```

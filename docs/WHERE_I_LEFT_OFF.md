@@ -1,62 +1,60 @@
 # Where I left off
 
 **Date:** 2026-06-27
-**Increment:** Foundations — build sequence **Steps 1-2** (+ seed/reset stubs from
-Step 3), per `09 §14` and kickoff `10`.
-**State:** ✅ Done and verified. `next build` passes, `next dev` runs, the French
-shell renders, Prisma connects to local PostgreSQL.
+**Last increment:** **Step 3 — fake demo data concept** (HRB-DEMO, users, deterministic
+IDs), per `09 §14` and `07_Demo_Scenario`.
+**State:** ✅ Done and verified. Migration applied, seed/reset work, `next build` +
+lint + typecheck pass.
 
 ---
 
 ## What exists now
 
-- **App boots** with `npm run dev` → http://localhost:3000. The French shell renders:
-  deep blue-green sidebar (Tableau de bord, Patients, Consultations, Facturation,
-  Administration, Journal d'audit), top bar (hospital-context + user/role + language
-  placeholders), the page-header pattern, and the persistent prototype label.
-  See `docs/screenshots/01-tableau-de-bord.png` and `02-patients-a-venir.png`.
-- **Empty dashboard** at `/` with placeholder KPI tiles (show "—", no real data); the
-  other modules are "à venir" placeholder routes.
-- **Folder structure** matches `09 §2` (with services/data-access nested under
-  `server/` per ADR-0001).
-- **Dependency direction wired** UI → `server/actions` → `server/services` →
-  hospital-scoped `server/db` → Prisma; services/authz are stubs; the UI→Prisma ban is
-  enforced by ESLint, not just documented.
-- **Design tokens** reflect Design System v0 (`06 §3-4`); **next-intl** serves French
-  from `messages/fr.json`; **lib/money** formats integer FCFA as "15 000 FCFA".
-- **Prisma 7** configured with the node-postgres adapter; `npm run db:check` proves the
-  live connection through the service layer.
-- **Git**: 10 small atomic commits referencing register IDs; `.gitignore` excludes
-  node_modules / .next / .env*.
+**Steps 1-2 (Foundations):** Next.js App Router shell — deep blue-green sidebar (FR
+nav), top bar (placeholders), page-header pattern, persistent prototype label, empty
+Tableau de bord + "à venir" routes. Design tokens (06), next-intl (French), lib/money
+(integer FCFA), Prisma 7 + local PostgreSQL, UI→service→data-access boundary enforced
+by ESLint. Pushed to `github.com/eacarkan/HMIS_Cameroon` (branch `main`).
+
+**Step 3 (this increment):**
+- **Prisma schema** with the 11-entity skeleton subset + `UserRole` and enums
+  (`prisma/schema.prisma`), all hospital-scoped, integer FCFA, soft-delete, neutral
+  status codes, per-hospital `Sequence` numbering. Migration
+  `…_init_skeleton_models` applied to the local DB.
+- **`lib/numbering`** — deterministic number format (`HRB-DEMO-P-2026-000001`).
+- **Seed/reset** (`prisma/seed-data.ts`, `scripts/seed.ts`, `scripts/reset.ts`):
+  idempotent, fake-only. Known starting state = 8 hospitals (HRB-DEMO active+demo, 7
+  inactive), 5 roles, 5 users + role assignments @ HRB-DEMO, zeroed 2026 sequences.
+  **No** patient/encounter/invoice (created live during the demo).
+- **Demo login password (all users):** `demo1234`.
 
 ## Verification done
 
-- `npm run build` → ✓ compiled, TypeScript clean, 6 static routes.
-- `npm run lint` → ✓ clean (incl. the import guardrail).
-- `npm run db:check` → ✓ PostgreSQL OK.
-- Screenshots captured (proof of work, `08 §8`).
+- `npm run db:seed` → ✓ 8 hospitals / 5 roles / 5 users / 5 userRoles / 4 sequences.
+  Re-running is idempotent. `npm run db:reset` → clears operational data + re-seeds.
+- DB rows confirmed via psql (users↔roles↔HRB-DEMO; sequences @ 2026 = 0).
+- `npm run typecheck`, `npm run lint`, `npm run build` → ✓ all clean.
 
-## Environment notes (for the next session)
+## Useful commands
 
-- Local PostgreSQL: Homebrew `postgresql@14` (a fresh cluster was initialized at
-  `/opt/homebrew/var/postgresql@14`). DB `hmis_cameroon`, role `hmis` /
-  `hmis_dev_password`. `DATABASE_URL` is in `.env` (gitignored); see `.env.example`.
-- Start DB if needed: `brew services start postgresql@14`.
+- Run app: `npm run dev` · DB connection check: `npm run db:check`
+- Seed / reset demo data: `npm run db:seed` / `npm run db:reset`
+- New migration: `npx prisma migrate dev --name <name>` · reset+seed: `npx prisma migrate reset`
+- Start DB if needed: `brew services start postgresql@14` (db `hmis_cameroon`, role `hmis`).
 
 ## What is intentionally NOT here (deferred)
 
-- No auth/RBAC logic, no patient/encounter/consultation/billing/receipt flows, no
-  printing. No real data — fake only. The Prisma schema is empty (no models yet).
+- No auth/RBAC enforcement yet (passwordHash is seeded, but credential verification is
+  Step 4). No patient/encounter/consultation/billing/receipt flows. No real data.
 
-## Next step — Step 3 (fake demo data concept)
+## Next step — Step 4 (auth shell)
 
-Per `07_Demo_Scenario_and_Fake_Dataset`:
-1. Add the domain models to `prisma/schema.prisma` (Hospital, User, Role, Patient,
-   Encounter, Consultation, Invoice, InvoiceItem, Payment, AuditLog, Sequence) — all
-   hospital-scoped, integer FCFA.
-2. Implement `scripts/seed.ts` / `scripts/reset.ts`: one demo hospital (HRB-DEMO), five
-   fictional users/roles, deterministic identifiers (e.g. `HRB-DEMO-P-2026-000001`), and
-   the reconciling 3 000 FCFA journey. Fake data only.
-3. Then Step 4 (auth shell) and Step 5 (hospital selector + scoping), at which point the
-   placeholders in `server/db/hospital-context.ts`, `server/authz`, and the top-bar
-   user/hospital slots get wired for real.
+Implement the Auth.js login + session + current actor (per ADR-0 / 09):
+1. Auth.js with a Credentials provider verifying `User.passwordHash` (bcrypt) — the 5
+   seeded demo users log in with password `demo1234`.
+2. A French login screen (06 §14): centered card, `Identifiant` / `Mot de passe`,
+   `Se connecter`, prototype label.
+3. Session → current actor available server-side; wire the top-bar user/role slot to
+   the real session; write the `auth.login` audit entry from the service layer.
+4. Then Step 5 (hospital selector + scoping) wires `server/db/hospital-context` and the
+   top-bar hospital slot to real data, and `server/authz` starts enforcing.
