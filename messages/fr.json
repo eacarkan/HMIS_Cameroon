@@ -70,6 +70,68 @@
     "noData": "Aucune donnée",
     "placeholder": "Les indicateurs s'afficheront une fois le parcours de démonstration réalisé (patient → visite → consultation → facture → paiement)."
   },
+  "sex": {
+    "male": "Masculin",
+    "female": "Féminin"
+  },
+  "encounterStatus": {
+    "open": "Ouverte",
+    "closed": "Clôturée",
+    "cancelled": "Annulée"
+  },
+  "consultationStatus": {
+    "draft": "Brouillon",
+    "finalized": "Finalisée"
+  },
+  "invoiceStatus": {
+    "draft": "Brouillon",
+    "issued": "Émise",
+    "partially_paid": "Partiellement payée",
+    "paid": "Payée",
+    "cancelled": "Annulée"
+  },
+  "paymentMethod": {
+    "cash": "Espèces",
+    "mobile_money": "Mobile money",
+    "card": "Carte",
+    "bank_transfer": "Virement"
+  },
+  "patient": {
+    "title": "Patients",
+    "searchTitle": "Rechercher un patient",
+    "searchPlaceholder": "Nom, prénom ou n° patient…",
+    "search": "Rechercher",
+    "create": "Créer un patient",
+    "noResults": "Aucun patient pour le moment.",
+    "noMatch": "Aucune correspondance — vous pouvez créer un nouveau patient.",
+    "colName": "Patient",
+    "colNumber": "N° patient",
+    "colAgeSex": "Âge / Sexe",
+    "open": "Ouvrir",
+    "years": "ans",
+    "patientNumber": "N° patient",
+    "ageSex": "Âge / Sexe",
+    "hospital": "Hôpital",
+    "activeEncounter": "Visite en cours",
+    "noEncounter": "Aucune",
+    "newTitle": "Nouveau patient",
+    "newSubtitle": "Saisissez les informations principales du patient.",
+    "sectionPrincipal": "Informations principales",
+    "sectionComplementaire": "Informations complémentaires",
+    "familyName": "Nom",
+    "givenName": "Prénom",
+    "sexLabel": "Sexe",
+    "sexPlaceholder": "Sélectionner…",
+    "dateOfBirth": "Date de naissance",
+    "phone": "Téléphone",
+    "residence": "Ville / quartier",
+    "sectionDossier": "Dossier",
+    "sectionVisites": "Visites",
+    "sectionFactures": "Factures",
+    "registeredOn": "Enregistré le",
+    "noVisits": "Aucune visite ouverte.",
+    "noInvoices": "Aucune facture."
+  },
   "comingSoon": {
     "badge": "À venir",
     "title": "Module à venir",

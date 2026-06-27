@@ -28,3 +28,13 @@ export function formatDateFr(value: Date): string {
 export function formatDateTimeFr(value: Date): string {
   return FR_DATE_TIME.format(value).replace(", ", " ");
 }
+
+/** Whole years between `dob` and `now` (age). */
+export function ageInYears(dob: Date, now: Date = new Date()): number {
+  let age = now.getFullYear() - dob.getFullYear();
+  const monthDelta = now.getMonth() - dob.getMonth();
+  if (monthDelta < 0 || (monthDelta === 0 && now.getDate() < dob.getDate())) {
+    age -= 1;
+  }
+  return age;
+}

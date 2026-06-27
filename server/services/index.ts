@@ -27,6 +27,13 @@ export {
   resolveHospitalContext,
   selectHospital,
 } from "./hospital-service";
+export { generateNumber } from "./numbering-service";
+export {
+  type CreatePatientInput,
+  searchPatientsForActor,
+  getPatient,
+  createPatientForActor,
+} from "./patient-service";
 
 /** Marker for a use-case that is intentionally not built yet. */
 export function notImplemented(useCase: string): never {

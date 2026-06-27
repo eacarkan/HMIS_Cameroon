@@ -12,3 +12,10 @@ export { pingDatabase } from "./health";
 export { findUserByEmailWithRoles, findUserByIdWithRoles } from "./users";
 export { type AuditEntryInput, createAuditEntry } from "./audit";
 export { findHospitalsForUser, findHospitalById } from "./hospitals";
+export { nextSequenceValue } from "./sequence";
+export {
+  type CreatePatientData,
+  createPatient,
+  searchPatients,
+  findPatientById,
+} from "./patients";

@@ -1,5 +1,9 @@
+import { redirect } from "next/navigation";
+
 import type { AuthenticatedActor } from "@/server/services";
+import type { HospitalContext } from "@/server/db";
 import { auth } from "./config";
+import { getActiveHospitalContext } from "./active-hospital";
 
 /**
  * `server/auth` — authentication + current actor (09 §3). Re-exports the Auth.js
@@ -26,3 +30,20 @@ export async function getCurrentActor(): Promise<AuthenticatedActor | null> {
 }
 
 export { getActiveHospitalContext } from "./active-hospital";
+
+/**
+ * Resolve the current actor and active hospital, redirecting when either is missing.
+ * The single entry point for server actions / pages that require a scoped session.
+ */
+export async function requireActorAndHospital(): Promise<{
+  actor: AuthenticatedActor;
+  hospital: HospitalContext;
+}> {
+  const actor = await getCurrentActor();
+  if (!actor) redirect("/connexion");
+
+  const hospital = await getActiveHospitalContext(actor);
+  if (!hospital) redirect("/selection-hopital");
+
+  return { actor, hospital };
+}
