@@ -18,6 +18,19 @@ export type AuditEntryInput = {
   metadata?: Prisma.InputJsonValue;
 };
 
+/** List audit entries for a hospital, newest first, optionally filtered by action. */
+export function findAuditEntries(
+  hospitalId: string,
+  opts: { action?: string; limit?: number } = {},
+) {
+  return prisma.auditLog.findMany({
+    where: { hospitalId, ...(opts.action ? { action: opts.action } : {}) },
+    orderBy: { createdAt: "desc" },
+    take: opts.limit ?? 100,
+    include: { actor: true },
+  });
+}
+
 export function createAuditEntry(entry: AuditEntryInput) {
   return prisma.auditLog.create({
     data: {

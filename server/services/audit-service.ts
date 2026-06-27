@@ -1,4 +1,11 @@
-import { type AuditEntryInput, createAuditEntry } from "@/server/db";
+import {
+  type AuditEntryInput,
+  type HospitalContext,
+  createAuditEntry,
+  findAuditEntries,
+} from "@/server/db";
+import { AuthorizationError, can } from "@/server/authz";
+import type { AuthenticatedActor } from "./auth-service";
 
 /**
  * Audit service (09 §7). Audit entries are written here, from the service layer, as
@@ -21,4 +28,19 @@ export const AUDIT_ACTIONS = {
 
 export function recordAudit(entry: AuditEntryInput) {
   return createAuditEntry(entry);
+}
+
+/**
+ * Read the audit log for the active hospital (09 §7). Read-only — requires
+ * `audit.read`; a denied read throws without spamming the log with its own entry.
+ */
+export async function listAuditEntries(
+  actor: AuthenticatedActor,
+  ctx: HospitalContext,
+  opts: { action?: string } = {},
+) {
+  if (!can(actor.roles, "audit.read")) {
+    throw new AuthorizationError("audit.read");
+  }
+  return findAuditEntries(ctx.hospitalId, { action: opts.action, limit: 100 });
 }

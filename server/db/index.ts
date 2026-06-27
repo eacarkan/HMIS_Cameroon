@@ -10,7 +10,11 @@ export { prisma } from "./prisma";
 export { type HospitalContext } from "./hospital-context";
 export { pingDatabase } from "./health";
 export { findUserByEmailWithRoles, findUserByIdWithRoles } from "./users";
-export { type AuditEntryInput, createAuditEntry } from "./audit";
+export {
+  type AuditEntryInput,
+  createAuditEntry,
+  findAuditEntries,
+} from "./audit";
 export { findHospitalsForUser, findHospitalById } from "./hospitals";
 export { nextSequenceValue } from "./sequence";
 export {

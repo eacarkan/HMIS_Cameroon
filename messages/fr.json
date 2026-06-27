@@ -202,6 +202,18 @@
     "signature": "Signature / cachet",
     "footerNote": "Document généré par le système — veuillez conserver ce reçu."
   },
+  "auditLog": {
+    "title": "Journal d'audit",
+    "subtitle": "Actions enregistrées pour l'hôpital actif",
+    "filterAction": "Filtrer par action",
+    "allActions": "Toutes les actions",
+    "colTime": "Date / heure",
+    "colActor": "Acteur",
+    "colAction": "Action",
+    "colEntity": "Entité",
+    "colSummary": "Résumé",
+    "empty": "Aucune entrée."
+  },
   "comingSoon": {
     "badge": "À venir",
     "title": "Module à venir",

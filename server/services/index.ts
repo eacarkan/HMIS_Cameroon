@@ -20,7 +20,7 @@ export {
   type AuthenticatedActor,
   authenticateCredentials,
 } from "./auth-service";
-export { AUDIT_ACTIONS, recordAudit } from "./audit-service";
+export { AUDIT_ACTIONS, recordAudit, listAuditEntries } from "./audit-service";
 export { requireCapability } from "./authz-service";
 export {
   getAccessibleHospitals,

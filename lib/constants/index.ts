@@ -77,6 +77,20 @@ export const TARIFFS = [
   { code: "injection", label: "Injection", amount: 1000, defaultQty: 0 },
 ] as const;
 
+/** French labels for audit action codes (dotted codes can't be next-intl keys). */
+export const AUDIT_ACTION_LABELS: Record<string, string> = {
+  "auth.login": "Connexion",
+  "hospital.select": "Sélection d'hôpital",
+  "patient.create": "Création patient",
+  "encounter.create": "Ouverture de visite",
+  "consultation.create": "Consultation",
+  "consultation.update": "Mise à jour consultation",
+  "invoice.create": "Création de facture",
+  "payment.record": "Paiement",
+  "receipt.print": "Impression de reçu",
+  "authz.denied": "Action refusée",
+};
+
 /** Payment-method labels for server-side audit summaries (UI uses messages/fr.json). */
 export const PAYMENT_METHOD_FR: Record<string, string> = {
   cash: "espèces",
