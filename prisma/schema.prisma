@@ -1,0 +1,21 @@
+// Prisma schema — HMIS Cameroon (SIGH/DME prototype)
+// Registers: D-003 (PostgreSQL + Prisma), D-009 (FCFA stored as integers),
+//            D-011 (hospital-scoped data access from day 1).
+//
+// FOUNDATIONS STEP (build steps 1-2): the schema is intentionally MINIMAL/EMPTY.
+// No domain models yet — Hospital, User, Role, Patient, Encounter, Consultation,
+// Invoice, InvoiceItem, Payment, AuditLog and the numbering Sequence are added in
+// Step 3+ per 05_Logical_Data_Model_v0 and 07_Demo_Scenario_and_Fake_Dataset.
+//
+// Architecture rule (09 §4/§8): money is stored as INTEGER FCFA (no floats); every
+// operational record will carry `hospital_id` and is only reachable within its
+// hospital context through the data-access layer (server/db). The UI never calls
+// Prisma directly.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
