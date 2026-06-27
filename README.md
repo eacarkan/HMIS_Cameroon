@@ -7,9 +7,13 @@ hospitals). This repository is the implementation of the approved planning basel
 `../Planning/` (ADR-0 stack, Design System v0, Architecture Rules `09`). **Fake data
 only — no real patient data, ever.**
 
-This increment covers **build sequence Steps 1-2** (`09 §14`): repo + app shell +
-design foundation + French i18n, plus seed/reset scaffolding stubs from Step 3. No
-business features yet.
+The **first walking skeleton is complete** (build sequence Steps 1–13, `09 §14`): the
+full golden path works end-to-end — login → select hospital → create patient → open
+visit → record consultation → create invoice → record payment → print receipt →
+dashboard tile → audit log — French-first, hospital-scoped, with service-layer RBAC and
+automatic audit. See [docs/DEMO.md](docs/DEMO.md) for the live script and
+[docs/build-log/](docs/build-log/) for per-step notes. Run `npm run smoke` for the
+golden-path verification.
 
 ## Stack
 
@@ -56,7 +60,8 @@ The schema is intentionally empty in this step; domain models arrive at Step 3+.
 | `npm run db:generate` | `prisma generate` |
 | `npm run db:push` | Push schema to the database |
 | `npm run db:check` | Verify the live DB connection through the service layer |
-| `npm run db:seed` / `db:reset` | Demo data stubs (implemented at Step 3) |
+| `npm run db:seed` / `db:reset` | Seed / reset the deterministic demo data |
+| `npm run smoke` | Golden-path smoke test (reconciliation, numbering, audit, RBAC, scoping) |
 
 ## Demo data (Step 3)
 
