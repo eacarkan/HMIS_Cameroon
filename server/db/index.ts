@@ -28,3 +28,13 @@ export {
   type CreateConsultationData,
   createConsultation,
 } from "./consultations";
+export {
+  type CreateInvoiceWithItemsData,
+  type CreatePaymentData,
+  createInvoiceWithItems,
+  findInvoiceById,
+  createPayment,
+  updateInvoiceStatus,
+  markReceiptPrinted,
+  findPaymentById,
+} from "./invoices";

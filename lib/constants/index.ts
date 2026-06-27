@@ -50,6 +50,41 @@ export const DEMO_HOSPITAL = {
  */
 export const DEMO_PASSWORD = "demo1234";
 
+/**
+ * Fake tariff catalogue (05 §4 — "one or two fake tariffs"; 07 §8). Integer FCFA.
+ * Real tariffs/price-lists are post-audit (C-006, Q-006). Client-safe.
+ */
+export const TARIFFS = [
+  {
+    code: "consultation_generale",
+    label: "Consultation médecine générale",
+    amount: 2000,
+    defaultQty: 1,
+  },
+  {
+    code: "ouverture_dossier",
+    label: "Frais d'ouverture de dossier",
+    amount: 1000,
+    defaultQty: 1,
+  },
+  {
+    code: "consultation_specialisee",
+    label: "Consultation spécialisée",
+    amount: 5000,
+    defaultQty: 0,
+  },
+  { code: "pansement", label: "Pansement", amount: 1500, defaultQty: 0 },
+  { code: "injection", label: "Injection", amount: 1000, defaultQty: 0 },
+] as const;
+
+/** Payment-method labels for server-side audit summaries (UI uses messages/fr.json). */
+export const PAYMENT_METHOD_FR: Record<string, string> = {
+  cash: "espèces",
+  mobile_money: "mobile money",
+  card: "carte",
+  bank_transfer: "virement",
+};
+
 export const DEMO_ACCOUNTS = [
   {
     email: "awa.njoya@hrb-demo.cm",

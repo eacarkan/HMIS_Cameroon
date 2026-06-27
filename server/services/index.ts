@@ -43,6 +43,13 @@ export {
   type RecordConsultationInput,
   recordConsultation,
 } from "./consultation-service";
+export {
+  type InvoiceLineInput,
+  invoiceBalance,
+  getInvoice,
+  createInvoice,
+  recordPayment,
+} from "./billing-service";
 
 /** Marker for a use-case that is intentionally not built yet. */
 export function notImplemented(useCase: string): never {

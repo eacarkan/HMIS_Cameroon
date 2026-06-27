@@ -164,6 +164,27 @@
     "recommendation": "Conduite à tenir",
     "save": "Enregistrer la consultation"
   },
+  "billing": {
+    "newTitle": "Créer la facture",
+    "newSubtitle": "Sélectionnez les prestations à facturer.",
+    "designation": "Désignation",
+    "unitPrice": "Prix unitaire",
+    "quantity": "Qté",
+    "lineTotal": "Montant",
+    "total": "Total",
+    "invoiceTitle": "Facture",
+    "invoiceNumber": "N° de facture",
+    "status": "Statut",
+    "paidLabel": "Payé",
+    "remaining": "Reste à payer",
+    "amount": "Montant",
+    "method": "Mode de paiement",
+    "paymentsTitle": "Paiements",
+    "receiptNumber": "N° de reçu",
+    "cashier": "Caissier",
+    "noPayments": "Aucun paiement enregistré.",
+    "date": "Date"
+  },
   "comingSoon": {
     "badge": "À venir",
     "title": "Module à venir",
