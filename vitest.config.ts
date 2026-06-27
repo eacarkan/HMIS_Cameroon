@@ -1,5 +1,4 @@
 import { defineConfig } from "vitest/config";
-import tsconfigPaths from "vite-tsconfig-paths";
 
 /**
  * Vitest configuration (Step 14). Three projects:
@@ -7,11 +6,11 @@ import tsconfigPaths from "vite-tsconfig-paths";
  *  - component   : React Testing Library on client/presentational components (jsdom)
  *  - integration : service + data-access against the TEST database (node, serial)
  *
- * `@/` path aliases resolve via vite-tsconfig-paths. Integration tests require
- * TEST_DATABASE_URL (a dedicated test DB) — see tests/setup/db.ts.
+ * `@/` path aliases resolve via Vite's native tsconfig-paths support. Integration tests
+ * require TEST_DATABASE_URL (a dedicated test DB) — see tests/setup/db.ts.
  */
 export default defineConfig({
-  plugins: [tsconfigPaths()],
+  resolve: { tsconfigPaths: true },
   test: {
     projects: [
       {
