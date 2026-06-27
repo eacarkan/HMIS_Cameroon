@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import {
   Building2,
+  Check,
   ChevronDown,
   Globe,
   LogOut,
@@ -18,18 +19,29 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import type { HospitalContext } from "@/lib/hospital-context";
 import type { AuthenticatedActor } from "@/server/services";
-import { signOutAction } from "@/server/auth/actions";
+import { selectHospitalAction, signOutAction } from "@/server/auth/actions";
+
+export type HospitalOption = { id: string; code: string; name: string };
 
 /**
- * Top bar (06 §5): hospital-context display, (later) global search, language
- * indicator and the signed-in user/role with sign-out. The hospital SELECTOR
- * (switching context) arrives at Step 5; here it shows the actor's assigned hospital.
+ * Top bar (06 §5): active-hospital selector (switch between accessible hospitals),
+ * (later) global search, language indicator and the signed-in user with sign-out.
  */
-export function Topbar({ actor }: { actor: AuthenticatedActor }) {
+export function Topbar({
+  actor,
+  hospital,
+  hospitals,
+}: {
+  actor: AuthenticatedActor;
+  hospital: HospitalContext;
+  hospitals: HospitalOption[];
+}) {
   const t = useTranslations("topbar");
   const tApp = useTranslations("app");
   const tRoles = useTranslations("roles");
+  const tHospital = useTranslations("hospital");
 
   const roleCode = actor.roles[0];
   const roleLabel = roleCode ? tRoles(roleCode) : "";
@@ -43,29 +55,50 @@ export function Topbar({ actor }: { actor: AuthenticatedActor }) {
 
   return (
     <header className="bg-card flex h-14 shrink-0 items-center gap-3 border-b px-4 lg:px-6">
-      {/* Hospital context — the actor's hospital; the selector (switching) is Step 5 */}
-      <button
-        type="button"
-        disabled
-        title={t("hospitalSelectorPending")}
-        className="bg-background flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-left disabled:cursor-not-allowed"
-      >
-        <Building2 className="text-primary size-4 shrink-0" aria-hidden />
-        <span className="leading-tight">
-          <span className="text-muted-foreground block text-[11px]">
-            {t("hospitalLabel")}
+      {/* Active hospital — selectable context */}
+      <DropdownMenu>
+        <DropdownMenuTrigger className="bg-background hover:bg-accent flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-left transition-colors focus-visible:outline-none">
+          <Building2 className="text-primary size-4 shrink-0" aria-hidden />
+          <span className="leading-tight">
+            <span className="text-muted-foreground block text-[11px]">
+              {t("hospitalLabel")}
+            </span>
+            <span className="block max-w-[14rem] truncate text-sm font-medium">
+              {hospital.name}
+            </span>
           </span>
-          <span className="block max-w-[14rem] truncate text-sm font-medium">
-            {actor.hospitalName ?? "—"}
-          </span>
-        </span>
-        {actor.hospitalCode ? (
           <Badge variant="secondary" className="ml-1">
-            {actor.hospitalCode}
+            {hospital.code}
           </Badge>
-        ) : null}
-        <ChevronDown className="text-muted-foreground size-4" aria-hidden />
-      </button>
+          <ChevronDown className="text-muted-foreground size-4" aria-hidden />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-72">
+          <DropdownMenuLabel>{tHospital("switchLabel")}</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {hospitals.map((h) => {
+            const isActive = h.id === hospital.hospitalId;
+            return (
+              <form key={h.id} action={selectHospitalAction.bind(null, h.id)}>
+                <button
+                  type="submit"
+                  className="hover:bg-accent flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm"
+                >
+                  <Check
+                    className={`size-4 shrink-0 ${isActive ? "text-primary" : "opacity-0"}`}
+                    aria-hidden
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate">{h.name}</span>
+                    <span className="text-muted-foreground block text-xs">
+                      {h.code}
+                    </span>
+                  </span>
+                </button>
+              </form>
+            );
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       {/* Global search — placeholder (later) */}
       <div className="relative ml-2 hidden max-w-sm flex-1 lg:block">
@@ -82,7 +115,6 @@ export function Topbar({ actor }: { actor: AuthenticatedActor }) {
       </div>
 
       <div className="ml-auto flex items-center gap-2">
-        {/* Language indicator — French only */}
         <span
           className="text-muted-foreground flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium"
           title={tApp("languageLabel")}
@@ -91,7 +123,6 @@ export function Topbar({ actor }: { actor: AuthenticatedActor }) {
           {tApp("languageShort")}
         </span>
 
-        {/* Signed-in user / role */}
         <DropdownMenu>
           <DropdownMenuTrigger className="hover:bg-accent flex items-center gap-2 rounded-md px-1.5 py-1 transition-colors focus-visible:outline-none">
             <span className="bg-primary/10 text-primary grid size-8 place-items-center rounded-full text-xs font-semibold">

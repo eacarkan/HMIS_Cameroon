@@ -25,6 +25,12 @@
     "caissier": "Caissier",
     "directeur": "Directeur (lecture seule)"
   },
+  "hospital": {
+    "selectTitle": "Sélection de l'hôpital",
+    "selectSubtitle": "Choisissez l'hôpital dans lequel vous travaillez.",
+    "switchLabel": "Changer d'hôpital",
+    "signedInAs": "Connecté en tant que {name}"
+  },
   "nav": {
     "sectionMain": "Navigation",
     "dashboard": "Tableau de bord",

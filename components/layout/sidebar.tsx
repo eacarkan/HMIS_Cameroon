@@ -5,18 +5,20 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Hospital } from "lucide-react";
 
+import { can } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "./nav";
 
 /**
  * Left sidebar (06 §2, §5): the deep institutional blue-green rail with module
- * navigation and an active-state aware list. Role-aware filtering is a Step 4-5
- * concern; here every item is shown.
+ * navigation and an active-state aware list. Items are filtered by the actor's
+ * capabilities (09 §6) so menus visibly differ by role.
  */
-export function Sidebar() {
+export function Sidebar({ roles }: { roles: string[] }) {
   const pathname = usePathname();
   const tNav = useTranslations("nav");
   const tApp = useTranslations("app");
+  const items = NAV_ITEMS.filter((item) => can(roles, item.capability));
 
   return (
     <aside className="bg-sidebar text-sidebar-foreground hidden w-64 shrink-0 flex-col md:flex">
@@ -41,7 +43,7 @@ export function Sidebar() {
           {tNav("sectionMain")}
         </p>
         <ul className="space-y-1">
-          {NAV_ITEMS.map((item) => {
+          {items.map((item) => {
             const isActive =
               item.href === "/"
                 ? pathname === "/"
