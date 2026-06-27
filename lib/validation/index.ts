@@ -24,3 +24,16 @@ export const fcfaAmount = z
   .number()
   .int({ message: "Le montant doit être un entier (FCFA)." })
   .nonnegative({ message: "Le montant ne peut pas être négatif." });
+
+/** Flatten a ZodError to `{ field: firstMessage }` for inline form display. */
+export function fieldErrorsOf(error: z.ZodError): Record<string, string> {
+  const out: Record<string, string> = {};
+  const fieldErrors = error.flatten().fieldErrors as Record<
+    string,
+    string[] | undefined
+  >;
+  for (const [key, messages] of Object.entries(fieldErrors)) {
+    if (messages && messages[0]) out[key] = messages[0];
+  }
+  return out;
+}

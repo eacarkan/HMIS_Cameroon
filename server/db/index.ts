@@ -19,3 +19,8 @@ export {
   searchPatients,
   findPatientById,
 } from "./patients";
+export {
+  type CreateEncounterData,
+  createEncounter,
+  findEncounterById,
+} from "./encounters";

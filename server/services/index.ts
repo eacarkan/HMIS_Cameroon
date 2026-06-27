@@ -34,6 +34,11 @@ export {
   getPatient,
   createPatientForActor,
 } from "./patient-service";
+export {
+  type OpenEncounterInput,
+  getEncounter,
+  openEncounter,
+} from "./encounter-service";
 
 /** Marker for a use-case that is intentionally not built yet. */
 export function notImplemented(useCase: string): never {

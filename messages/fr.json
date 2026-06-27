@@ -132,6 +132,26 @@
     "noVisits": "Aucune visite ouverte.",
     "noInvoices": "Aucune facture."
   },
+  "encounter": {
+    "newTitle": "Ouvrir une visite",
+    "newSubtitle": "Démarrer une nouvelle visite pour ce patient.",
+    "service": "Service / département",
+    "reason": "Motif de visite",
+    "reasonPlaceholder": "Motif de la consultation…",
+    "number": "N° de visite",
+    "status": "Statut",
+    "openedAt": "Ouverte le",
+    "clinician": "Clinicien",
+    "unassigned": "Non assigné",
+    "info": "Informations de la visite",
+    "consultations": "Consultations",
+    "noConsultations": "Aucune consultation enregistrée.",
+    "recordConsultation": "Enregistrer la consultation",
+    "billing": "Facturation",
+    "noInvoice": "Aucune facture pour cette visite.",
+    "createInvoice": "Créer la facture",
+    "viewInvoice": "Voir la facture"
+  },
   "comingSoon": {
     "badge": "À venir",
     "title": "Module à venir",
