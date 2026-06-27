@@ -1,0 +1,59 @@
+{
+  "app": {
+    "name": "SIGH · DME",
+    "longName": "Système d'Information de Gestion Hospitalière",
+    "ministry": "Ministère de la Santé Publique",
+    "prototypeLabel": "Prototype de démonstration fonctionnelle — non destiné à la production",
+    "languageShort": "FR",
+    "languageLabel": "Français"
+  },
+  "nav": {
+    "sectionMain": "Navigation",
+    "dashboard": "Tableau de bord",
+    "patients": "Patients",
+    "consultations": "Consultations",
+    "billing": "Facturation",
+    "administration": "Administration",
+    "audit": "Journal d'audit"
+  },
+  "topbar": {
+    "hospitalLabel": "Hôpital actif",
+    "selectHospital": "Sélectionner un hôpital",
+    "hospitalSelectorPending": "Sélecteur d'hôpital — disponible à l'étape 5",
+    "searchPlaceholder": "Rechercher…",
+    "userFallbackName": "Utilisateur",
+    "rolePending": "À connecter",
+    "authPending": "Authentification — étape 4",
+    "signOut": "Se déconnecter"
+  },
+  "actions": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "createPatient": "Créer un patient",
+    "openEncounter": "Ouvrir une visite",
+    "collectPayment": "Encaisser",
+    "printReceipt": "Imprimer le reçu"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "subtitle": "Vue d'ensemble de l'activité de l'hôpital actif",
+    "kpi": {
+      "patientsToday": "Patients enregistrés aujourd'hui",
+      "openEncounters": "Visites ouvertes",
+      "collectionsToday": "Encaissements du jour",
+      "recentActivity": "Activité récente"
+    },
+    "noData": "Aucune donnée",
+    "placeholder": "Les indicateurs s'afficheront une fois le parcours de démonstration réalisé (patient → visite → consultation → facture → paiement)."
+  },
+  "comingSoon": {
+    "badge": "À venir",
+    "title": "Module à venir",
+    "description": "Ce module sera disponible dans une prochaine étape du prototype. La navigation et la structure sont en place ; les fonctionnalités métier arrivent étape par étape.",
+    "patients": "La recherche et la création de patients arrivent à l'étape 6.",
+    "consultations": "La saisie des consultations arrive à l'étape 8.",
+    "billing": "La facturation et l'encaissement arrivent à l'étape 9.",
+    "administration": "La gestion des utilisateurs et des rôles arrive à l'étape 4.",
+    "audit": "Le journal d'audit arrive à l'étape 12."
+  }
+}
