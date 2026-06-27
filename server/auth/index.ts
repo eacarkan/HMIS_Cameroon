@@ -18,8 +18,11 @@ export async function getCurrentActor(): Promise<AuthenticatedActor | null> {
     displayName: session.user.name ?? "",
     email: session.user.email ?? "",
     roles: session.user.roles ?? [],
+    hospitalIds: session.user.hospitalIds ?? [],
     hospitalId: session.user.hospitalId ?? null,
     hospitalCode: session.user.hospitalCode ?? null,
     hospitalName: session.user.hospitalName ?? null,
   };
 }
+
+export { getActiveHospitalContext } from "./active-hospital";

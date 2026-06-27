@@ -17,7 +17,9 @@ export type AuthenticatedActor = {
   email: string;
   /** Role codes (e.g. "caissier"). */
   roles: string[];
-  /** Active hospital context — for now the user's (single) assigned hospital. */
+  /** All hospital ids the actor has access to (via UserRole). */
+  hospitalIds: string[];
+  /** Default/primary hospital (the user's first assignment). */
   hospitalId: string | null;
   hospitalCode: string | null;
   hospitalName: string | null;
@@ -37,8 +39,8 @@ export async function authenticateCredentials(
   const passwordOk = await bcrypt.compare(password, user.passwordHash);
   if (!passwordOk) return null;
 
-  const roles = user.userRoles.map((ur) => ur.role.code);
-  // Single active hospital in the prototype; the real selector arrives at Step 5.
+  const roles = [...new Set(user.userRoles.map((ur) => ur.role.code))];
+  const hospitalIds = [...new Set(user.userRoles.map((ur) => ur.hospitalId))];
   const primary = user.userRoles[0];
   const hospitalId = primary?.hospitalId ?? null;
   const hospitalCode = primary?.hospital.code ?? null;
@@ -58,6 +60,7 @@ export async function authenticateCredentials(
     displayName: user.displayName,
     email: user.email,
     roles,
+    hospitalIds,
     hospitalId,
     hospitalCode,
     hospitalName,

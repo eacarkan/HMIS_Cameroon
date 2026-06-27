@@ -7,11 +7,8 @@
  * ESLint `no-restricted-imports`).
  */
 export { prisma } from "./prisma";
-export {
-  type HospitalContext,
-  PLACEHOLDER_HOSPITAL_CONTEXT,
-  requireHospitalContext,
-} from "./hospital-context";
+export { type HospitalContext } from "./hospital-context";
 export { pingDatabase } from "./health";
 export { findUserByEmailWithRoles, findUserByIdWithRoles } from "./users";
 export { type AuditEntryInput, createAuditEntry } from "./audit";
+export { findHospitalsForUser, findHospitalById } from "./hospitals";

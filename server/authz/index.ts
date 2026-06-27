@@ -1,23 +1,18 @@
 /**
- * `server/authz` — authorization (RBAC) boundary (09 §6).
+ * `server/authz` — authorization boundary (09 §6).
  *
- * Auth.js answers "who is this?"; THIS layer answers "may this actor do this, here?".
- * Every protected use-case in `server/services` will check actor + role + active
- * hospital before acting; a refused action fails server-side with a clear, non-leaking
- * error and is written to the audit log as `authz.denied`. Hiding a button in the UI
- * is never the control (09 §4, §13).
- *
- * FOUNDATIONS (Steps 1-2): no roles, no permissions, no enforcement yet — the auth
- * shell arrives at Step 4 and the hospital-scoped role checks at Step 5. The coarse
- * role list below is a placeholder shape only (matches 07_Demo_Scenario users).
+ * Auth.js answers "who is this?"; this layer answers "may this actor do this, here?".
+ * The pure capability matrix lives in `lib/rbac` (shared with the UI for nav
+ * filtering); enforcement that also writes the `authz.denied` audit lives in
+ * `server/services/authz-service`. A refused action fails server-side with a clear,
+ * non-leaking error — hiding a button is never the control (09 §4, §13).
  */
+export { type Role, type Capability, ROLE_CAPABILITIES, can } from "@/lib/rbac";
 
-export type Role =
-  "administrateur" | "agent_accueil" | "medecin" | "caissier" | "directeur";
-
-/** Placeholder until the service-layer RBAC lands (Step 4-5). */
-export function requirePermission(action: string): never {
-  throw new Error(
-    `Authorization is not wired yet (arrives at build Step 4-5). Refused: ${action}`,
-  );
+/** Thrown when an actor lacks a capability. Mapped to a clean French error in the UI. */
+export class AuthorizationError extends Error {
+  constructor(public readonly capability: string) {
+    super(`Action non autorisée: ${capability}`);
+    this.name = "AuthorizationError";
+  }
 }

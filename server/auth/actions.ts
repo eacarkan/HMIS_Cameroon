@@ -1,12 +1,18 @@
 "use server";
 
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { AuthError } from "next-auth";
 
+import { selectHospital } from "@/server/services";
 import { signIn, signOut } from "./config";
+import { getCurrentActor } from "./index";
+import { ACTIVE_HOSPITAL_COOKIE } from "./active-hospital";
 
 /**
- * Auth transport actions (09 §4). Thin: they call Auth.js sign-in/out. Credential
- * verification + audit live in the service layer (auth-service).
+ * Auth transport actions (09 §4). Thin: validation + Auth.js sign-in/out + the
+ * active-hospital cookie. Credential verification, access checks and audit live in
+ * the service layer.
  */
 
 export type LoginState = { error?: string };
@@ -32,5 +38,20 @@ export async function loginAction(
 }
 
 export async function signOutAction() {
+  (await cookies()).delete(ACTIVE_HOSPITAL_COOKIE);
   await signOut({ redirectTo: "/connexion" });
+}
+
+/** Set the active hospital (validated + audited in the service layer). */
+export async function selectHospitalAction(hospitalId: string) {
+  const actor = await getCurrentActor();
+  if (!actor) redirect("/connexion");
+
+  await selectHospital(actor, hospitalId);
+  (await cookies()).set(ACTIVE_HOSPITAL_COOKIE, hospitalId, {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+  });
+  redirect("/");
 }
