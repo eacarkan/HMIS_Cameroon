@@ -13,3 +13,5 @@ export {
   requireHospitalContext,
 } from "./hospital-context";
 export { pingDatabase } from "./health";
+export { findUserByEmailWithRoles, findUserByIdWithRoles } from "./users";
+export { type AuditEntryInput, createAuditEntry } from "./audit";

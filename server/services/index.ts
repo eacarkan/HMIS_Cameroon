@@ -16,6 +16,11 @@
  */
 
 export { getDatabaseStatus } from "./system-service";
+export {
+  type AuthenticatedActor,
+  authenticateCredentials,
+} from "./auth-service";
+export { AUDIT_ACTIONS, recordAudit } from "./audit-service";
 
 /** Marker for a use-case that is intentionally not built yet. */
 export function notImplemented(useCase: string): never {
