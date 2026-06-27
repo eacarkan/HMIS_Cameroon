@@ -16,7 +16,17 @@
     "db:check": "tsx scripts/check-db.ts",
     "db:seed": "tsx scripts/seed.ts",
     "db:reset": "tsx scripts/reset.ts",
-    "smoke": "tsx scripts/golden-path.ts"
+    "db:test:setup": "tsx scripts/setup-test-db.ts",
+    "smoke": "tsx scripts/golden-path.ts",
+    "test": "vitest run --project unit --project component",
+    "test:watch": "vitest",
+    "test:unit": "vitest run --project unit",
+    "test:component": "vitest run --project component",
+    "test:integration": "vitest run --project integration",
+    "test:e2e": "playwright test",
+    "test:all": "npm run typecheck && npm run lint && npm run test:unit && npm run test:component && npm run test:integration && npm run build && npm run test:e2e",
+    "check:arch": "tsx scripts/check-architecture.ts",
+    "check:privacy": "tsx scripts/check-privacy.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
@@ -39,7 +49,12 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/pg": "^8.20.0",
@@ -49,11 +64,14 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
     "eslint-config-prettier": "^10.1.8",
+    "jsdom": "^29.1.1",
     "prettier": "^3.9.0",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "prisma": "^7.8.0",
     "tailwindcss": "^4",
     "tsx": "^4.22.4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.9"
   }
 }
