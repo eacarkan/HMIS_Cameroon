@@ -75,7 +75,8 @@ Seeded demo users (all share the password **`demo1234`**):
 | Solange ABENA | Caissier | solange.abena@hrb-demo.cm |
 | Dr Emmanuel TCHOUA | Directeur (lecture seule) | emmanuel.tchoua@hrb-demo.cm |
 
-_All data is fake. Login becomes functional at Step 4._
+Log in at `/connexion` with any account above and password `demo1234` (Step 4). _All
+data is fake._ RBAC enforcement + the hospital selector arrive at Step 5.
 
 ## Structure (09 §2)
 
