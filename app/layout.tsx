@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 
-import { AppShell } from "@/components/layout/app-shell";
 import { APP_NAME, APP_LONG_NAME } from "@/lib/constants";
 import "./globals.css";
 
@@ -25,7 +24,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // French-only: a single fixed locale, no i18n routing (09 §9).
+  // French-only: a single fixed locale, no i18n routing (09 §9). The app shell is
+  // composed inside the authenticated (app) group, not here — so the login screen
+  // renders without it.
   const locale = await getLocale();
   const messages = await getMessages();
 
@@ -33,7 +34,7 @@ export default async function RootLayout({
     <html lang={locale} className={`${inter.variable} h-full`}>
       <body className="bg-background text-foreground min-h-full antialiased">
         <NextIntlClientProvider messages={messages}>
-          <AppShell>{children}</AppShell>
+          {children}
         </NextIntlClientProvider>
       </body>
     </html>

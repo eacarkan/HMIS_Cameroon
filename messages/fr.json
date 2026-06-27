@@ -7,6 +7,24 @@
     "languageShort": "FR",
     "languageLabel": "Français"
   },
+  "auth": {
+    "title": "Connexion",
+    "subtitle": "Système d'Information de Gestion Hospitalière",
+    "identifier": "Identifiant",
+    "identifierPlaceholder": "prenom.nom@hrb-demo.cm",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "signingIn": "Connexion…",
+    "demoTitle": "Comptes de démonstration",
+    "demoPasswordLabel": "Mot de passe (tous les comptes)"
+  },
+  "roles": {
+    "administrateur": "Administrateur",
+    "agent_accueil": "Agent d'accueil",
+    "medecin": "Médecin",
+    "caissier": "Caissier",
+    "directeur": "Directeur (lecture seule)"
+  },
   "nav": {
     "sectionMain": "Navigation",
     "dashboard": "Tableau de bord",

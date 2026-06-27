@@ -43,3 +43,37 @@ export const DEMO_HOSPITAL = {
   name: "Hôpital Régional de Bertoua — Démo",
   region: "Est",
 } as const;
+
+/**
+ * Demo login credentials shown on the login screen (Step 4). Client-safe — mirrors
+ * the seeded users in prisma/seed-data. Fake accounts only (A-001/D-008).
+ */
+export const DEMO_PASSWORD = "demo1234";
+
+export const DEMO_ACCOUNTS = [
+  {
+    email: "awa.njoya@hrb-demo.cm",
+    displayName: "Awa NJOYA",
+    roleCode: "administrateur",
+  },
+  {
+    email: "brigitte.mbarga@hrb-demo.cm",
+    displayName: "Brigitte MBARGA",
+    roleCode: "agent_accueil",
+  },
+  {
+    email: "jeanpaul.etoa@hrb-demo.cm",
+    displayName: "Dr Jean-Paul ETOA",
+    roleCode: "medecin",
+  },
+  {
+    email: "solange.abena@hrb-demo.cm",
+    displayName: "Solange ABENA",
+    roleCode: "caissier",
+  },
+  {
+    email: "emmanuel.tchoua@hrb-demo.cm",
+    displayName: "Dr Emmanuel TCHOUA",
+    roleCode: "directeur",
+  },
+] as const;
