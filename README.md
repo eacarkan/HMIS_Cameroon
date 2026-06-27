@@ -61,7 +61,8 @@ The schema is intentionally empty in this step; domain models arrive at Step 3+.
 | `npm run db:push` | Push schema to the database |
 | `npm run db:check` | Verify the live DB connection through the service layer |
 | `npm run db:seed` / `db:reset` | Seed / reset the deterministic demo data |
-| `npm run smoke` | Golden-path smoke test (reconciliation, numbering, audit, RBAC, scoping) |
+| `npm run smoke:test` | Golden-path smoke test on the **test** DB (reconciliation, numbering, audit, RBAC, scoping) |
+| `npm run smoke:dev` | Same, against the **dev** DB — manual/dev-only, fake data only |
 
 ## Demo data (Step 3)
 

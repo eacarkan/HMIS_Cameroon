@@ -38,10 +38,17 @@ No heavy/exotic frameworks were introduced.
 ## Package scripts
 
 `typecheck`, `lint`, `build`, `test` (unit+component), `test:unit`, `test:component`,
-`test:integration`, `test:e2e`, `test:all`, `smoke`, `check:arch`, `check:privacy`,
+`test:integration`, `test:e2e`, `test:all`, `smoke` / `smoke:test` (test DB, safe
+default) / `smoke:dev` (dev DB, manual-only), `check:arch`, `check:privacy`,
 `db:test:setup`.
 
 `test:all` runs: typecheck → lint → unit → component → integration → build → e2e.
+
+**Smoke-test DB safety:** `npm run smoke` and `npm run smoke:test` run the golden path
+against `TEST_DATABASE_URL` and **refuse any database whose name does not contain
+`test`** (the script sets `DATABASE_URL` from `TEST_DATABASE_URL` before Prisma loads).
+`npm run smoke:dev` (`SMOKE_DEV=true`) targets the development `DATABASE_URL` and is
+**manual/dev-only — fake data only, never with real data**.
 
 ## Database / test-data approach
 
@@ -61,7 +68,8 @@ npm run test          # unit + component (no DB)
 npm run db:test:setup # once: create + migrate the test DB
 npm run test:integration
 npm run test:e2e
-npm run smoke         # golden-path assertions (dev DB)
+npm run smoke:test    # golden-path assertions on the TEST database (safe default)
+# npm run smoke:dev   # same, against the DEV database (manual/dev-only; fake data only)
 npm run check:arch && npm run check:privacy
 ```
 
@@ -76,7 +84,7 @@ npm run check:arch && npm run check:privacy
 | component (5 files, 8 tests) | ✅ pass |
 | integration (9 files, 26 tests) | ✅ pass |
 | e2e (7 tests, 6 flows) | ✅ pass |
-| smoke (golden-path) | ✅ pass |
+| smoke:test (golden-path, TEST DB) | ✅ pass |
 | check:arch | ✅ pass |
 | check:privacy | ✅ pass |
 

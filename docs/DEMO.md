@@ -11,8 +11,9 @@ npm run db:reset     # known starting state: HRB-DEMO + 5 users, no patient/visi
 npm run dev          # http://localhost:3000
 ```
 
-Optional: `npm run smoke` replays the whole journey headless and asserts every
-acceptance-critical outcome (reconciliation, numbering, audit, RBAC, scoping).
+Optional: `npm run smoke:test` replays the whole journey headless on the **test**
+database and asserts every acceptance-critical outcome (reconciliation, numbering,
+audit, RBAC, scoping). (`npm run smoke:dev` targets the dev DB — manual/dev-only.)
 
 Demo users (password `demo1234` for all):
 

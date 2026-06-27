@@ -3,22 +3,6 @@ import "dotenv/config";
 import { clearOperationalData, seedBaseData } from "@/prisma/seed-data";
 import { formatFcfa } from "@/lib/money";
 import { AuthorizationError } from "@/server/authz";
-import { prisma } from "@/server/db";
-import {
-  authenticateCredentials,
-  createInvoice,
-  createPatientForActor,
-  getDashboardSummary,
-  invoiceBalance,
-  getInvoice,
-  listAuditEntries,
-  openEncounter,
-  recordConsultation,
-  recordPayment,
-  recordReceiptPrint,
-  resolveHospitalContext,
-  selectHospital,
-} from "@/server/services";
 
 /**
  * Golden-path smoke test (09 §11, 02). Resets to the known demo state and replays the
@@ -26,6 +10,13 @@ import {
  * consultation → invoice → payment → receipt → dashboard → audit), asserting the
  * acceptance-critical outcomes: deterministic numbering, 3 000 FCFA reconciliation,
  * the audit chain, hospital scoping and a server-side RBAC block. Fake data only.
+ *
+ * DB target safety:
+ *  - `npm run smoke` / `npm run smoke:test` (DEFAULT): runs against TEST_DATABASE_URL and
+ *    REFUSES any database whose name does not contain "test".
+ *  - `npm run smoke:dev` (SMOKE_DEV=true): runs against the development DATABASE_URL —
+ *    manual/dev-only, fake data only, NEVER with real data.
+ * The target is resolved BEFORE Prisma is imported (dynamic imports in main()).
  */
 const HRB = "hosp-hrb-demo";
 let failures = 0;
@@ -35,14 +26,71 @@ function check(label: string, ok: boolean, detail = "") {
   if (!ok) failures++;
 }
 
-async function login(email: string) {
-  const actor = await authenticateCredentials(email, "demo1234");
-  if (!actor) throw new Error(`login failed: ${email}`);
-  const ctx = await selectHospital(actor, HRB);
-  return { actor, ctx };
+/** Resolve which database the smoke test runs against, safely (test DB by default). */
+function resolveDatabaseTarget(): void {
+  if (process.env.SMOKE_DEV === "true") {
+    if (!process.env.DATABASE_URL) {
+      console.error(
+        "smoke:dev requires DATABASE_URL (the development database).",
+      );
+      process.exit(1);
+    }
+    console.warn(
+      "⚠ smoke:dev — running against the DEVELOPMENT database. Manual/dev-only; " +
+        "fake data only; never use with real data.",
+    );
+    return;
+  }
+
+  const testUrl = process.env.TEST_DATABASE_URL;
+  if (!testUrl) {
+    console.error(
+      "smoke:test requires TEST_DATABASE_URL (a dedicated test database). See " +
+        ".env.example. Use `npm run smoke:dev` to target the development DB.",
+    );
+    process.exit(1);
+  }
+
+  const dbName = (testUrl.split("/").pop() ?? "").split("?")[0];
+  if (!/test/i.test(dbName)) {
+    console.error(
+      `Refusing: TEST_DATABASE_URL database "${dbName}" does not look like a test ` +
+        `database (its name must contain "test").`,
+    );
+    process.exit(1);
+  }
+
+  process.env.DATABASE_URL = testUrl;
 }
 
 async function main() {
+  resolveDatabaseTarget();
+
+  // Imported AFTER the DB target is set so Prisma connects to the right database.
+  const { prisma } = await import("@/server/db");
+  const {
+    authenticateCredentials,
+    createInvoice,
+    createPatientForActor,
+    getDashboardSummary,
+    getInvoice,
+    invoiceBalance,
+    listAuditEntries,
+    openEncounter,
+    recordConsultation,
+    recordPayment,
+    recordReceiptPrint,
+    resolveHospitalContext,
+    selectHospital,
+  } = await import("@/server/services");
+
+  async function login(email: string) {
+    const actor = await authenticateCredentials(email, "demo1234");
+    if (!actor) throw new Error(`login failed: ${email}`);
+    const ctx = await selectHospital(actor, HRB);
+    return { actor, ctx };
+  }
+
   await clearOperationalData(prisma);
   await seedBaseData(prisma);
 
