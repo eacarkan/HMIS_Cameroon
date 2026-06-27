@@ -1,0 +1,30 @@
+/**
+ * Dates — French formatting helpers (09 §9, design system §10).
+ *
+ * Consistent French date display across tables, banners and the receipt
+ * (e.g. `26/06/2026`, `27/06/2026 09:40`). Pure functions, no side effects.
+ */
+
+const FR_DATE = new Intl.DateTimeFormat("fr-FR", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+});
+
+const FR_DATE_TIME = new Intl.DateTimeFormat("fr-FR", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+/** Format a date as `JJ/MM/AAAA`, e.g. "26/06/2026". */
+export function formatDateFr(value: Date): string {
+  return FR_DATE.format(value);
+}
+
+/** Format a date+time as `JJ/MM/AAAA HH:MM`, e.g. "27/06/2026 09:40". */
+export function formatDateTimeFr(value: Date): string {
+  return FR_DATE_TIME.format(value).replace(", ", " ");
+}
