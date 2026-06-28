@@ -31,6 +31,7 @@ export {
 export {
   type CreateConsultationData,
   createConsultation,
+  findConsultationById,
 } from "./consultations";
 export {
   type CreateInvoiceWithItemsData,
@@ -49,32 +50,67 @@ export {
   recentAuditEntries,
 } from "./dashboard";
 
-// Phase 1 (Gate 2) — additive hospital-scoped data-access for the new models.
+// Phase 1 (Gate 2 + Gate 3) — additive hospital-scoped data-access for the new models.
 export {
+  type CreateDepartmentData,
+  type CreateServiceUnitData,
+  type CreateDocumentTemplateData,
   listDepartments,
   listServiceUnits,
   listSettings,
   getSetting,
   listDocumentTemplates,
+  createDepartment,
+  findDepartmentById,
+  updateDepartment,
+  createServiceUnit,
+  findServiceUnitById,
+  updateServiceUnit,
+  upsertSetting,
+  createDocumentTemplate,
+  findDocumentTemplateById,
+  updateDocumentTemplate,
 } from "./config";
-export { listPriceLists, listTariffs, findTariffByCode } from "./tariffs";
+export {
+  type CreatePriceListData,
+  type CreateTariffData,
+  listPriceLists,
+  listTariffs,
+  findTariffByCode,
+  createPriceList,
+  findPriceListById,
+  updatePriceList,
+  createTariff,
+  findTariffById,
+  updateTariff,
+} from "./tariffs";
 export {
   type CreatePatientContactData,
   type CreatePatientIdentifierData,
   type CreateDuplicateCandidateData,
   createPatientContact,
   listPatientContacts,
+  findPatientContactById,
+  updatePatientContact,
   createPatientIdentifier,
   listPatientIdentifiers,
   findPatientIdentifier,
+  findPatientIdentifierById,
+  updatePatientIdentifier,
   createDuplicateCandidate,
   listDuplicateCandidates,
+  findDuplicateCandidateById,
+  updateDuplicateCandidateStatus,
 } from "./patient-identity";
 export {
   type CreateObservationData,
   type CreateDiagnosisData,
   createObservation,
   listObservations,
+  findObservationById,
+  updateObservation,
   createDiagnosis,
   listDiagnoses,
+  findDiagnosisById,
+  updateDiagnosis,
 } from "./clinical-structure";

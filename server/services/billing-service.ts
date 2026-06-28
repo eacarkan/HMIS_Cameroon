@@ -7,6 +7,7 @@ import {
   createPayment,
   findEncounterById,
   findInvoiceById,
+  findTariffByCode,
   updateInvoiceStatus,
   type HospitalContext,
 } from "@/server/db";
@@ -138,4 +139,37 @@ export async function recordPayment(
   });
 
   return payment;
+}
+
+/**
+ * Tariff-as-source helper (Gate 3, 23 §5 — SOURCE ONLY). The cashier resolves a tariff
+ * (by code, hospital-scoped) into an invoice line input. It is a READ-ONLY reference: it
+ * returns the values to snapshot at `createInvoice` time and NEVER mutates a tariff or an
+ * existing InvoiceItem — later tariff changes can't alter historical invoices. Integer
+ * FCFA. Requires `tariff.use`; audits `invoice_item.tariff_source_used`.
+ */
+export async function getTariffLineSource(
+  actor: AuthenticatedActor,
+  ctx: HospitalContext,
+  tariffCode: string,
+  quantity = 1,
+): Promise<InvoiceLineInput> {
+  await requireCapability(actor, ctx, "tariff.use", { type: "Tariff" });
+
+  const tariff = await findTariffByCode(ctx.hospitalId, tariffCode);
+  if (!tariff || !tariff.isActive) {
+    throw new Error("Tarif introuvable ou inactif dans cet hôpital.");
+  }
+
+  await recordAudit({
+    hospitalId: ctx.hospitalId,
+    actorId: actor.id,
+    action: AUDIT_ACTIONS.invoiceItemTariffSourceUsed,
+    entityType: "Tariff",
+    entityId: tariff.id,
+    summary: `Tarif utilisé comme source de ligne : ${tariff.label} (${formatFcfa(tariff.amount)})`,
+  });
+
+  // A plain snapshot input — createInvoice will freeze these onto the InvoiceItem.
+  return { label: tariff.label, unitAmount: tariff.amount, quantity };
 }

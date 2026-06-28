@@ -25,3 +25,55 @@ export function findTariffByCode(hospitalId: string, code: string) {
     where: { hospitalId, code, deletedAt: null },
   });
 }
+
+// --- Phase 1 (Gate 3) scoped lookups + mutations. Service layer enforces RBAC/audit. ---
+
+export type CreatePriceListData = {
+  hospitalId: string;
+  code: string;
+  name: string;
+  effectiveFrom?: Date | null;
+  effectiveTo?: Date | null;
+};
+export function createPriceList(data: CreatePriceListData) {
+  return prisma.priceList.create({ data });
+}
+export function findPriceListById(hospitalId: string, id: string) {
+  return prisma.priceList.findFirst({ where: { id, hospitalId, deletedAt: null } });
+}
+export function updatePriceList(
+  id: string,
+  data: {
+    name?: string;
+    effectiveFrom?: Date | null;
+    effectiveTo?: Date | null;
+    isActive?: boolean;
+  },
+) {
+  return prisma.priceList.update({ where: { id }, data });
+}
+
+export type CreateTariffData = {
+  hospitalId: string;
+  priceListId?: string | null;
+  code: string;
+  label: string;
+  amount: number; // integer FCFA
+};
+export function createTariff(data: CreateTariffData) {
+  return prisma.tariff.create({ data });
+}
+export function findTariffById(hospitalId: string, id: string) {
+  return prisma.tariff.findFirst({ where: { id, hospitalId, deletedAt: null } });
+}
+export function updateTariff(
+  id: string,
+  data: {
+    label?: string;
+    amount?: number; // integer FCFA
+    priceListId?: string | null;
+    isActive?: boolean;
+  },
+) {
+  return prisma.tariff.update({ where: { id }, data });
+}

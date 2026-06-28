@@ -44,3 +44,25 @@ export function listDiagnoses(hospitalId: string, consultationId: string) {
     orderBy: { createdAt: "asc" },
   });
 }
+
+// --- Phase 1 (Gate 3) scoped lookups + updates. Service layer enforces RBAC/audit. ---
+
+export function findObservationById(hospitalId: string, id: string) {
+  return prisma.observation.findFirst({ where: { id, hospitalId, deletedAt: null } });
+}
+export function updateObservation(
+  id: string,
+  data: { type?: string; value?: string; unit?: string | null },
+) {
+  return prisma.observation.update({ where: { id }, data });
+}
+
+export function findDiagnosisById(hospitalId: string, id: string) {
+  return prisma.diagnosis.findFirst({ where: { id, hospitalId, deletedAt: null } });
+}
+export function updateDiagnosis(
+  id: string,
+  data: { label?: string; code?: string | null; isPrimary?: boolean },
+) {
+  return prisma.diagnosis.update({ where: { id }, data });
+}

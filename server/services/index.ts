@@ -49,12 +49,57 @@ export {
   getInvoice,
   createInvoice,
   recordPayment,
+  getTariffLineSource,
 } from "./billing-service";
 export { getReceipt, recordReceiptPrint } from "./receipt-service";
 export {
   type DashboardSummary,
   getDashboardSummary,
 } from "./dashboard-service";
+
+// Phase 1 (Gate 3) — service wrappers (RBAC + hospital scoping + audit) over the Gate 2
+// data-access modules. No UI; no schema change.
+export {
+  listDepartments,
+  createDepartment,
+  updateDepartment,
+  deactivateDepartment,
+  listServiceUnits,
+  createServiceUnit,
+  deactivateServiceUnit,
+  listSettings,
+  updateSetting,
+  listDocumentTemplates,
+  createDocumentTemplate,
+  deactivateDocumentTemplate,
+} from "./config-service";
+export {
+  listPatientContacts,
+  addPatientContact,
+  deactivatePatientContact,
+  listPatientIdentifiers,
+  addPatientIdentifier,
+  deactivatePatientIdentifier,
+  flagDuplicateCandidate,
+  reviewDuplicateCandidate,
+} from "./patient-identity-service";
+export {
+  listObservations,
+  addObservation,
+  updateObservation,
+  listDiagnoses,
+  addDiagnosis,
+  updateDiagnosis,
+} from "./clinical-structure-service";
+export {
+  listPriceLists,
+  createPriceList,
+  deactivatePriceList,
+  listTariffs,
+  createTariff,
+  updateTariff,
+  deactivateTariff,
+} from "./tariff-service";
 
 /** Marker for a use-case that is intentionally not built yet. */
 export function notImplemented(useCase: string): never {

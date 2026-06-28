@@ -74,3 +74,46 @@ export function listDuplicateCandidates(hospitalId: string) {
     orderBy: { createdAt: "desc" },
   });
 }
+
+// --- Phase 1 (Gate 3) scoped lookups + mutations. Service layer enforces RBAC/audit. ---
+
+export function findPatientContactById(hospitalId: string, id: string) {
+  return prisma.patientContact.findFirst({ where: { id, hospitalId, deletedAt: null } });
+}
+export function updatePatientContact(
+  id: string,
+  data: {
+    contactType?: string;
+    value?: string;
+    label?: string | null;
+    deletedAt?: Date | null;
+  },
+) {
+  return prisma.patientContact.update({ where: { id }, data });
+}
+
+export function findPatientIdentifierById(hospitalId: string, id: string) {
+  return prisma.patientIdentifier.findFirst({
+    where: { id, hospitalId, deletedAt: null },
+  });
+}
+export function updatePatientIdentifier(
+  id: string,
+  data: {
+    identifierType?: string;
+    value?: string;
+    issuingAuthority?: string | null;
+    isActive?: boolean;
+    deletedAt?: Date | null;
+  },
+) {
+  return prisma.patientIdentifier.update({ where: { id }, data });
+}
+
+export function findDuplicateCandidateById(hospitalId: string, id: string) {
+  return prisma.patientDuplicateCandidate.findFirst({ where: { id, hospitalId } });
+}
+/** Update only the review status — never merges patients (warning/review only). */
+export function updateDuplicateCandidateStatus(id: string, status: string) {
+  return prisma.patientDuplicateCandidate.update({ where: { id }, data: { status } });
+}

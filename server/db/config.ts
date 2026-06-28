@@ -42,3 +42,84 @@ export function listDocumentTemplates(hospitalId: string) {
     orderBy: { type: "asc" },
   });
 }
+
+// --- Phase 1 (Gate 3) scoped lookups + mutations. Service layer enforces RBAC/audit. ---
+
+export type CreateDepartmentData = {
+  hospitalId: string;
+  code: string;
+  name: string;
+};
+export function createDepartment(data: CreateDepartmentData) {
+  return prisma.department.create({ data });
+}
+export function findDepartmentById(hospitalId: string, id: string) {
+  return prisma.department.findFirst({ where: { id, hospitalId, deletedAt: null } });
+}
+export function updateDepartment(
+  id: string,
+  data: { name?: string; isActive?: boolean },
+) {
+  return prisma.department.update({ where: { id }, data });
+}
+
+export type CreateServiceUnitData = {
+  hospitalId: string;
+  departmentId?: string | null;
+  code: string;
+  name: string;
+  kind?: string | null;
+};
+export function createServiceUnit(data: CreateServiceUnitData) {
+  return prisma.serviceUnit.create({ data });
+}
+export function findServiceUnitById(hospitalId: string, id: string) {
+  return prisma.serviceUnit.findFirst({ where: { id, hospitalId, deletedAt: null } });
+}
+export function updateServiceUnit(
+  id: string,
+  data: {
+    name?: string;
+    kind?: string | null;
+    departmentId?: string | null;
+    isActive?: boolean;
+  },
+) {
+  return prisma.serviceUnit.update({ where: { id }, data });
+}
+
+/** Upsert a hospital-scoped setting (create or update its value). */
+export function upsertSetting(hospitalId: string, key: string, value: string) {
+  return prisma.setting.upsert({
+    where: { hospitalId_key: { hospitalId, key } },
+    create: { hospitalId, key, value },
+    update: { value },
+  });
+}
+
+export type CreateDocumentTemplateData = {
+  hospitalId: string;
+  type: string;
+  name: string;
+  header?: string | null;
+  body?: string | null;
+};
+export function createDocumentTemplate(data: CreateDocumentTemplateData) {
+  return prisma.documentTemplate.create({ data });
+}
+export function findDocumentTemplateById(hospitalId: string, id: string) {
+  return prisma.documentTemplate.findFirst({
+    where: { id, hospitalId, deletedAt: null },
+  });
+}
+export function updateDocumentTemplate(
+  id: string,
+  data: {
+    name?: string;
+    header?: string | null;
+    body?: string | null;
+    isActive?: boolean;
+  },
+) {
+  return prisma.documentTemplate.update({ where: { id }, data });
+}

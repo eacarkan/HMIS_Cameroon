@@ -11,6 +11,7 @@ export type Role =
   "administrateur" | "agent_accueil" | "medecin" | "caissier" | "directeur";
 
 export type Capability =
+  // Phase 0 capabilities.
   | "dashboard.read"
   | "patient.read"
   | "patient.create"
@@ -23,9 +24,23 @@ export type Capability =
   | "payment.record"
   | "receipt.print"
   | "audit.read"
-  | "admin.manage";
+  | "admin.manage"
+  // Phase 1 (Gate 3) capabilities. NB: the administrator manages configuration and
+  // tariffs but is NOT granted routine patient-identity or clinical access (23 §6);
+  // those are reception / clinician only.
+  | "config.read"
+  | "config.manage"
+  | "patient.identity.read"
+  | "patient.identity.manage"
+  | "patient.duplicate.manage"
+  | "clinical.structure.read"
+  | "clinical.structure.manage"
+  | "tariff.read"
+  | "tariff.manage"
+  | "tariff.use";
 
-const ALL: Capability[] = [
+/** All Phase 0 capabilities (the administrator's Phase 0 baseline). */
+const PHASE0_ALL: Capability[] = [
   "dashboard.read",
   "patient.read",
   "patient.create",
@@ -42,13 +57,23 @@ const ALL: Capability[] = [
 ];
 
 export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
-  administrateur: ALL,
+  // Admin manages configuration + tariffs; clinical/identity stay role-specific (23 §6).
+  administrateur: [
+    ...PHASE0_ALL,
+    "config.read",
+    "config.manage",
+    "tariff.read",
+    "tariff.manage",
+  ],
   agent_accueil: [
     "dashboard.read",
     "patient.read",
     "patient.create",
     "encounter.read",
     "encounter.create",
+    "patient.identity.read",
+    "patient.identity.manage",
+    "patient.duplicate.manage",
   ],
   medecin: [
     "dashboard.read",
@@ -56,6 +81,9 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "encounter.read",
     "consultation.read",
     "consultation.create",
+    "patient.identity.read",
+    "clinical.structure.read",
+    "clinical.structure.manage",
   ],
   caissier: [
     "dashboard.read",
@@ -65,6 +93,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "invoice.create",
     "payment.record",
     "receipt.print",
+    "tariff.read",
+    "tariff.use",
   ],
   directeur: [
     "dashboard.read",
@@ -73,6 +103,7 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "consultation.read",
     "invoice.read",
     "audit.read",
+    "config.read",
   ],
 };
 

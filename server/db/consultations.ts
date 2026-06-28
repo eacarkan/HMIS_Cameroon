@@ -20,3 +20,10 @@ export type CreateConsultationData = {
 export function createConsultation(data: CreateConsultationData) {
   return prisma.consultation.create({ data });
 }
+
+/** A single consultation within a hospital (Phase 1, Gate 3 — clinical-structure scope). */
+export function findConsultationById(hospitalId: string, id: string) {
+  return prisma.consultation.findFirst({
+    where: { id, hospitalId, deletedAt: null },
+  });
+}
