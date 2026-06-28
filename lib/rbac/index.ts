@@ -37,7 +37,10 @@ export type Capability =
   | "clinical.structure.manage"
   | "tariff.read"
   | "tariff.manage"
-  | "tariff.use";
+  | "tariff.use"
+  // Phase 1 (Gate 5B) capabilities.
+  | "cashier.report.read"
+  | "user.manage";
 
 /** All Phase 0 capabilities (the administrator's Phase 0 baseline). */
 const PHASE0_ALL: Capability[] = [
@@ -64,6 +67,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "config.manage",
     "tariff.read",
     "tariff.manage",
+    "cashier.report.read",
+    "user.manage",
   ],
   agent_accueil: [
     "dashboard.read",
@@ -95,6 +100,7 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "receipt.print",
     "tariff.read",
     "tariff.use",
+    "cashier.report.read",
   ],
   directeur: [
     "dashboard.read",
@@ -104,6 +110,7 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "invoice.read",
     "audit.read",
     "config.read",
+    "cashier.report.read",
   ],
 };
 

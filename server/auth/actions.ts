@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AuthError } from "next-auth";
 
-import { selectHospital } from "@/server/services";
+import { AUDIT_ACTIONS, recordAudit, selectHospital } from "@/server/services";
 import { signIn, signOut } from "./config";
 import { getCurrentActor } from "./index";
 import { ACTIVE_HOSPITAL_COOKIE } from "./active-hospital";
@@ -38,7 +38,20 @@ export async function loginAction(
 }
 
 export async function signOutAction() {
-  (await cookies()).delete(ACTIVE_HOSPITAL_COOKIE);
+  const cookieStore = await cookies();
+  // Audit the logout (Gate 5B) while the session is still available — server-side only.
+  const actor = await getCurrentActor();
+  if (actor) {
+    await recordAudit({
+      hospitalId: cookieStore.get(ACTIVE_HOSPITAL_COOKIE)?.value ?? null,
+      actorId: actor.id,
+      action: AUDIT_ACTIONS.authLogout,
+      entityType: "User",
+      entityId: actor.id,
+      summary: "Déconnexion",
+    });
+  }
+  cookieStore.delete(ACTIVE_HOSPITAL_COOKIE);
   await signOut({ redirectTo: "/connexion" });
 }
 

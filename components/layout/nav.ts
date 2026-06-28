@@ -3,6 +3,7 @@ import {
   Users,
   Stethoscope,
   ReceiptText,
+  Banknote,
   Settings2,
   ScrollText,
   type LucideIcon,
@@ -46,6 +47,12 @@ export const NAV_ITEMS: NavItem[] = [
     labelKey: "billing",
     icon: ReceiptText,
     capability: "invoice.read",
+  },
+  {
+    href: "/rapports-caisse",
+    labelKey: "cashierReport",
+    icon: Banknote,
+    capability: "cashier.report.read",
   },
   {
     href: "/administration",

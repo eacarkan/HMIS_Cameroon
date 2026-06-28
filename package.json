@@ -31,7 +31,8 @@
     "check:privacy": "tsx scripts/check-privacy.ts",
     "screenshots:review": "bash scripts/capture-review-screenshots.sh",
     "screenshots:demo": "REVIEW_SET=stakeholder OUTDIR=docs/stakeholder-demo-screenshots SHOW_DEMO=false ONE_PATIENT=true bash scripts/capture-review-screenshots.sh",
-    "screenshots:gate4": "REVIEW_SET=gate4 OUTDIR=docs/gate4-screenshots GATE4=true SHOW_DEMO=true ONE_PATIENT=false bash scripts/capture-review-screenshots.sh"
+    "screenshots:gate4": "REVIEW_SET=gate4 OUTDIR=docs/gate4-screenshots GATE4=true SHOW_DEMO=true ONE_PATIENT=false bash scripts/capture-review-screenshots.sh",
+    "screenshots:gate5b": "REVIEW_SET=gate5b OUTDIR=docs/gate5b-screenshots SHOW_DEMO=true ONE_PATIENT=false bash scripts/capture-review-screenshots.sh"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",

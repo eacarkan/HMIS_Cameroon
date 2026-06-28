@@ -1,4 +1,4 @@
-import { ReceiptText } from "lucide-react";
+import { ReceiptText, Users } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -48,14 +48,24 @@ export default async function AdministrationPage() {
         title={t("title")}
         description={t("subtitle")}
         actions={
-          can(actor.roles, "tariff.read") ? (
-            <Button asChild variant="secondary" size="sm">
-              <Link href="/administration/tarifs">
-                <ReceiptText className="size-4" aria-hidden />
-                {t("manageTariffs")}
-              </Link>
-            </Button>
-          ) : undefined
+          <div className="flex flex-wrap gap-2">
+            {can(actor.roles, "user.manage") ? (
+              <Button asChild variant="secondary" size="sm">
+                <Link href="/administration/utilisateurs">
+                  <Users className="size-4" aria-hidden />
+                  {t("manageUsers")}
+                </Link>
+              </Button>
+            ) : null}
+            {can(actor.roles, "tariff.read") ? (
+              <Button asChild variant="secondary" size="sm">
+                <Link href="/administration/tarifs">
+                  <ReceiptText className="size-4" aria-hidden />
+                  {t("manageTariffs")}
+                </Link>
+              </Button>
+            ) : null}
+          </div>
         }
       />
 

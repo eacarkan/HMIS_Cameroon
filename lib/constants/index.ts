@@ -122,6 +122,14 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "tariff.update": "Mise à jour tarif",
   "tariff.deactivate": "Désactivation tarif",
   "invoice_item.tariff_source_used": "Tarif utilisé (source de facture)",
+  // Phase 1 (Gate 5B) — cashier reporting, user lifecycle, logout.
+  "auth.logout": "Déconnexion",
+  "cashier.daily_report.generate": "Rapport de caisse (export)",
+  "user.create": "Création utilisateur",
+  "user.activate": "Activation utilisateur",
+  "user.deactivate": "Désactivation utilisateur",
+  "role.assign": "Attribution de rôle",
+  "role.remove": "Retrait de rôle",
 };
 
 /**

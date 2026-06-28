@@ -36,6 +36,22 @@ export function startOfToday(now: Date = new Date()): Date {
   return d;
 }
 
+/** Today's local date as `YYYY-MM-DD` (default for the cashier daily report). */
+export function todayIsoDate(now: Date = new Date()): string {
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+/** Local-day [start, end) range for a `YYYY-MM-DD` date string. */
+export function dayRange(isoDate: string): { start: Date; end: Date } {
+  const start = new Date(`${isoDate}T00:00:00`);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 1);
+  return { start, end };
+}
+
 /** Whole years between `dob` and `now` (age). */
 export function ageInYears(dob: Date, now: Date = new Date()): number {
   let age = now.getFullYear() - dob.getFullYear();

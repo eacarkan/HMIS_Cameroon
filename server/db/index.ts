@@ -9,7 +9,22 @@
 export { prisma } from "./prisma";
 export { type HospitalContext } from "./hospital-context";
 export { pingDatabase } from "./health";
-export { findUserByEmailWithRoles, findUserByIdWithRoles } from "./users";
+export {
+  type CreateUserRecordData,
+  findUserByEmailWithRoles,
+  findUserByIdWithRoles,
+  listUsersForHospital,
+  createUserRecord,
+  setUserStatus,
+  findRoleByCode,
+  findUserRoleInHospital,
+  assignUserRole,
+  removeUserRole,
+  userHasRoleInHospital,
+  countActiveUsersWithRoleInHospital,
+  countRoleAssignmentsInHospital,
+} from "./users";
+export { findPaymentsForDay } from "./reports";
 export {
   type AuditEntryInput,
   createAuditEntry,

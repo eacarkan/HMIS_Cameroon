@@ -36,7 +36,7 @@ const cookiesFor = (user) =>
 // REVIEW_SET=review (default) — technical review (two patients, demo-accounts hint shown).
 // REVIEW_SET=stakeholder — approved one-patient golden path (dashboard 1/1/3 000 FCFA).
 // REVIEW_SET=gate4 — Gate 4 UI/workflow screens (config, identity, clinical, tariff, audit).
-const SET = ["stakeholder", "gate4"].includes(process.env.REVIEW_SET)
+const SET = ["stakeholder", "gate4", "gate5b"].includes(process.env.REVIEW_SET)
   ? process.env.REVIEW_SET
   : "review";
 
@@ -84,8 +84,20 @@ const GATE4_PAGES = [
   { file: "07-journal-audit", url: "/journal-audit", user: "admin", includes: ["Journal d'audit", "Ajout contact patient"] },
 ];
 
+// --- Gate 5B set — cashier daily report + user/account lifecycle. ---
+const GATE5B_PAGES = [
+  { file: "01-rapport-caisse", url: "/rapports-caisse", user: "cashier", includes: ["Rapport de caisse", IDS.payment1Number, "Total encaissé"] },
+  { file: "02-utilisateurs", url: "/administration/utilisateurs", user: "admin", includes: ["Utilisateurs", "Awa NJOYA", "Créer un utilisateur", "Retour à l'administration"] },
+];
+
 const PAGES =
-  SET === "stakeholder" ? STAKE_PAGES : SET === "gate4" ? GATE4_PAGES : REVIEW_PAGES;
+  SET === "stakeholder"
+    ? STAKE_PAGES
+    : SET === "gate4"
+      ? GATE4_PAGES
+      : SET === "gate5b"
+        ? GATE5B_PAGES
+        : REVIEW_PAGES;
 
 // --- Nav placeholder routes: validated only (no screenshot) — must be clean French
 //     pages with the prototype label, never a default 404 (item 5). ---

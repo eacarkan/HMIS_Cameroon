@@ -57,6 +57,14 @@ export const AUDIT_ACTIONS = {
   tariffUpdate: "tariff.update",
   tariffDeactivate: "tariff.deactivate",
   invoiceItemTariffSourceUsed: "invoice_item.tariff_source_used",
+  // Phase 1 (Gate 5B) — cashier reporting, user lifecycle, logout.
+  authLogout: "auth.logout",
+  cashierDailyReport: "cashier.daily_report.generate",
+  userCreate: "user.create",
+  userActivate: "user.activate",
+  userDeactivate: "user.deactivate",
+  roleAssign: "role.assign",
+  roleRemove: "role.remove",
 } as const;
 
 export function recordAudit(entry: AuditEntryInput) {

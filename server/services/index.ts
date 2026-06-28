@@ -102,6 +102,24 @@ export {
   deactivateTariff,
 } from "./tariff-service";
 
+// Phase 1 (Gate 5B) — cashier daily report + export, and user/account lifecycle.
+export {
+  type CashierReportRow,
+  type CashierDailyReport,
+  getCashierDailyReport,
+  exportCashierDailyReportCsv,
+} from "./reports-service";
+export {
+  listUsers,
+  createUserForActor,
+  setUserActive,
+  assignRoleForActor,
+  removeRoleForActor,
+  LAST_ADMIN_ERROR,
+  SELF_DEACTIVATE_ERROR,
+  SELF_ADMIN_REMOVAL_ERROR,
+} from "./user-admin-service";
+
 /** Marker for a use-case that is intentionally not built yet. */
 export function notImplemented(useCase: string): never {
   throw new Error(`Use-case not implemented yet: ${useCase}`);
