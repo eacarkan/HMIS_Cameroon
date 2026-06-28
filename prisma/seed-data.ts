@@ -356,6 +356,15 @@ export async function clearOperationalData(
   await prisma.patientContact.deleteMany();
   await prisma.encounter.deleteMany();
   await prisma.patient.deleteMany();
+  // Config / tariff master-data is reset too so each run starts from the seeded base
+  // (seedBaseData re-creates it idempotently). Tariff is cleared after InvoiceItem (FK);
+  // ServiceUnit before Department, Tariff before PriceList.
+  await prisma.tariff.deleteMany();
+  await prisma.priceList.deleteMany();
+  await prisma.serviceUnit.deleteMany();
+  await prisma.department.deleteMany();
+  await prisma.setting.deleteMany();
+  await prisma.documentTemplate.deleteMany();
   await prisma.auditLog.deleteMany();
   await prisma.sequence.updateMany({ data: { current: 0 } });
 }

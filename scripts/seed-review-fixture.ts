@@ -59,6 +59,11 @@ async function main() {
     recordPayment,
     recordReceiptPrint,
     selectHospital,
+    addPatientContact,
+    addPatientIdentifier,
+    addObservation,
+    addDiagnosis,
+    flagDuplicateCandidate,
   } = await import("@/server/services");
   const { AuthorizationError } = await import("@/server/authz");
 
@@ -93,7 +98,7 @@ async function main() {
   );
 
   const clinician = await login("jeanpaul.etoa@hrb-demo.cm");
-  await recordConsultation(clinician.actor, clinician.ctx, encounter1.id, {
+  const consultation1 = await recordConsultation(clinician.actor, clinician.ctx, encounter1.id, {
     reason: "Fièvre et céphalées depuis 48 heures",
     clinicalNote: "Patiente consciente, état général conservé.",
     vitals: "Température 38,2 °C · Tension 120/80 · Pouls 88/min · Poids 64 kg",
@@ -127,6 +132,7 @@ async function main() {
   const ids: Record<string, string> = {
     patient1: patient1.id,
     patient1Number: patient1.patientNumber,
+    consultation1: consultation1.id,
     encounter1: encounter1.id,
     encounter1Number: encounter1.encounterNumber,
     invoice1: invoice1.id,
@@ -160,6 +166,42 @@ async function main() {
     ids.patient2Number = patient2.patientNumber;
     ids.encounter2 = encounter2.id;
     ids.encounter2Number = encounter2.encounterNumber;
+
+    // Gate 4 demo enrichment (fake): identity/contact, structured clinical data and a
+    // duplicate-candidate hint — so the Gate 4 panels show content in screenshots.
+    if (process.env.GATE4 === "true") {
+      await addPatientContact(reception.actor, reception.ctx, patient1.id, {
+        contactType: "phone",
+        value: "+237 6 99 00 00 11",
+        label: "Mobile",
+      });
+      await addPatientIdentifier(reception.actor, reception.ctx, patient1.id, {
+        identifierType: "carte_hospitaliere",
+        value: "HRB-2026-0001",
+      });
+      await addObservation(clinician.actor, clinician.ctx, consultation1.id, {
+        type: "Température",
+        value: "38,2",
+        unit: "°C",
+      });
+      await addObservation(clinician.actor, clinician.ctx, consultation1.id, {
+        type: "Tension",
+        value: "120/80",
+        unit: "mmHg",
+      });
+      await addDiagnosis(clinician.actor, clinician.ctx, consultation1.id, {
+        label: "Syndrome fébrile",
+        code: "R50.9",
+        isPrimary: true,
+      });
+      await flagDuplicateCandidate(
+        reception.actor,
+        reception.ctx,
+        patient1.id,
+        patient2.id,
+        "nom + date de naissance",
+      );
+    }
   }
 
   writeFileSync(out, JSON.stringify(ids, null, 2));

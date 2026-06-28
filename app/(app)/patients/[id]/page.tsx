@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 
 import { PageHeader } from "@/components/layout/page-header";
 import { PatientBanner } from "@/components/patients/patient-banner";
+import { PatientIdentityPanel } from "@/components/patients/patient-identity-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +13,12 @@ import { formatDateFr } from "@/lib/dates";
 import { formatFcfa } from "@/lib/money";
 import { can } from "@/lib/rbac";
 import { requireActorAndHospital } from "@/server/auth";
-import { getPatient } from "@/server/services";
+import {
+  getPatient,
+  listPatientContacts,
+  listPatientIdentifiers,
+  listDuplicateCandidatesForActor,
+} from "@/server/services";
 
 export default async function PatientDetailPage({
   params,
@@ -32,6 +38,22 @@ export default async function PatientDetailPage({
   const activeEncounter =
     patient.encounters.find((e) => e.status === "open") ?? null;
   const invoices = patient.encounters.flatMap((e) => e.invoices);
+
+  // Identity/contact panel (Gate 4): reception manages, clinician may read. Data is
+  // fetched through the Gate 3 service (server-side RBAC + hospital scoping).
+  const canReadIdentity = can(actor.roles, "patient.identity.read");
+  const canManageIdentity = can(actor.roles, "patient.identity.manage");
+  const contacts = canReadIdentity
+    ? await listPatientContacts(actor, hospital, id)
+    : [];
+  const identifiers = canReadIdentity
+    ? await listPatientIdentifiers(actor, hospital, id)
+    : [];
+  const duplicates = can(actor.roles, "patient.duplicate.manage")
+    ? (await listDuplicateCandidatesForActor(actor, hospital)).filter(
+        (d) => d.patientId === id || d.candidatePatientId === id,
+      )
+    : [];
 
   const action =
     can(actor.roles, "encounter.create") && !activeEncounter ? (
@@ -149,6 +171,30 @@ export default async function PatientDetailPage({
             )}
           </CardContent>
         </Card>
+
+        {canReadIdentity ? (
+          <PatientIdentityPanel
+            patientId={patient.id}
+            canManage={canManageIdentity}
+            contacts={contacts.map((c) => ({
+              id: c.id,
+              contactType: c.contactType,
+              value: c.value,
+              label: c.label,
+            }))}
+            identifiers={identifiers.map((i) => ({
+              id: i.id,
+              identifierType: i.identifierType,
+              value: i.value,
+              issuingAuthority: i.issuingAuthority,
+            }))}
+            duplicates={duplicates.map((d) => ({
+              id: d.id,
+              matchBasis: d.matchBasis,
+              status: d.status,
+            }))}
+          />
+        ) : null}
       </div>
     </>
   );

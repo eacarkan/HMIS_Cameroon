@@ -51,7 +51,8 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/administration",
     labelKey: "administration",
     icon: Settings2,
-    capability: "admin.manage",
+    // Visible to roles that may read configuration (admin manages; director read-only).
+    capability: "config.read",
   },
   {
     href: "/journal-audit",

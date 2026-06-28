@@ -36,9 +36,11 @@ describe("Sidebar (06 §5) — French nav + role filtering", () => {
     expect(screen.queryByText("Consultations")).not.toBeInTheDocument();
   });
 
-  it("directeur sees Journal d'audit", () => {
+  it("directeur sees Journal d'audit + Administration (read-only, Gate 4)", () => {
     renderWithIntl(<Sidebar roles={["directeur"]} />);
     expect(screen.getByText("Journal d'audit")).toBeInTheDocument();
-    expect(screen.queryByText("Administration")).not.toBeInTheDocument();
+    // Gate 4: the director may READ configuration (config.read), so the nav entry shows;
+    // mutation forms remain admin-only (server-side RBAC is the real control).
+    expect(screen.getByText("Administration")).toBeInTheDocument();
   });
 });

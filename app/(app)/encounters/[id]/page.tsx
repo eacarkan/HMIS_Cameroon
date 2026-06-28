@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
+import { ClinicalStructurePanel } from "@/components/consultations/clinical-structure-panel";
 import { PageHeader } from "@/components/layout/page-header";
 import { PatientBanner } from "@/components/patients/patient-banner";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +19,7 @@ import { formatDateTimeFr } from "@/lib/dates";
 import { formatFcfa } from "@/lib/money";
 import { can } from "@/lib/rbac";
 import { requireActorAndHospital } from "@/server/auth";
-import { getEncounter } from "@/server/services";
+import { getEncounter, listObservations, listDiagnoses } from "@/server/services";
 
 export default async function EncounterPage({
   params,
@@ -40,6 +41,28 @@ export default async function EncounterPage({
     encounter.assignedTo?.displayName ??
     encounter.consultations[0]?.performedBy?.displayName ??
     t("unassigned");
+
+  // Structured clinical data (Gate 4): clinician reads/manages; others don't see it.
+  const canReadClinical = can(actor.roles, "clinical.structure.read");
+  const canManageClinical = can(actor.roles, "clinical.structure.manage");
+  const clinicalByConsultation = new Map<
+    string,
+    {
+      observations: Awaited<ReturnType<typeof listObservations>>;
+      diagnoses: Awaited<ReturnType<typeof listDiagnoses>>;
+    }
+  >();
+  if (canReadClinical) {
+    await Promise.all(
+      encounter.consultations.map(async (c) => {
+        const [observations, diagnoses] = await Promise.all([
+          listObservations(actor, hospital, c.id),
+          listDiagnoses(actor, hospital, c.id),
+        ]);
+        clinicalByConsultation.set(c.id, { observations, diagnoses });
+      }),
+    );
+  }
 
   return (
     <>
@@ -114,6 +137,29 @@ export default async function EncounterPage({
                       <p className="text-muted-foreground mt-1 text-xs">
                         {c.performedBy.displayName}
                       </p>
+                    ) : null}
+                    {canReadClinical ? (
+                      <ClinicalStructurePanel
+                        encounterId={encounter.id}
+                        consultationId={c.id}
+                        canManage={canManageClinical}
+                        observations={(
+                          clinicalByConsultation.get(c.id)?.observations ?? []
+                        ).map((o) => ({
+                          id: o.id,
+                          type: o.type,
+                          value: o.value,
+                          unit: o.unit,
+                        }))}
+                        diagnoses={(
+                          clinicalByConsultation.get(c.id)?.diagnoses ?? []
+                        ).map((d) => ({
+                          id: d.id,
+                          label: d.label,
+                          code: d.code,
+                          isPrimary: d.isPrimary,
+                        }))}
+                      />
                     ) : null}
                   </li>
                 ))}

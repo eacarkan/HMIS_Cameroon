@@ -34,9 +34,11 @@ const cookiesFor = (user) =>
   user ? [{ name: "authjs.session-token", value: SESSIONS[user] }] : null;
 
 // REVIEW_SET=review (default) — technical review (two patients, demo-accounts hint shown).
-// REVIEW_SET=stakeholder — approved one-patient golden path (dashboard 1/1/3 000 FCFA),
-// demo-accounts hint hidden. The login demo hint must be ABSENT in the stakeholder set.
-const SET = process.env.REVIEW_SET === "stakeholder" ? "stakeholder" : "review";
+// REVIEW_SET=stakeholder — approved one-patient golden path (dashboard 1/1/3 000 FCFA).
+// REVIEW_SET=gate4 — Gate 4 UI/workflow screens (config, identity, clinical, tariff, audit).
+const SET = ["stakeholder", "gate4"].includes(process.env.REVIEW_SET)
+  ? process.env.REVIEW_SET
+  : "review";
 
 // --- Technical review set (two patients; shows empty consultation/billing forms). ---
 const REVIEW_PAGES = [
@@ -70,14 +72,28 @@ const STAKE_PAGES = [
   { file: "09-journal-audit", url: "/journal-audit", user: "admin", includes: ["Journal d'audit"] },
 ];
 
-const PAGES = SET === "stakeholder" ? STAKE_PAGES : REVIEW_PAGES;
+// --- Gate 4 set — UI/workflow screens over the Gate 3 services (two patients + Gate 4
+//     demo enrichment from the fixture). Role-aware: each page uses the right actor. ---
+const GATE4_PAGES = [
+  { file: "01-administration-config", url: "/administration", user: "admin", includes: ["Administration", "Départements", "Unités de service"] },
+  { file: "02-tarifs", url: "/administration/tarifs", user: "admin", includes: ["Tarifs", "Consultation médecine générale"] },
+  { file: "03-patient-identite", url: `/patients/${IDS.patient1}`, user: "reception", includes: ["Identité & contacts", "HRB-2026-0001", "aucune fusion"] },
+  { file: "04-consultation-clinique", url: `/encounters/${IDS.encounter1}`, user: "doctor", includes: ["Constantes", "Syndrome fébrile"] },
+  { file: "05-facturation-tarifs", url: `/encounters/${IDS.encounter2}/facturation`, user: "cashier", includes: ["Consultation médecine générale"] },
+  { file: "06-recu", url: `/recus/${IDS.payment1}`, user: "cashier", includes: [IDS.payment1Number, "République du Cameroun"] },
+  { file: "07-journal-audit", url: "/journal-audit", user: "admin", includes: ["Journal d'audit", "Ajout contact patient"] },
+];
+
+const PAGES =
+  SET === "stakeholder" ? STAKE_PAGES : SET === "gate4" ? GATE4_PAGES : REVIEW_PAGES;
 
 // --- Nav placeholder routes: validated only (no screenshot) — must be clean French
 //     pages with the prototype label, never a default 404 (item 5). ---
+// NB: /administration is a real page since Gate 4 (configuration UI), so it is no longer
+// a placeholder. The top-level /consultations and /facturation remain "à venir".
 const CHECK_ONLY = [
   { url: "/consultations", user: "admin", includes: ["à venir"] },
   { url: "/facturation", user: "admin", includes: ["à venir"] },
-  { url: "/administration", user: "admin", includes: ["à venir"] },
 ];
 
 async function connectCdp() {
@@ -176,7 +192,10 @@ function validate(label, text, { includes = [], excludes = [], requireProto = tr
 
 async function main() {
   mkdirSync(OUTDIR, { recursive: true });
-  for (const u of ["admin", "reception", "director"])
+  const neededUsers = new Set(
+    [...PAGES, ...CHECK_ONLY].map((p) => p.user).filter(Boolean),
+  );
+  for (const u of neededUsers)
     if (!SESSIONS[u]) throw new Error(`missing session token for ${u}`);
 
   const { send, close } = await connectCdp();

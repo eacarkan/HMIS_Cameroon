@@ -10,6 +10,7 @@ import {
   findPatientIdentifierById,
   updatePatientIdentifier as dbUpdatePatientIdentifier,
   createDuplicateCandidate as dbCreateDuplicateCandidate,
+  listDuplicateCandidates as dbListDuplicateCandidates,
   findDuplicateCandidateById,
   updateDuplicateCandidateStatus,
 } from "@/server/db";
@@ -146,6 +147,16 @@ export async function deactivatePatientIdentifier(
 }
 
 // ---- Duplicate candidate (WARNING / REVIEW ONLY — never merges patients) ----
+
+/** Read-only review queue of persisted duplicate hints for the active hospital. */
+export async function listDuplicateCandidatesForActor(
+  actor: AuthenticatedActor,
+  ctx: HospitalContext,
+) {
+  await requireCapability(actor, ctx, "patient.duplicate.manage");
+  return dbListDuplicateCandidates(ctx.hospitalId);
+}
+
 export async function flagDuplicateCandidate(
   actor: AuthenticatedActor,
   ctx: HospitalContext,

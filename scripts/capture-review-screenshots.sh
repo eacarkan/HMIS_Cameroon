@@ -21,6 +21,7 @@ REVIEW_SET="${REVIEW_SET:-review}"
 OUTDIR="${OUTDIR:-docs/review-screenshots}"
 SHOW_DEMO="${SHOW_DEMO:-true}"
 ONE_PATIENT="${ONE_PATIENT:-false}"
+GATE4="${GATE4:-false}"
 
 # Read values straight from .env. NB: do NOT use `dotenv.config()` in a shell
 # command-substitution — dotenv v17 prints an informational banner to stdout that would
@@ -61,8 +62,8 @@ for i in $(seq 1 60); do
   [ "$i" = 60 ] && { echo "server did not start"; cat "$SRVLOG"; exit 1; }
 done
 
-echo "== 3/4 seed deterministic fixture (one_patient=$ONE_PATIENT) =="
-ONE_PATIENT="$ONE_PATIENT" tsx scripts/seed-review-fixture.ts "$IDS_FILE"
+echo "== 3/4 seed deterministic fixture (one_patient=$ONE_PATIENT, gate4=$GATE4) =="
+ONE_PATIENT="$ONE_PATIENT" GATE4="$GATE4" tsx scripts/seed-review-fixture.ts "$IDS_FILE"
 
 # Mint a session token per demo user through the running server (credentials flow).
 login_token() {
@@ -78,10 +79,12 @@ login_token() {
 ADMIN_T=$(login_token "awa.njoya@hrb-demo.cm")
 RECEP_T=$(login_token "brigitte.mbarga@hrb-demo.cm")
 DIR_T=$(login_token "emmanuel.tchoua@hrb-demo.cm")
+DOC_T=$(login_token "jeanpaul.etoa@hrb-demo.cm")
+CAI_T=$(login_token "solange.abena@hrb-demo.cm")
 [ -n "$ADMIN_T" ] || { echo "login failed (no session token)"; cat "$SRVLOG"; exit 1; }
 SESS_FILE="$WORK/sessions.json"
-node -e "require('fs').writeFileSync(process.argv[1],JSON.stringify({admin:process.argv[2],reception:process.argv[3],director:process.argv[4]}))" \
-  "$SESS_FILE" "$ADMIN_T" "$RECEP_T" "$DIR_T"
+node -e "require('fs').writeFileSync(process.argv[1],JSON.stringify({admin:process.argv[2],reception:process.argv[3],director:process.argv[4],doctor:process.argv[5],cashier:process.argv[6]}))" \
+  "$SESS_FILE" "$ADMIN_T" "$RECEP_T" "$DIR_T" "$DOC_T" "$CAI_T"
 
 echo "== 4/4 capture + validate screenshots ($REVIEW_SET -> $OUTDIR) =="
 mkdir -p "$OUTDIR"

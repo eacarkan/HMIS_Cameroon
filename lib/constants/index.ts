@@ -89,6 +89,39 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "payment.record": "Paiement",
   "receipt.print": "Impression de reçu",
   "authz.denied": "Action refusée",
+  // Phase 1 (Gate 3/4) — configuration / master data.
+  "department.create": "Création département",
+  "department.update": "Mise à jour département",
+  "department.deactivate": "Désactivation département",
+  "service_unit.create": "Création unité de service",
+  "service_unit.update": "Mise à jour unité de service",
+  "service_unit.deactivate": "Désactivation unité de service",
+  "setting.update": "Mise à jour paramètre",
+  "document_template.create": "Création modèle de document",
+  "document_template.update": "Mise à jour modèle de document",
+  "document_template.deactivate": "Désactivation modèle de document",
+  // Phase 1 (Gate 3/4) — patient identity / contact.
+  "patient_contact.create": "Ajout contact patient",
+  "patient_contact.update": "Mise à jour contact patient",
+  "patient_contact.deactivate": "Désactivation contact patient",
+  "patient_identifier.create": "Ajout identifiant patient",
+  "patient_identifier.update": "Mise à jour identifiant patient",
+  "patient_identifier.deactivate": "Désactivation identifiant patient",
+  "patient_duplicate.warning": "Doublon signalé",
+  "patient_duplicate.review": "Revue de doublon",
+  // Phase 1 (Gate 3/4) — clinical structure.
+  "observation.create": "Constante enregistrée",
+  "observation.update": "Mise à jour constante",
+  "diagnosis.create": "Diagnostic enregistré",
+  "diagnosis.update": "Mise à jour diagnostic",
+  // Phase 1 (Gate 3/4) — tariff / price list.
+  "price_list.create": "Création liste tarifaire",
+  "price_list.update": "Mise à jour liste tarifaire",
+  "price_list.deactivate": "Désactivation liste tarifaire",
+  "tariff.create": "Création tarif",
+  "tariff.update": "Mise à jour tarif",
+  "tariff.deactivate": "Désactivation tarif",
+  "invoice_item.tariff_source_used": "Tarif utilisé (source de facture)",
 };
 
 /** Payment-method labels for server-side audit summaries (UI uses messages/fr.json). */

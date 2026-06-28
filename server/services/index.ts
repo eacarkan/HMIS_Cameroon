@@ -80,6 +80,7 @@ export {
   listPatientIdentifiers,
   addPatientIdentifier,
   deactivatePatientIdentifier,
+  listDuplicateCandidatesForActor,
   flagDuplicateCandidate,
   reviewDuplicateCandidate,
 } from "./patient-identity-service";

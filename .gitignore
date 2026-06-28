@@ -50,3 +50,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# generated Gate 4 review bundle
+/docs/gate4-implementation-package.zip

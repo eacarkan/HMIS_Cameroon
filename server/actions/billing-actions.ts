@@ -6,7 +6,12 @@ import { TARIFFS } from "@/lib/constants";
 import { z } from "@/lib/validation";
 import { AuthorizationError } from "@/server/authz";
 import { requireActorAndHospital } from "@/server/auth";
-import { createInvoice, recordPayment } from "@/server/services";
+import {
+  createInvoice,
+  getTariffLineSource,
+  recordPayment,
+  type InvoiceLineInput,
+} from "@/server/services";
 
 export type BillingFormState = { error?: string };
 
@@ -19,14 +24,27 @@ export async function createInvoiceAction(
 ): Promise<BillingFormState> {
   const { actor, hospital } = await requireActorAndHospital();
 
-  const lines = TARIFFS.map((tariff) => {
+  // The cashier's selected quantities (qty > 0). Each selected line is SOURCED from the
+  // hospital tariff catalogue via the Gate 3 helper (audited `invoice_item.tariff_source_used`);
+  // createInvoice then freezes the snapshot. Falls back to the seeded catalogue label/amount
+  // if a code is not in the DB, so a snapshot is always written and the total reconciles.
+  const selected = TARIFFS.map((tariff) => {
     const raw = Number(formData.get(`qty_${tariff.code}`) ?? 0);
     const quantity = Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 0;
-    return { label: tariff.label, unitAmount: tariff.amount, quantity };
-  });
+    return { code: tariff.code, label: tariff.label, amount: tariff.amount, quantity };
+  }).filter((s) => s.quantity > 0);
 
   let invoiceId: string;
   try {
+    const lines: InvoiceLineInput[] = [];
+    for (const sel of selected) {
+      try {
+        lines.push(await getTariffLineSource(actor, hospital, sel.code, sel.quantity));
+      } catch (e) {
+        if (e instanceof AuthorizationError) throw e;
+        lines.push({ label: sel.label, unitAmount: sel.amount, quantity: sel.quantity });
+      }
+    }
     const invoice = await createInvoice(actor, hospital, encounterId, lines);
     invoiceId = invoice.id;
   } catch (error) {
