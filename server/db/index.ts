@@ -48,3 +48,33 @@ export {
   sumCollectionsSince,
   recentAuditEntries,
 } from "./dashboard";
+
+// Phase 1 (Gate 2) — additive hospital-scoped data-access for the new models.
+export {
+  listDepartments,
+  listServiceUnits,
+  listSettings,
+  getSetting,
+  listDocumentTemplates,
+} from "./config";
+export { listPriceLists, listTariffs, findTariffByCode } from "./tariffs";
+export {
+  type CreatePatientContactData,
+  type CreatePatientIdentifierData,
+  type CreateDuplicateCandidateData,
+  createPatientContact,
+  listPatientContacts,
+  createPatientIdentifier,
+  listPatientIdentifiers,
+  findPatientIdentifier,
+  createDuplicateCandidate,
+  listDuplicateCandidates,
+} from "./patient-identity";
+export {
+  type CreateObservationData,
+  type CreateDiagnosisData,
+  createObservation,
+  listObservations,
+  createDiagnosis,
+  listDiagnoses,
+} from "./clinical-structure";

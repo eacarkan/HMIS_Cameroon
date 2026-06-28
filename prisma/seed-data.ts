@@ -228,6 +228,110 @@ export async function seedBaseData(prisma: PrismaClient): Promise<void> {
       update: {},
     });
   }
+
+  await seedConfigAndTariffs(prisma);
+}
+
+/**
+ * Phase 1 (Gate 2) fake, deterministic configuration + tariff base data for HRB-DEMO:
+ * a few departments/service units, minimal settings, a receipt document template, and a
+ * price list with the demo tariffs (mirrors lib/constants TARIFFS). Idempotent upserts.
+ * Fake data only — added at Gate 2 to support the new schema; the golden path is unchanged.
+ */
+async function seedConfigAndTariffs(prisma: PrismaClient): Promise<void> {
+  const departments = [
+    { code: "ACCUEIL", name: "Accueil" },
+    { code: "MED-GEN", name: "Médecine générale" },
+    { code: "CAISSE", name: "Caisse" },
+  ];
+  const deptIdByCode = new Map<string, string>();
+  for (const d of departments) {
+    const row = await prisma.department.upsert({
+      where: { hospitalId_code: { hospitalId: DEMO_HOSPITAL_ID, code: d.code } },
+      create: { hospitalId: DEMO_HOSPITAL_ID, code: d.code, name: d.name },
+      update: { name: d.name },
+    });
+    deptIdByCode.set(d.code, row.id);
+  }
+
+  const serviceUnits = [
+    { code: "SU-CONSULT-1", name: "Salle de consultation 1", dept: "MED-GEN", kind: "consultation" },
+    { code: "SU-CAISSE-1", name: "Caisse 1", dept: "CAISSE", kind: "caisse" },
+  ];
+  for (const s of serviceUnits) {
+    await prisma.serviceUnit.upsert({
+      where: { hospitalId_code: { hospitalId: DEMO_HOSPITAL_ID, code: s.code } },
+      create: {
+        hospitalId: DEMO_HOSPITAL_ID,
+        code: s.code,
+        name: s.name,
+        kind: s.kind,
+        departmentId: deptIdByCode.get(s.dept) ?? null,
+      },
+      update: { name: s.name, kind: s.kind, departmentId: deptIdByCode.get(s.dept) ?? null },
+    });
+  }
+
+  const settings = [
+    { key: "locale.default", value: "fr" },
+    {
+      key: "receipt.footer_note",
+      value: "Document généré par le système — veuillez conserver ce reçu.",
+    },
+  ];
+  for (const st of settings) {
+    await prisma.setting.upsert({
+      where: { hospitalId_key: { hospitalId: DEMO_HOSPITAL_ID, key: st.key } },
+      create: { hospitalId: DEMO_HOSPITAL_ID, key: st.key, value: st.value },
+      update: { value: st.value },
+    });
+  }
+
+  await prisma.documentTemplate.upsert({
+    where: {
+      hospitalId_type_name: {
+        hospitalId: DEMO_HOSPITAL_ID,
+        type: "receipt",
+        name: "Reçu standard",
+      },
+    },
+    create: {
+      hospitalId: DEMO_HOSPITAL_ID,
+      type: "receipt",
+      name: "Reçu standard",
+      header: "République du Cameroun · Ministère de la Santé Publique",
+      body: "Hôpital Régional de Bertoua — Démo",
+    },
+    update: {},
+  });
+
+  const priceList = await prisma.priceList.upsert({
+    where: { hospitalId_code: { hospitalId: DEMO_HOSPITAL_ID, code: "PL-2026" } },
+    create: { hospitalId: DEMO_HOSPITAL_ID, code: "PL-2026", name: "Tarifs 2026 — Démo" },
+    update: { name: "Tarifs 2026 — Démo" },
+  });
+
+  // Integer FCFA only — mirrors the fake demo tariffs in lib/constants.
+  const tariffs = [
+    { code: "consultation_generale", label: "Consultation médecine générale", amount: 2000 },
+    { code: "ouverture_dossier", label: "Frais d'ouverture de dossier", amount: 1000 },
+    { code: "consultation_specialisee", label: "Consultation spécialisée", amount: 5000 },
+    { code: "pansement", label: "Pansement", amount: 1500 },
+    { code: "injection", label: "Injection", amount: 1000 },
+  ];
+  for (const t of tariffs) {
+    await prisma.tariff.upsert({
+      where: { hospitalId_code: { hospitalId: DEMO_HOSPITAL_ID, code: t.code } },
+      create: {
+        hospitalId: DEMO_HOSPITAL_ID,
+        priceListId: priceList.id,
+        code: t.code,
+        label: t.label,
+        amount: t.amount,
+      },
+      update: { label: t.label, amount: t.amount, priceListId: priceList.id },
+    });
+  }
 }
 
 /**
@@ -238,10 +342,18 @@ export async function seedBaseData(prisma: PrismaClient): Promise<void> {
 export async function clearOperationalData(
   prisma: PrismaClient,
 ): Promise<void> {
+  // FK-safe order (children before parents). Phase 1 (Gate 2) patient/consultation
+  // child tables are cleared before patients/consultations. Config/tariff base data is
+  // NOT cleared here — it is re-upserted idempotently by seedBaseData.
   await prisma.payment.deleteMany();
   await prisma.invoiceItem.deleteMany();
   await prisma.invoice.deleteMany();
+  await prisma.diagnosis.deleteMany();
+  await prisma.observation.deleteMany();
   await prisma.consultation.deleteMany();
+  await prisma.patientDuplicateCandidate.deleteMany();
+  await prisma.patientIdentifier.deleteMany();
+  await prisma.patientContact.deleteMany();
   await prisma.encounter.deleteMany();
   await prisma.patient.deleteMany();
   await prisma.auditLog.deleteMany();

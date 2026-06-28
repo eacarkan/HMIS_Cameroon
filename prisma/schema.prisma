@@ -1,5 +1,9 @@
 // Prisma schema — HMIS Cameroon (SIGH/DME prototype)
 // Build Step 3: the first walking-skeleton data model (05_Logical_Data_Model_v0 §4).
+// Gate 2 (Phase 1): additive data-model foundation per the approved Gate 1 proposal
+// (Planning 19/20) and preflight (21) — Department/ServiceUnit/Setting/DocumentTemplate,
+// PatientContact/PatientIdentifier/PatientDuplicateCandidate, Observation/Diagnosis,
+// Tariff/PriceList (+ optional InvoiceItem→Tariff source). Dev/test + fake data only.
 //
 // Rules embodied here:
 //  - Hospital-scoped operational records carry `hospitalId` (D-011, 05 §7).
@@ -8,10 +12,13 @@
 //  - Soft-delete (`deletedAt`) on operational records; AuditLog is append-only.
 //  - Per-hospital human-readable numbers come from the Sequence counter (05 §6).
 //  - Fake data only — no real patient data (A-001/D-008).
+//  - Existing Phase 0 models/fields are PRESERVED (additive only); free-text
+//    Consultation.vitals/.provisionalDiagnosis are kept during the transition;
+//    InvoiceItem keeps its historical snapshot.
 //
-// Postponed per 05 §4 (NOT modelled yet): Permission, Practitioner, PatientIdentifier/
-// Contact, Diagnosis/Observation/Vitals entities, Tariff/PriceList, Department/
-// ServiceUnit, DocumentTemplate/Setting, lab, pharmacy.
+// Still NOT modelled (blocked from this batch): Prescription/Order, Practitioner, a
+// separate Receipt entity, partial-payment workflow, national MPI / merge, and all
+// Phase 2 (lab, pharmacy, hospitalization, …) / Phase 4 modules.
 
 generator client {
   provider = "prisma-client-js"
@@ -94,6 +101,19 @@ model Hospital {
   payments      Payment[]
   auditLogs     AuditLog[]
   sequences     Sequence[]
+
+  // Phase 1 (Gate 2) additive relations.
+  departments                Department[]
+  serviceUnits               ServiceUnit[]
+  settings                   Setting[]
+  documentTemplates          DocumentTemplate[]
+  priceLists                 PriceList[]
+  tariffs                    Tariff[]
+  patientContacts            PatientContact[]
+  patientIdentifiers         PatientIdentifier[]
+  patientDuplicateCandidates PatientDuplicateCandidate[]
+  observations               Observation[]
+  diagnoses                  Diagnosis[]
 }
 
 // ===================== Users / RBAC =====================
@@ -165,6 +185,12 @@ model Patient {
   hospital   Hospital    @relation(fields: [hospitalId], references: [id])
   encounters Encounter[]
 
+  // Phase 1 (Gate 2) additive relations.
+  contacts            PatientContact[]
+  identifiers         PatientIdentifier[]
+  duplicateCandidates PatientDuplicateCandidate[] @relation("DuplicatePatient")
+  duplicateMatches    PatientDuplicateCandidate[] @relation("DuplicateCandidatePatient")
+
   @@unique([hospitalId, patientNumber])
   @@index([hospitalId, familyName, givenName])
 }
@@ -223,6 +249,10 @@ model Consultation {
   encounter   Encounter @relation(fields: [encounterId], references: [id])
   performedBy User?     @relation("ConsultationPerformedBy", fields: [performedById], references: [id])
 
+  // Phase 1 (Gate 2) additive relations (free-text fields above are kept).
+  observations Observation[]
+  diagnoses    Diagnosis[]
+
   @@index([hospitalId, encounterId])
 }
 
@@ -251,11 +281,14 @@ model Invoice {
   @@index([hospitalId, encounterId])
 }
 
-/// One billed line. unitAmount/lineTotal are integer FCFA.
+/// One billed line. label/quantity/unitAmount/lineTotal are a HISTORICAL SNAPSHOT
+/// (integer FCFA) — never rewritten by later Tariff changes. `tariffId` is an OPTIONAL
+/// source reference only (Phase 1, Gate 2); the snapshot remains the source of truth.
 model InvoiceItem {
   id         String   @id @default(cuid())
   hospitalId String
   invoiceId  String
+  tariffId   String?
   label      String
   quantity   Int      @default(1)
   unitAmount Int
@@ -264,8 +297,10 @@ model InvoiceItem {
 
   hospital Hospital @relation(fields: [hospitalId], references: [id])
   invoice  Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  tariff   Tariff?  @relation(fields: [tariffId], references: [id])
 
   @@index([invoiceId])
+  @@index([tariffId])
 }
 
 /// Money received against an invoice. amount is integer FCFA. Partial payments allowed.
@@ -326,4 +361,230 @@ model Sequence {
   hospital Hospital @relation(fields: [hospitalId], references: [id])
 
   @@unique([hospitalId, type, year])
+}
+
+// ============ Phase 1 (Gate 2) — Configuration / master data (additive) ============
+// Hospital-scoped config; soft-delete; configuration-before-customization (19/20 §A).
+
+/// Organizational unit within a hospital. Hospital-scoped config.
+model Department {
+  id         String    @id @default(cuid())
+  hospitalId String
+  code       String
+  name       String
+  isActive   Boolean   @default(true)
+  deletedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  hospital     Hospital      @relation(fields: [hospitalId], references: [id])
+  serviceUnits ServiceUnit[]
+
+  @@unique([hospitalId, code])
+  @@index([hospitalId])
+}
+
+/// A point of service within a department (caisse, salle de consultation). Config.
+model ServiceUnit {
+  id           String    @id @default(cuid())
+  hospitalId   String
+  departmentId String?
+  code         String
+  name         String
+  kind         String?
+  isActive     Boolean   @default(true)
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  hospital   Hospital    @relation(fields: [hospitalId], references: [id])
+  department Department? @relation(fields: [departmentId], references: [id])
+
+  @@unique([hospitalId, code])
+  @@index([hospitalId, departmentId])
+}
+
+/// Configurable key/value setting; per-hospital (hospitalId set) or global (null). Config.
+model Setting {
+  id         String    @id @default(cuid())
+  hospitalId String?
+  key        String
+  value      String
+  deletedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  hospital Hospital? @relation(fields: [hospitalId], references: [id])
+
+  @@unique([hospitalId, key])
+  @@index([hospitalId])
+}
+
+/// Printed-document wording/header (e.g. receipt header); per-hospital or global. Config.
+model DocumentTemplate {
+  id         String    @id @default(cuid())
+  hospitalId String?
+  type       String
+  name       String
+  header     String?
+  body       String?
+  isActive   Boolean   @default(true)
+  deletedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  hospital Hospital? @relation(fields: [hospitalId], references: [id])
+
+  @@unique([hospitalId, type, name])
+  @@index([hospitalId])
+}
+
+// ============ Phase 1 (Gate 2) — Patient identity / contact (additive) ============
+// Phase 0 Patient fields (phone/residence) KEPT. No MPI, no merge, no survivorship,
+// no global de-duplication (19/20 §B).
+
+/// Optional contact datum for a patient (phone/address/next-of-kin). Hospital-scoped.
+model PatientContact {
+  id          String    @id @default(cuid())
+  hospitalId  String
+  patientId   String
+  contactType String
+  value       String
+  label       String?
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+  patient  Patient  @relation(fields: [patientId], references: [id])
+
+  @@index([hospitalId, patientId])
+}
+
+/// Optional administrative identifier. Uniqueness is HOSPITAL-LOCAL (not national; no
+/// MPI / no global de-duplication). Hospital-scoped.
+model PatientIdentifier {
+  id               String    @id @default(cuid())
+  hospitalId       String
+  patientId        String
+  identifierType   String
+  value            String
+  issuingAuthority String?
+  isActive         Boolean   @default(true)
+  deletedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+  patient  Patient  @relation(fields: [patientId], references: [id])
+
+  @@unique([hospitalId, identifierType, value])
+  @@index([hospitalId, patientId])
+}
+
+/// Possible-duplicate hint between two patients in one hospital. WARNING/REVIEW ONLY —
+/// no merge, no survivorship, no MPI. Hospital-scoped.
+model PatientDuplicateCandidate {
+  id                 String   @id @default(cuid())
+  hospitalId         String
+  patientId          String
+  candidatePatientId String
+  matchBasis         String
+  status             String   @default("open")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  hospital         Hospital @relation(fields: [hospitalId], references: [id])
+  patient          Patient  @relation("DuplicatePatient", fields: [patientId], references: [id])
+  candidatePatient Patient  @relation("DuplicateCandidatePatient", fields: [candidatePatientId], references: [id])
+
+  @@unique([hospitalId, patientId, candidatePatientId])
+  @@index([hospitalId, status])
+}
+
+// ============ Phase 1 (Gate 2) — Clinical structure (additive) ============
+// Consultation free-text `vitals` / `provisionalDiagnosis` are KEPT (transition).
+// Clinical actions still reference User; no Practitioner; no legal-EMR finalization
+// beyond current scope (19/20 §C).
+
+/// Structured measured value within a consultation (over the free-text `vitals`).
+model Observation {
+  id             String    @id @default(cuid())
+  hospitalId     String
+  consultationId String
+  type           String
+  value          String
+  unit           String?
+  deletedAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  hospital     Hospital     @relation(fields: [hospitalId], references: [id])
+  consultation Consultation @relation(fields: [consultationId], references: [id])
+
+  @@index([hospitalId, consultationId])
+}
+
+/// Structured/coded diagnosis within a consultation (over `provisionalDiagnosis`).
+model Diagnosis {
+  id             String    @id @default(cuid())
+  hospitalId     String
+  consultationId String
+  code           String?
+  label          String
+  isPrimary      Boolean   @default(false)
+  deletedAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  hospital     Hospital     @relation(fields: [hospitalId], references: [id])
+  consultation Consultation @relation(fields: [consultationId], references: [id])
+
+  @@index([hospitalId, consultationId])
+}
+
+// ============ Phase 1 (Gate 2) — Tariff / price list (additive, integer FCFA) ============
+// InvoiceItem keeps its snapshot; later Tariff changes never alter past invoices/
+// receipts. Integer FCFA only — no floats (19/20 §D).
+
+/// A set of tariffs effective for a hospital/period. Hospital-scoped config.
+model PriceList {
+  id            String    @id @default(cuid())
+  hospitalId    String
+  code          String
+  name          String
+  effectiveFrom DateTime?
+  effectiveTo   DateTime?
+  isActive      Boolean   @default(true)
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+  tariffs  Tariff[]
+
+  @@unique([hospitalId, code])
+  @@index([hospitalId])
+}
+
+/// A priced billable item (integer FCFA). An OPTIONAL source for InvoiceItem; the
+/// InvoiceItem keeps its own snapshot so billing history is never rewritten.
+model Tariff {
+  id          String    @id @default(cuid())
+  hospitalId  String
+  priceListId String?
+  code        String
+  label       String
+  amount      Int
+  isActive    Boolean   @default(true)
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  hospital     Hospital      @relation(fields: [hospitalId], references: [id])
+  priceList    PriceList?    @relation(fields: [priceListId], references: [id])
+  invoiceItems InvoiceItem[]
+
+  @@unique([hospitalId, code])
+  @@index([hospitalId, priceListId])
 }
