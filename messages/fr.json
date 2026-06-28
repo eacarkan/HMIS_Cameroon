@@ -55,6 +55,7 @@
     "cancel": "Annuler",
     "createPatient": "Créer un patient",
     "openEncounter": "Ouvrir une visite",
+    "viewEncounter": "Voir la visite",
     "collectPayment": "Encaisser",
     "printReceipt": "Imprimer le reçu"
   },
@@ -183,6 +184,7 @@
     "receiptNumber": "N° de reçu",
     "cashier": "Caissier",
     "noPayments": "Aucun paiement enregistré.",
+    "noTariffs": "Aucun tarif actif — contactez l'administrateur.",
     "date": "Date"
   },
   "receipt": {

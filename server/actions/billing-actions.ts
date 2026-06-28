@@ -2,13 +2,13 @@
 
 import { redirect } from "next/navigation";
 
-import { TARIFFS } from "@/lib/constants";
 import { z } from "@/lib/validation";
 import { AuthorizationError } from "@/server/authz";
 import { requireActorAndHospital } from "@/server/auth";
 import {
   createInvoice,
   getTariffLineSource,
+  listTariffs,
   recordPayment,
   type InvoiceLineInput,
 } from "@/server/services";
@@ -24,25 +24,31 @@ export async function createInvoiceAction(
 ): Promise<BillingFormState> {
   const { actor, hospital } = await requireActorAndHospital();
 
-  // The cashier's selected quantities (qty > 0). Each selected line is SOURCED from the
-  // hospital tariff catalogue via the Gate 3 helper (audited `invoice_item.tariff_source_used`);
-  // createInvoice then freezes the snapshot. Falls back to the seeded catalogue label/amount
-  // if a code is not in the DB, so a snapshot is always written and the total reconciles.
-  const selected = TARIFFS.map((tariff) => {
-    const raw = Number(formData.get(`qty_${tariff.code}`) ?? 0);
-    const quantity = Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 0;
-    return { code: tariff.code, label: tariff.label, amount: tariff.amount, quantity };
-  }).filter((s) => s.quantity > 0);
+  const TARIFF_UNAVAILABLE =
+    "Tarif indisponible ou non autorisé. Veuillez actualiser la page.";
+
+  // Line items are sourced ONLY from the active DB tariff catalogue (the same list the
+  // form rendered). There is NO static fallback: a missing/inactive/unauthorized tariff
+  // returns a clear French error. createInvoice freezes the snapshot (label/qty/amount).
+  let activeTariffs: Awaited<ReturnType<typeof listTariffs>>;
+  try {
+    activeTariffs = (await listTariffs(actor, hospital)).filter((tf) => tf.isActive);
+  } catch {
+    return { error: TARIFF_UNAVAILABLE };
+  }
 
   let invoiceId: string;
   try {
     const lines: InvoiceLineInput[] = [];
-    for (const sel of selected) {
+    for (const tf of activeTariffs) {
+      const raw = Number(formData.get(`qty_${tf.code}`) ?? 0);
+      const quantity = Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 0;
+      if (quantity <= 0) continue;
       try {
-        lines.push(await getTariffLineSource(actor, hospital, sel.code, sel.quantity));
-      } catch (e) {
-        if (e instanceof AuthorizationError) throw e;
-        lines.push({ label: sel.label, unitAmount: sel.amount, quantity: sel.quantity });
+        // Audited `invoice_item.tariff_source_used`.
+        lines.push(await getTariffLineSource(actor, hospital, tf.code, quantity));
+      } catch {
+        return { error: TARIFF_UNAVAILABLE }; // no static fallback
       }
     }
     const invoice = await createInvoice(actor, hospital, encounterId, lines);

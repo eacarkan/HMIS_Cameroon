@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { codeLabelFr } from "@/lib/constants";
 import {
   addPatientContactAction,
   deactivatePatientContactAction,
@@ -90,7 +91,9 @@ export function PatientIdentityPanel({
               {contacts.map((c) => (
                 <li key={c.id} className="flex items-center justify-between gap-3 py-2">
                   <span>
-                    <span className="text-muted-foreground text-xs">{c.contactType}</span>{" "}
+                    <span className="text-muted-foreground text-xs">
+                      {codeLabelFr(c.contactType)}
+                    </span>{" "}
                     <span className="font-medium">{c.value}</span>
                     {c.label ? <span className="text-muted-foreground"> · {c.label}</span> : null}
                   </span>
@@ -133,7 +136,9 @@ export function PatientIdentityPanel({
               {identifiers.map((i) => (
                 <li key={i.id} className="flex items-center justify-between gap-3 py-2">
                   <span>
-                    <span className="text-muted-foreground text-xs">{i.identifierType}</span>{" "}
+                    <span className="text-muted-foreground text-xs">
+                      {codeLabelFr(i.identifierType)}
+                    </span>{" "}
                     <span className="tnum font-medium">{i.value}</span>
                   </span>
                   {canManage ? (

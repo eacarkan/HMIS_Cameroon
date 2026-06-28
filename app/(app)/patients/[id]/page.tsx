@@ -67,7 +67,7 @@ export default async function PatientDetailPage({
       <Button asChild variant="secondary">
         <Link href={`/encounters/${activeEncounter.id}`}>
           <Eye className="size-4" aria-hidden />
-          {tActions("openEncounter")}
+          {tActions("viewEncounter")}
         </Link>
       </Button>
     ) : undefined;

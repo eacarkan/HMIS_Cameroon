@@ -99,6 +99,9 @@ test.describe.serial("golden path", () => {
 
     await page.getByRole("link", { name: "Créer la facture" }).click();
     await page.waitForURL(/\/facturation$/);
+    // Select the two base services from the DB tariff catalogue (2 000 + 1 000 FCFA).
+    await page.locator('input[name="qty_consultation_generale"]').fill("1");
+    await page.locator('input[name="qty_ouverture_dossier"]').fill("1");
     await expect(page.getByText("3 000 FCFA").first()).toBeVisible(); // live total
     await page.getByRole("button", { name: "Créer la facture" }).click();
 

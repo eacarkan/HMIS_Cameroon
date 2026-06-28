@@ -96,10 +96,10 @@ export default async function TariffsPage() {
               <table className="w-full text-sm">
                 <thead className="text-muted-foreground border-b text-left text-xs">
                   <tr>
-                    <th className="py-2 font-medium">{t("name")}</th>
-                    <th className="py-2 font-medium">{t("code")}</th>
-                    <th className="py-2 text-right font-medium">{t("amount")}</th>
-                    <th className="py-2 font-medium">{t("priceLists")}</th>
+                    <th className="py-2 pr-4 font-medium">{t("name")}</th>
+                    <th className="py-2 pr-4 font-medium">{t("code")}</th>
+                    <th className="py-2 pr-8 text-right font-medium">{t("amount")}</th>
+                    <th className="py-2 pr-4 pl-2 font-medium">{t("priceLists")}</th>
                     <th className="py-2 font-medium">{t("status")}</th>
                     {canManage ? <th className="py-2"></th> : null}
                   </tr>
@@ -107,10 +107,10 @@ export default async function TariffsPage() {
                 <tbody>
                   {tariffs.map((tf) => (
                     <tr key={tf.id} className="border-b last:border-0">
-                      <td className="py-2 font-medium">{tf.label}</td>
-                      <td className="text-muted-foreground py-2">{tf.code}</td>
-                      <td className="tnum py-2 text-right">{formatFcfa(tf.amount)}</td>
-                      <td className="text-muted-foreground py-2">
+                      <td className="py-2 pr-4 font-medium">{tf.label}</td>
+                      <td className="text-muted-foreground py-2 pr-4">{tf.code}</td>
+                      <td className="tnum py-2 pr-8 text-right">{formatFcfa(tf.amount)}</td>
+                      <td className="text-muted-foreground py-2 pr-4 pl-2">
                         {tf.priceListId ? (plNameById.get(tf.priceListId) ?? "—") : "—"}
                       </td>
                       <td className="py-2">

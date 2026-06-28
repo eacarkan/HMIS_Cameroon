@@ -124,6 +124,31 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "invoice_item.tariff_source_used": "Tarif utilisé (source de facture)",
 };
 
+/**
+ * French display labels for common coded values (contact/identifier/observation types).
+ * Client-safe; the UI falls back to the raw code via `codeLabelFr` when not mapped.
+ */
+export const CODE_LABELS_FR: Record<string, string> = {
+  phone: "Téléphone",
+  mobile: "Mobile",
+  email: "E-mail",
+  address: "Adresse",
+  next_of_kin: "Personne à contacter",
+  carte_hospitaliere: "Carte hospitalière",
+  cni: "CNI",
+  passeport: "Passeport",
+  temperature: "Température",
+  tension: "Tension",
+  pouls: "Pouls",
+  poids: "Poids",
+};
+
+/** Human French label for a coded value, falling back to the raw code if unmapped. */
+export function codeLabelFr(code: string): string {
+  if (!code) return code;
+  return CODE_LABELS_FR[code.toLowerCase()] ?? code;
+}
+
 /** Payment-method labels for server-side audit summaries (UI uses messages/fr.json). */
 export const PAYMENT_METHOD_FR: Record<string, string> = {
   cash: "espèces",

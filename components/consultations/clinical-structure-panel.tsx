@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { codeLabelFr } from "@/lib/constants";
 import {
   addObservationAction,
   addDiagnosisAction,
@@ -67,7 +68,7 @@ export function ClinicalStructurePanel({
           <ul className="space-y-1 text-sm">
             {observations.map((o) => (
               <li key={o.id} className="flex justify-between gap-2">
-                <span className="text-muted-foreground">{o.type}</span>
+                <span className="text-muted-foreground">{codeLabelFr(o.type)}</span>
                 <span className="font-medium">
                   {o.value}
                   {o.unit ? ` ${o.unit}` : ""}
