@@ -4,6 +4,9 @@ import {
   Stethoscope,
   ReceiptText,
   Banknote,
+  Wallet,
+  Ban,
+  Undo2,
   Settings2,
   ScrollText,
   UserCog,
@@ -55,6 +58,27 @@ export const NAV_ITEMS: NavItem[] = [
     labelKey: "cashierReport",
     icon: Banknote,
     capability: "cashier.report.read",
+  },
+  {
+    // Phase 2C — Brouillard de Caisse (cashier opens/closes their shift).
+    href: "/caisse/brouillard",
+    labelKey: "brouillard",
+    icon: Wallet,
+    capability: "cashier.shift.manage",
+  },
+  {
+    // Phase 2C — cancellation approval worklist (Hospital Administrator).
+    href: "/annulations",
+    labelKey: "cancellations",
+    icon: Ban,
+    capability: "invoice.cancel.approve",
+  },
+  {
+    // Phase 2C — refund vouchers (cashier / admin / director read).
+    href: "/remboursements",
+    labelKey: "refunds",
+    icon: Undo2,
+    capability: "refund.read",
   },
   {
     href: "/administration",

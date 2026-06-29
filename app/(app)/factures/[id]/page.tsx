@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
-import { VoidInvoiceForm } from "@/components/billing/cashier-controls";
+import { RequestCancellationForm } from "@/components/billing/cashier-controls";
 import { PaymentForm } from "@/components/billing/payment-form";
 import { PageHeader } from "@/components/layout/page-header";
 import { PatientBanner } from "@/components/patients/patient-banner";
@@ -30,10 +30,18 @@ export default async function InvoicePage({
   const tInv = await getTranslations("invoiceStatus");
   const tMethod = await getTranslations("paymentMethod");
   const tActions = await getTranslations("actions");
+  const tc = await getTranslations("cancellation");
 
   const { paid, remaining } = invoiceBalance(invoice);
   const patient = invoice.encounter.patient;
   const lastPayment = invoice.payments[invoice.payments.length - 1] ?? null;
+
+  // Phase 2C — cancellation request state for this invoice (latest first) + any refund voucher.
+  const latestRequest = invoice.cancellationRequests[0] ?? null;
+  const pendingRequest = invoice.cancellationRequests.find((r) => r.status === "requested") ?? null;
+  const refundVoucher = invoice.cancellationRequests.find((r) => r.refundVoucher)?.refundVoucher ?? null;
+  const canRequestCancel =
+    invoice.status !== "cancelled" && !pendingRequest && can(actor.roles, "invoice.cancel.request");
 
   return (
     <>
@@ -144,15 +152,32 @@ export default async function InvoicePage({
               </Button>
             ) : null}
 
-            {invoice.status !== "cancelled" && can(actor.roles, "invoice.create") ? (
+            {canRequestCancel ? (
               <div className="border-t pt-3">
-                <VoidInvoiceForm invoiceId={invoice.id} />
+                <RequestCancellationForm invoiceId={invoice.id} />
               </div>
             ) : null}
-            {invoice.status === "cancelled" ? (
-              <p className="text-destructive border-t pt-3 text-sm font-medium">
-                {t("invoiceVoided")}
+            {pendingRequest ? (
+              <p className="border-t pt-3 text-sm font-medium text-amber-700">
+                {tc("pendingNotice")}
               </p>
+            ) : null}
+            {invoice.status === "cancelled" ? (
+              <div className="border-t pt-3">
+                <p className="text-destructive text-sm font-medium">{t("invoiceVoided")}</p>
+                {latestRequest?.decisionReason ? (
+                  <p className="text-muted-foreground mt-1 text-xs">
+                    {tc("decisionReason")} : {latestRequest.decisionReason}
+                  </p>
+                ) : null}
+                {refundVoucher ? (
+                  <Button asChild size="sm" variant="outline" className="mt-2">
+                    <Link href={`/remboursements/${refundVoucher.id}`}>
+                      {tc("viewRefund")} — {refundVoucher.voucherNumber}
+                    </Link>
+                  </Button>
+                ) : null}
+              </div>
             ) : null}
           </CardContent>
         </Card>

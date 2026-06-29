@@ -88,6 +88,15 @@ export function CreateTariffForm({
             ))}
           </select>
         </div>
+        {/* Phase 2C — optional effective dates (never alter existing invoice snapshots). */}
+        <div className="grid gap-1.5">
+          <Label htmlFor="tf-from">{t("effectiveFrom")}</Label>
+          <Input id="tf-from" name="effectiveFrom" type="date" className="w-40" />
+        </div>
+        <div className="grid gap-1.5">
+          <Label htmlFor="tf-to">{t("effectiveTo")}</Label>
+          <Input id="tf-to" name="effectiveTo" type="date" className="w-40" />
+        </div>
         <Button type="submit" size="sm" disabled={pending}>
           {t("add")}
         </Button>

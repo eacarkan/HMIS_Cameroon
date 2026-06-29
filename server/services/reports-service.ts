@@ -126,26 +126,9 @@ export async function getCashierShiftSummary(
   };
 }
 
-/** Close the current cashier's shift — computes (reproducibly) and audits totals by mode. */
-export async function closeCashierShift(
-  actor: AuthenticatedActor,
-  ctx: HospitalContext,
-  date?: string,
-): Promise<CashierShiftSummary> {
-  await requireCapability(actor, ctx, "payment.record", { type: "Report" });
-  const summary = await getCashierShiftSummary(actor, ctx, date);
-  const breakdown =
-    summary.byMethod.map((m) => `${m.methodLabel} ${formatFcfa(m.total)}`).join(", ") || "—";
-  await recordAudit({
-    hospitalId: ctx.hospitalId,
-    actorId: actor.id,
-    action: AUDIT_ACTIONS.cashierShiftClose,
-    entityType: "Report",
-    entityId: null,
-    summary: `Clôture de caisse (${summary.date}) — ${formatFcfa(summary.total)}, ${summary.count} reçu(s) [${breakdown}]`,
-  });
-  return summary;
-}
+// NOTE (Phase 2C): the ephemeral "close shift" marker was superseded by the persisted Brouillard
+// de Caisse (open → close with five frozen totals) in `cashier-shift-service`. The daily report
+// here remains a read-only operational view used by the report page and the Brouillard computation.
 
 function csvCell(value: string | number): string {
   const s = String(value);

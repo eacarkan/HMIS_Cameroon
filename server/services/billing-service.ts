@@ -1,6 +1,5 @@
 import type { PaymentMethod } from "@prisma/client";
 
-import { canVoidInvoice } from "@/lib/billing-rules";
 import { PAYMENT_METHOD_FR } from "@/lib/constants";
 import { formatFcfa, lineTotalFcfa, sumFcfa } from "@/lib/money";
 import {
@@ -10,7 +9,6 @@ import {
   findInvoiceById,
   findTariffByCode,
   updateInvoiceStatus,
-  updatePaymentStatus,
   type HospitalContext,
 } from "@/server/db";
 import type { AuthenticatedActor } from "./auth-service";
@@ -144,45 +142,12 @@ export async function recordPayment(
 }
 
 /**
- * Void / cancel an invoice (Phase 1A Batch 3) with a reason. Sets the invoice to
- * `cancelled` and cancels its recorded payments (so reports/totals exclude them and the
- * receipts are marked voided). InvoiceItem snapshots are NEVER modified — this is a
- * controlled state change, not a rewrite of history. Audited with the reason.
+ * Phase 2C — direct invoice voiding was REPLACED by the controlled cancellation workflow
+ * (`cancellation-service`): a cashier REQUESTS a cancellation (mandatory reason) and a Hospital
+ * Administrator APPROVES it (cashier ≠ approver), spawning a RefundVoucher for paid invoices.
+ * The cancel mechanics (set invoice `cancelled`, cancel recorded payments — snapshots untouched)
+ * now live in `approveInvoiceCancellation`.
  */
-export async function voidInvoice(
-  actor: AuthenticatedActor,
-  ctx: HospitalContext,
-  invoiceId: string,
-  reason: string,
-) {
-  await requireCapability(actor, ctx, "invoice.create", { type: "Invoice", id: invoiceId });
-
-  const invoice = await findInvoiceById(ctx.hospitalId, invoiceId);
-  if (!invoice) throw new Error("Facture introuvable dans cet hôpital.");
-  if (!canVoidInvoice(invoice.status)) {
-    throw new Error("Cette facture est déjà annulée.");
-  }
-  const trimmedReason = reason.trim();
-  if (trimmedReason.length === 0) throw new Error("Le motif d'annulation est obligatoire.");
-
-  await updateInvoiceStatus(ctx.hospitalId, invoiceId, "cancelled");
-  for (const payment of invoice.payments) {
-    if (payment.status === "recorded") {
-      await updatePaymentStatus(ctx.hospitalId, payment.id, "cancelled");
-    }
-  }
-
-  await recordAudit({
-    hospitalId: ctx.hospitalId,
-    actorId: actor.id,
-    action: AUDIT_ACTIONS.invoiceVoid,
-    entityType: "Invoice",
-    entityId: invoiceId,
-    summary: `Annulation de la facture ${invoice.invoiceNumber} — motif : ${trimmedReason}`,
-  });
-
-  return findInvoiceById(ctx.hospitalId, invoiceId);
-}
 
 /**
  * Tariff-as-source helper (Gate 3, 23 §5 — SOURCE ONLY). The cashier resolves a tariff

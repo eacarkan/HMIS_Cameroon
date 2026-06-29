@@ -2,15 +2,18 @@ import { expect, test } from "@playwright/test";
 
 import { ACCOUNTS, login } from "./_helpers";
 
-const SHOTS = "docs/batch3-screenshots";
+const SHOTS = "docs/phase2c-screenshots";
 
 /**
- * Phase 1A Batch 3 — cashier day cycle (E2E): issue → pay → report (totals by mode) →
- * close shift → void (with reason) → voided receipt marking. Self-contained (its own
- * fictional patient), sorts AFTER golden-path. Runs against the TEST database.
+ * Phase 2C — cashier day cycle (E2E): open Brouillard → issue → pay → daily report → close
+ * Brouillard (five frozen fields + Chief Cashier signature) → request cancellation (cashier) →
+ * approve (admin) → refund voucher. Self-contained (its own fictional patient); sorts AFTER the
+ * golden path. Runs against the TEST database.
  */
-test.describe.serial("cashier controls", () => {
-  test("issue → pay → report → close shift → void → voided receipt", async ({ page }) => {
+test.describe.serial("cashier controls (Phase 2C)", () => {
+  test("open shift → pay → close Brouillard → request cancel → admin approve → refund", async ({
+    page,
+  }) => {
     // Reception registers a patient and opens a visit.
     await login(page, ACCOUNTS.reception);
     await page.goto("/patients/nouveau");
@@ -27,9 +30,14 @@ test.describe.serial("cashier controls", () => {
     await page.waitForURL(/\/encounters\/[^/]+$/);
     const encounterUrl = page.url();
 
-    // Cashier issues the invoice and records payment.
+    // Cashier opens a Brouillard (opening balance), then issues + pays within the shift window.
     await page.context().clearCookies();
     await login(page, ACCOUNTS.cashier);
+    await page.goto("/caisse/brouillard");
+    await page.locator('input[name="openingBalance"]').fill("5000");
+    await page.getByRole("button", { name: "Ouvrir la caisse" }).click();
+    await expect(page.getByText("Caisse ouverte")).toBeVisible();
+
     await page.goto(encounterUrl);
     await page.getByRole("link", { name: "Créer la facture" }).click();
     await page.waitForURL(/\/facturation$/);
@@ -40,24 +48,34 @@ test.describe.serial("cashier controls", () => {
     await page.getByRole("button", { name: "Encaisser" }).click();
     await expect(page.getByText("Payée").first()).toBeVisible();
 
-    // Cashier report — totals by payment mode.
+    // Cashier daily report — totals by payment mode.
     await page.goto("/rapports-caisse");
     await expect(page.getByText("Totaux par mode de paiement")).toBeVisible();
-    await expect(page.getByText("HRB-DEMO-R-2026-000002").first()).toBeVisible();
     await page.screenshot({ path: `${SHOTS}/01-report-by-method.png`, fullPage: true });
 
-    // Close the shift (audited totals by mode).
+    // Close the Brouillard, then open the printable view (five mandatory fields + signature).
+    await page.goto("/caisse/brouillard");
     await page.getByRole("button", { name: "Clôturer la caisse" }).click();
-    await expect(page.getByText(/Caisse clôturée/)).toBeVisible();
-    await page.screenshot({ path: `${SHOTS}/02-shift-closed.png`, fullPage: true });
+    await page.getByRole("link", { name: /HRB-DEMO-B-/ }).first().click();
+    await expect(page.getByText("Solde de clôture théorique")).toBeVisible();
+    await expect(page.getByText("Signature du chef de caisse")).toBeVisible();
+    await page.screenshot({ path: `${SHOTS}/02-brouillard.png`, fullPage: true });
 
-    // Void the invoice with a reason.
+    // Cashier requests an invoice cancellation (mandatory reason) — does NOT cancel yet.
     await page.goto(invoiceUrl);
-    await page.getByLabel("Motif d'annulation").fill("Erreur de facturation (test)");
-    await page.getByRole("button", { name: "Annuler la facture" }).click();
-    await expect(page.getByText(/Facture annulée/)).toBeVisible();
-    await page.screenshot({ path: `${SHOTS}/03-voided-invoice.png`, fullPage: true });
-    // (The voided-receipt "Reçu annulé" marking is covered by the component test, and the
-    // payment→cancelled state by the integration suite.)
+    await page.getByLabel(/Motif de la demande d'annulation/).fill("Erreur de facturation (test)");
+    await page.getByRole("button", { name: "Demander l'annulation" }).click();
+    await expect(page.getByText(/en attente d'approbation/).first()).toBeVisible();
+    await page.screenshot({ path: `${SHOTS}/03-cancellation-request.png`, fullPage: true });
+
+    // Admin approves the cancellation → invoice cancelled + refund voucher raised.
+    await page.context().clearCookies();
+    await login(page, ACCOUNTS.admin);
+    await page.goto("/annulations");
+    await expect(page.getByText("Erreur de facturation (test)")).toBeVisible();
+    await page.getByRole("button", { name: "Approuver" }).first().click();
+    await page.goto("/remboursements");
+    await expect(page.getByText("HRB-DEMO-A-2026-000001")).toBeVisible();
+    await page.screenshot({ path: `${SHOTS}/04-refund-voucher.png`, fullPage: true });
   });
 });

@@ -59,6 +59,9 @@ export type CreateTariffData = {
   code: string;
   label: string;
   amount: number; // integer FCFA
+  // Phase 2C — optional effective dates (informational; never alter InvoiceItem snapshots).
+  effectiveFrom?: Date | null;
+  effectiveTo?: Date | null;
 };
 export function createTariff(data: CreateTariffData) {
   return prisma.tariff.create({ data });
@@ -73,6 +76,9 @@ export function updateTariff(
     amount?: number; // integer FCFA
     priceListId?: string | null;
     isActive?: boolean;
+    // Phase 2C — optional effective dates.
+    effectiveFrom?: Date | null;
+    effectiveTo?: Date | null;
   },
 ) {
   return prisma.tariff.update({ where: { id }, data });

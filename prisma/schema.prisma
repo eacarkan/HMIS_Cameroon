@@ -76,6 +76,34 @@ enum SequenceType {
   encounter
   invoice
   receipt
+  // Phase 2C — refund voucher ("avoir") and cashier shift / Brouillard de Caisse numbers.
+  refund_voucher
+  cashier_shift
+}
+
+// ===================== Phase 2C — cashier/billing strengthening =====================
+
+/// Invoice cancellation request lifecycle: a cashier requests, a Hospital Administrator decides.
+enum CancellationRequestStatus {
+  requested
+  approved
+  rejected
+}
+
+/// Refund voucher lifecycle for a cancelled PAID invoice: requested → approved → paid (+ cancelled).
+enum RefundVoucherStatus {
+  requested
+  approved
+  paid
+  cancelled
+}
+
+/// Cashier shift / Brouillard de Caisse lifecycle: opened, then closed (figures frozen), and — only
+/// through the controlled correction workflow — corrected. The frozen figures are never mutated.
+enum CashierShiftStatus {
+  open
+  closed
+  corrected
 }
 
 /// Phase 2A — service/department catalogue classification (neutral codes; Fr/En labels in UI).
@@ -114,6 +142,12 @@ model Hospital {
   payments      Payment[]
   auditLogs     AuditLog[]
   sequences     Sequence[]
+
+  // Phase 2C additive relations.
+  cancellationRequests    InvoiceCancellationRequest[]
+  refundVouchers          RefundVoucher[]
+  cashierShifts           CashierShift[]
+  cashierShiftCorrections CashierShiftCorrection[]
 
   // Phase 1 (Gate 2) additive relations.
   departments                Department[]
@@ -158,6 +192,17 @@ model User {
   consultations      Consultation[] @relation("ConsultationPerformedBy")
   encountersAssigned Encounter[]    @relation("EncounterAssignedTo")
   payments           Payment[]      @relation("PaymentCashier")
+
+  // Phase 2C additive relations (cancellation / refund / shift actors).
+  cancellationRequestsMade    InvoiceCancellationRequest[] @relation("CancellationRequestedBy")
+  cancellationRequestsDecided InvoiceCancellationRequest[] @relation("CancellationDecidedBy")
+  refundVouchersRequested     RefundVoucher[]              @relation("RefundRequestedBy")
+  refundVouchersApproved      RefundVoucher[]              @relation("RefundApprovedBy")
+  refundVouchersExecuted      RefundVoucher[]              @relation("RefundExecutedBy")
+  refundVouchersCancelled     RefundVoucher[]              @relation("RefundCancelledBy")
+  cashierShifts               CashierShift[]               @relation("ShiftCashier")
+  cashierShiftsClosed         CashierShift[]               @relation("ShiftClosedBy")
+  cashierShiftCorrections     CashierShiftCorrection[]     @relation("ShiftCorrectedBy")
 }
 
 /// Assignment of a Role to a User, scoped to a Hospital (minimal RBAC, 05 §4).
@@ -303,6 +348,10 @@ model Invoice {
   encounter Encounter     @relation(fields: [encounterId], references: [id])
   items     InvoiceItem[]
   payments  Payment[]
+
+  // Phase 2C additive relations.
+  cancellationRequests InvoiceCancellationRequest[]
+  refundVouchers       RefundVoucher[]
 
   @@unique([hospitalId, invoiceNumber])
   @@index([hospitalId, encounterId])
@@ -616,16 +665,20 @@ model PriceList {
 /// A priced billable item (integer FCFA). An OPTIONAL source for InvoiceItem; the
 /// InvoiceItem keeps its own snapshot so billing history is never rewritten.
 model Tariff {
-  id          String    @id @default(cuid())
-  hospitalId  String
-  priceListId String?
-  code        String
-  label       String
-  amount      Int
-  isActive    Boolean   @default(true)
-  deletedAt   DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id            String    @id @default(cuid())
+  hospitalId    String
+  priceListId   String?
+  code          String
+  label         String
+  amount        Int
+  isActive      Boolean   @default(true)
+  // Phase 2C — OPTIONAL effective dates (additive). Purely informational for pricing validity;
+  // they never alter existing InvoiceItem snapshots (billing history is immutable).
+  effectiveFrom DateTime?
+  effectiveTo   DateTime?
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   hospital     Hospital      @relation(fields: [hospitalId], references: [id])
   priceList    PriceList?    @relation(fields: [priceListId], references: [id])
@@ -653,4 +706,118 @@ model DiagnosisCode {
   updatedAt    DateTime @updatedAt
 
   @@index([isActive, displayOrder])
+}
+
+// ============ Phase 2C — cancellation, refund voucher, Brouillard de Caisse ============
+
+/// A cashier's request to cancel an invoice, decided by a Hospital Administrator. The cashier may
+/// NOT approve their own request (requester ≠ approver, enforced at the service layer). Two distinct
+/// events: the request, then the decision. On approval the invoice (and its recorded payments) are
+/// cancelled and — when the invoice had recorded payments — a linked RefundVoucher is generated.
+model InvoiceCancellationRequest {
+  id             String                    @id @default(cuid())
+  hospitalId     String
+  invoiceId      String
+  status         CancellationRequestStatus @default(requested)
+  reason         String
+  requestedById  String
+  decidedById    String?
+  decisionReason String?
+  decidedAt      DateTime?
+  createdAt      DateTime                  @default(now())
+  updatedAt      DateTime                  @updatedAt
+
+  hospital      Hospital       @relation(fields: [hospitalId], references: [id])
+  invoice       Invoice        @relation(fields: [invoiceId], references: [id])
+  requestedBy   User           @relation("CancellationRequestedBy", fields: [requestedById], references: [id])
+  decidedBy     User?          @relation("CancellationDecidedBy", fields: [decidedById], references: [id])
+  refundVoucher RefundVoucher?
+
+  @@index([hospitalId, status])
+  @@index([invoiceId])
+}
+
+/// Refund voucher ("bon d'avoir") for a cancelled PAID invoice, linked to the originating invoice
+/// and cancellation request. Lifecycle: requested → approved → paid (the physical cash-out is
+/// recorded at "paid"/executed) — or cancelled. Amounts are integer FCFA.
+model RefundVoucher {
+  id                    String              @id @default(cuid())
+  hospitalId            String
+  voucherNumber         String
+  invoiceId             String
+  cancellationRequestId String              @unique
+  amount                Int
+  status                RefundVoucherStatus @default(requested)
+  reason                String
+  requestedById         String
+  approvedById          String?
+  executedById          String?
+  cancelledById         String?
+  approvedAt            DateTime?
+  executedAt            DateTime?
+  cancelledAt           DateTime?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  hospital            Hospital                   @relation(fields: [hospitalId], references: [id])
+  invoice             Invoice                    @relation(fields: [invoiceId], references: [id])
+  cancellationRequest InvoiceCancellationRequest @relation(fields: [cancellationRequestId], references: [id])
+  requestedBy         User                       @relation("RefundRequestedBy", fields: [requestedById], references: [id])
+  approvedBy          User?                      @relation("RefundApprovedBy", fields: [approvedById], references: [id])
+  executedBy          User?                      @relation("RefundExecutedBy", fields: [executedById], references: [id])
+  cancelledBy         User?                      @relation("RefundCancelledBy", fields: [cancelledById], references: [id])
+
+  @@unique([hospitalId, voucherNumber])
+  @@index([hospitalId, status])
+  @@index([invoiceId])
+}
+
+/// Cashier shift + Brouillard de Caisse. Opened with an opening balance; on close the five
+/// mandatory totals are FROZEN (integer FCFA) and the record becomes immutable. Corrections never
+/// mutate the frozen figures — they are appended as CashierShiftCorrection rows and flip the status
+/// to `corrected`. Shift totals are attributed by the cashier's recorded payments within the shift
+/// window [openedAt, closedAt) (deterministic; no Payment FK to keep the change additive).
+model CashierShift {
+  id                        String             @id @default(cuid())
+  hospitalId                String
+  shiftNumber               String
+  cashierId                 String
+  status                    CashierShiftStatus @default(open)
+  openingBalance            Int                @default(0)
+  totalCashReceived         Int                @default(0)
+  totalMobileCardReceived   Int                @default(0)
+  totalCancellationsRefunds Int                @default(0)
+  expectedClosingBalance    Int                @default(0)
+  receiptCount              Int                @default(0)
+  openedAt                  DateTime           @default(now())
+  closedAt                  DateTime?
+  closedById                String?
+  createdAt                 DateTime           @default(now())
+  updatedAt                 DateTime           @updatedAt
+
+  hospital    Hospital                 @relation(fields: [hospitalId], references: [id])
+  cashier     User                     @relation("ShiftCashier", fields: [cashierId], references: [id])
+  closedBy    User?                    @relation("ShiftClosedBy", fields: [closedById], references: [id])
+  corrections CashierShiftCorrection[]
+
+  @@unique([hospitalId, shiftNumber])
+  @@index([hospitalId, cashierId, status])
+}
+
+/// An append-only correction note against a CLOSED Brouillard. The original frozen totals are never
+/// modified; this records a controlled, audited adjustment (reason + note + who + when).
+model CashierShiftCorrection {
+  id             String   @id @default(cuid())
+  hospitalId     String
+  cashierShiftId String
+  reason         String
+  note           String
+  correctedById  String
+  createdAt      DateTime @default(now())
+
+  hospital     Hospital     @relation(fields: [hospitalId], references: [id])
+  cashierShift CashierShift @relation(fields: [cashierShiftId], references: [id])
+  correctedBy  User         @relation("ShiftCorrectedBy", fields: [correctedById], references: [id])
+
+  @@index([cashierShiftId])
 }

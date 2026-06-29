@@ -156,3 +156,33 @@ export {
   findDiagnosisById,
   updateDiagnosis,
 } from "./clinical-structure";
+
+// Phase 2C — cancellation workflow, refund vouchers, cashier shifts / Brouillard de Caisse.
+export {
+  type CreateCancellationRequestData,
+  createCancellationRequest,
+  findCancellationRequestById,
+  listCancellationRequests,
+  findPendingCancellationForInvoice,
+  updateCancellationDecision,
+} from "./cancellations";
+export {
+  type CreateRefundVoucherData,
+  createRefundVoucher,
+  findRefundVoucherById,
+  listRefundVouchers,
+  findExecutedRefundsForWindow,
+  updateRefundVoucher,
+} from "./refunds";
+export {
+  type CreateCashierShiftData,
+  type CreateShiftCorrectionData,
+  createCashierShift,
+  findOpenCashierShift,
+  findCashierShiftById,
+  listCashierShifts,
+  findCashierPaymentsForWindow,
+  closeCashierShiftRow,
+  markCashierShiftCorrected,
+  createShiftCorrection,
+} from "./cashier-shifts";

@@ -75,7 +75,6 @@ export {
   getInvoice,
   createInvoice,
   recordPayment,
-  voidInvoice,
   getTariffLineSource,
 } from "./billing-service";
 export { getReceipt, recordReceiptPrint } from "./receipt-service";
@@ -147,8 +146,32 @@ export {
   getCashierDailyReport,
   exportCashierDailyReportCsv,
   getCashierShiftSummary,
-  closeCashierShift,
 } from "./reports-service";
+
+// Phase 2C — cancellation workflow, refund vouchers, persisted Brouillard de Caisse.
+export {
+  listCancellations,
+  getCancellation,
+  requestInvoiceCancellation,
+  approveInvoiceCancellation,
+  rejectInvoiceCancellation,
+} from "./cancellation-service";
+export {
+  listRefunds,
+  getRefund,
+  approveRefund,
+  executeRefund,
+  cancelRefund,
+} from "./refund-service";
+export {
+  getOpenShift,
+  getCashierShift,
+  listShifts,
+  previewShiftTotals,
+  openCashierShift,
+  closeCashierShift,
+  correctCashierShift,
+} from "./cashier-shift-service";
 export {
   listUsers,
   createUserForActor,

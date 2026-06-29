@@ -46,7 +46,8 @@ export function createInvoiceWithItems(data: CreateInvoiceWithItemsData) {
   });
 }
 
-/** A single invoice within a hospital, with items, payments and the patient. */
+/** A single invoice within a hospital, with items, payments and the patient. Phase 2C also
+ *  surfaces the cancellation requests (+ any refund voucher) so the invoice view can show state. */
 export function findInvoiceById(hospitalId: string, id: string) {
   return prisma.invoice.findFirst({
     where: { id, hospitalId, deletedAt: null },
@@ -54,6 +55,10 @@ export function findInvoiceById(hospitalId: string, id: string) {
       items: true,
       payments: { orderBy: { paidAt: "asc" }, include: { cashier: true } },
       encounter: { include: { patient: true } },
+      cancellationRequests: {
+        orderBy: { createdAt: "desc" },
+        include: { refundVoucher: true, requestedBy: true, decidedBy: true },
+      },
     },
   });
 }

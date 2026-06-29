@@ -1,8 +1,8 @@
 import { Download } from "lucide-react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
-import { CloseShiftButton } from "@/components/billing/cashier-controls";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -118,8 +118,10 @@ export default async function CashierReportPage({
         <Card>
           <CardHeader>
             <CardTitle className="text-base">{t("shiftTitle")}</CardTitle>
-            {can(actor.roles, "payment.record") ? (
-              <CloseShiftButton date={report.date} />
+            {can(actor.roles, "cashier.shift.manage") ? (
+              <Button asChild size="sm" variant="secondary">
+                <Link href="/caisse/brouillard">{t("openBrouillard")}</Link>
+              </Button>
             ) : null}
           </CardHeader>
           <CardContent>

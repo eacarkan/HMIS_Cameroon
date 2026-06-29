@@ -8,14 +8,26 @@
  */
 
 /** Document kinds that carry a per-hospital number. */
-export type DocumentKind = "patient" | "encounter" | "invoice" | "receipt";
+export type DocumentKind =
+  | "patient"
+  | "encounter"
+  | "invoice"
+  | "receipt"
+  // Phase 2C — refund voucher ("avoir") and cashier shift / Brouillard de Caisse.
+  | "refund_voucher"
+  | "cashier_shift";
 
-/** French-mnemonic letter per kind: P patient · V visite · F facture · R reçu. */
+/**
+ * French-mnemonic letter per kind: P patient · V visite · F facture · R reçu ·
+ * A avoir (bon de remboursement) · B brouillard de caisse.
+ */
 const KIND_LETTER: Record<DocumentKind, string> = {
   patient: "P",
   encounter: "V",
   invoice: "F",
   receipt: "R",
+  refund_voucher: "A",
+  cashier_shift: "B",
 };
 
 /** Zero-padded width of the per-year counter (e.g. 1 → "000001"). */

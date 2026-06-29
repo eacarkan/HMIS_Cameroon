@@ -91,6 +91,18 @@ export const AUDIT_ACTIONS = {
   // diagnosis reuses `diagnosis.create`). The original temporary ID is retained in the audit.
   patientTemporaryCreated: "patient.temporary_created",
   patientIdentityUpdated: "patient.identity_updated",
+  // Phase 2C — cancellation workflow, refund voucher, Brouillard de Caisse. Append-only;
+  // every money-affecting action carries actor + hospital + amounts (in the French summary).
+  invoiceCancellationRequested: "invoice.cancellation_requested",
+  invoiceCancellationApproved: "invoice.cancellation_approved",
+  invoiceCancellationRejected: "invoice.cancellation_rejected",
+  refundVoucherCreated: "refund_voucher.created",
+  refundVoucherApproved: "refund_voucher.approved",
+  refundVoucherExecuted: "refund_voucher.executed",
+  refundVoucherCancelled: "refund_voucher.cancelled",
+  cashierShiftOpened: "cashier.shift_opened",
+  cashierShiftClosed: "cashier.shift_closed",
+  cashierClosingCorrected: "cashier.closing_corrected",
 } as const;
 
 /**

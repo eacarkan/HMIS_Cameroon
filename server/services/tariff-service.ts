@@ -86,7 +86,15 @@ export async function listTariffs(actor: AuthenticatedActor, ctx: HospitalContex
 export async function createTariff(
   actor: AuthenticatedActor,
   ctx: HospitalContext,
-  input: { code: string; label: string; amount: number; priceListId?: string | null },
+  input: {
+    code: string;
+    label: string;
+    amount: number;
+    priceListId?: string | null;
+    // Phase 2C — optional effective dates (informational; snapshots remain immutable).
+    effectiveFrom?: Date | null;
+    effectiveTo?: Date | null;
+  },
 ) {
   await requireCapability(actor, ctx, "tariff.manage", { type: "Tariff" });
   assertIntegerFcfa(input.amount);
@@ -100,6 +108,8 @@ export async function createTariff(
     code: input.code,
     label: input.label,
     amount: input.amount,
+    effectiveFrom: input.effectiveFrom ?? null,
+    effectiveTo: input.effectiveTo ?? null,
   });
   await recordAudit({
     hospitalId: ctx.hospitalId,
@@ -116,7 +126,12 @@ export async function updateTariff(
   actor: AuthenticatedActor,
   ctx: HospitalContext,
   id: string,
-  input: { label?: string; amount?: number },
+  input: {
+    label?: string;
+    amount?: number;
+    effectiveFrom?: Date | null;
+    effectiveTo?: Date | null;
+  },
 ) {
   await requireCapability(actor, ctx, "tariff.manage", { type: "Tariff", id });
   if (input.amount !== undefined) assertIntegerFcfa(input.amount);
@@ -125,6 +140,8 @@ export async function updateTariff(
   const tariff = await dbUpdateTariff(id, {
     label: input.label,
     amount: input.amount,
+    effectiveFrom: input.effectiveFrom,
+    effectiveTo: input.effectiveTo,
   });
   await recordAudit({
     hospitalId: ctx.hospitalId,

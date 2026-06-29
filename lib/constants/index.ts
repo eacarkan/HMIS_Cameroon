@@ -150,6 +150,17 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   // Phase 2B — patient identity.
   "patient.temporary_created": "Création d'un patient temporaire",
   "patient.identity_updated": "Mise à jour de l'identité patient",
+  // Phase 2C — cancellation workflow, refund voucher, Brouillard de Caisse.
+  "invoice.cancellation_requested": "Demande d'annulation de facture",
+  "invoice.cancellation_approved": "Annulation de facture approuvée",
+  "invoice.cancellation_rejected": "Demande d'annulation rejetée",
+  "refund_voucher.created": "Création d'un bon de remboursement",
+  "refund_voucher.approved": "Bon de remboursement approuvé",
+  "refund_voucher.executed": "Bon de remboursement payé",
+  "refund_voucher.cancelled": "Bon de remboursement annulé",
+  "cashier.shift_opened": "Ouverture de caisse",
+  "cashier.shift_closed": "Clôture de caisse (brouillard)",
+  "cashier.closing_corrected": "Correction de brouillard de caisse",
 };
 
 /**

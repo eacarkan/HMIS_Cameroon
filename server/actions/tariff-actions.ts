@@ -73,6 +73,13 @@ export async function createTariffAction(
   const label = (formData.get("label") as string)?.trim();
   const amount = Number(formData.get("amount"));
   const priceListId = (formData.get("priceListId") as string) || null;
+  // Phase 2C — optional effective dates (YYYY-MM-DD). Empty → null.
+  const parseDate = (key: string): Date | null => {
+    const raw = (formData.get(key) as string)?.trim();
+    if (!raw) return null;
+    const d = new Date(raw);
+    return Number.isNaN(d.getTime()) ? null : d;
+  };
   if (!code || !label) {
     return { errors: { code: "Le code et le libellé sont obligatoires." } };
   }
@@ -80,7 +87,14 @@ export async function createTariffAction(
     return { errors: { amount: "Montant FCFA invalide — entier positif requis." } };
   }
   try {
-    await createTariff(actor, hospital, { code, label, amount, priceListId });
+    await createTariff(actor, hospital, {
+      code,
+      label,
+      amount,
+      priceListId,
+      effectiveFrom: parseDate("effectiveFrom"),
+      effectiveTo: parseDate("effectiveTo"),
+    });
   } catch (e) {
     return fail(e);
   }

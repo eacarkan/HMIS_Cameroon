@@ -44,7 +44,15 @@ export type Capability =
   // Phase 2A capabilities — service/department catalogue. `manage` = Hospital Admin (and
   // Local IT Lead when assigned); `view` = operational roles, scoped to ACTIVE services.
   | "service.config.manage"
-  | "service.config.view";
+  | "service.config.view"
+  // Phase 2C capabilities — cashier/billing strengthening. The cashier REQUESTS a cancellation
+  // and EXECUTES an approved refund and manages their own shift; only the Hospital Administrator
+  // APPROVES cancellations/refunds (cashier ≠ approver). Refund vouchers are widely readable.
+  | "invoice.cancel.request"
+  | "invoice.cancel.approve"
+  | "refund.read"
+  | "refund.execute"
+  | "cashier.shift.manage";
 
 export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
   // Hospital administrator — configuration, tariffs, users, service catalogue, and oversight
@@ -68,6 +76,11 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "tariff.manage",
     "cashier.report.read",
     "user.manage",
+    // Phase 2C — the administrator APPROVES cancellations/refunds (cannot request or execute),
+    // and can read refund vouchers for oversight. No payment/refund execution (not clinical, not
+    // a cashier).
+    "invoice.cancel.approve",
+    "refund.read",
   ],
   agent_accueil: [
     "dashboard.read",
@@ -103,6 +116,12 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "tariff.use",
     "cashier.report.read",
     "service.config.view",
+    // Phase 2C — the cashier REQUESTS cancellations, EXECUTES approved refund vouchers, and
+    // opens/closes/corrects their own Brouillard de Caisse. They cannot APPROVE (admin only).
+    "invoice.cancel.request",
+    "refund.read",
+    "refund.execute",
+    "cashier.shift.manage",
   ],
   directeur: [
     "dashboard.read",
@@ -114,6 +133,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "config.read",
     "cashier.report.read",
     "service.config.view",
+    // Phase 2C — read-only oversight of refund vouchers.
+    "refund.read",
   ],
 };
 

@@ -4,7 +4,6 @@ import { TARIFFS } from "@/lib/constants";
 import { todayIsoDate } from "@/lib/dates";
 import { AuthorizationError } from "@/server/authz";
 import {
-  closeCashierShift,
   createInvoice,
   createPatientForActor,
   exportCashierDailyReportCsv,
@@ -13,7 +12,6 @@ import {
   invoiceBalance,
   openEncounter,
   recordPayment,
-  voidInvoice,
 } from "@/server/services";
 import { ACCOUNTS, loginAndSelect } from "../helpers/actors";
 import { prisma, resetTestDb } from "../helpers/db";
@@ -188,41 +186,8 @@ describe("integration: Phase 1A Batch 3 — billing/cashier controls", () => {
     return { cashier, invoice };
   }
 
-  it("voids an invoice with reason: status cancelled, payments cancelled, items immutable, audited", async () => {
-    const { cashier, invoice } = await paidInvoice();
-    const before = await getInvoice(cashier.actor, cashier.ctx, invoice.id);
-    const itemsBefore = before!.items.map((i) => ({ label: i.label, lineTotal: i.lineTotal }));
-
-    await voidInvoice(cashier.actor, cashier.ctx, invoice.id, "Erreur de saisie");
-
-    const after = await getInvoice(cashier.actor, cashier.ctx, invoice.id);
-    expect(after!.status).toBe("cancelled");
-    expect(after!.payments.every((p) => p.status === "cancelled")).toBe(true);
-    // InvoiceItem snapshots are unchanged (no rewrite of history).
-    expect(after!.items.map((i) => ({ label: i.label, lineTotal: i.lineTotal }))).toEqual(itemsBefore);
-
-    const audit = await prisma.auditLog.findFirst({ where: { action: "invoice.void", entityId: invoice.id } });
-    expect(audit?.summary).toContain("Erreur de saisie");
-  });
-
-  it("rejects voiding an already-cancelled invoice", async () => {
-    const { cashier, invoice } = await paidInvoice();
-    await voidInvoice(cashier.actor, cashier.ctx, invoice.id, "Doublon");
-    await expect(
-      voidInvoice(cashier.actor, cashier.ctx, invoice.id, "Encore"),
-    ).rejects.toThrow(/déjà annulée/);
-  });
-
-  it("voided payments are excluded from the cashier daily report", async () => {
-    const { cashier, invoice } = await paidInvoice();
-    const today = todayIsoDate();
-    const before = await getCashierDailyReport(cashier.actor, cashier.ctx, today);
-    expect(before.total).toBe(3000);
-    await voidInvoice(cashier.actor, cashier.ctx, invoice.id, "Annulation test");
-    const after = await getCashierDailyReport(cashier.actor, cashier.ctx, today);
-    expect(after.total).toBe(0);
-    expect(after.count).toBe(0);
-  });
+  // Phase 2C — direct invoice voiding + the ephemeral shift close were replaced by the cancellation
+  // workflow and the persisted Brouillard; those flows are covered in cashier-billing-2c.test.ts.
 
   it("daily report filters by payment method and aggregates totals by mode", async () => {
     const encounterId = await anEncounterId();
@@ -242,15 +207,6 @@ describe("integration: Phase 1A Batch 3 — billing/cashier controls", () => {
     const cashOnly = await getCashierDailyReport(cashier.actor, cashier.ctx, { date: today, method: "cash" });
     expect(cashOnly.count).toBe(1);
     expect(cashOnly.total).toBe(2000);
-  });
-
-  it("closing a shift computes totals by mode and is audited", async () => {
-    const { cashier } = await paidInvoice();
-    const summary = await closeCashierShift(cashier.actor, cashier.ctx, todayIsoDate());
-    expect(summary.total).toBe(3000);
-    expect(summary.byMethod[0]).toMatchObject({ method: "cash", total: 3000 });
-    const audit = await prisma.auditLog.findFirst({ where: { action: "cashier.shift_close" } });
-    expect(audit?.summary).toContain("Clôture de caisse");
   });
 
   it("CSV export is BOM-prefixed and reflects the report", async () => {

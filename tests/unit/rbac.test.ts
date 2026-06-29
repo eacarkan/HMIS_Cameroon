@@ -90,6 +90,26 @@ describe("lib/rbac — role capabilities (09 §6, 07 §4)", () => {
     expect(can(["directeur"], "clinical.structure.read")).toBe(false);
   });
 
+  it("Phase 2C — cashier requests/executes; admin approves (cashier ≠ approver)", () => {
+    // Cashier REQUESTS cancellations, EXECUTES refunds, manages their own Brouillard — never approves.
+    expect(can(["caissier"], "invoice.cancel.request")).toBe(true);
+    expect(can(["caissier"], "refund.execute")).toBe(true);
+    expect(can(["caissier"], "cashier.shift.manage")).toBe(true);
+    expect(can(["caissier"], "invoice.cancel.approve")).toBe(false);
+
+    // Administrator APPROVES cancellations/refunds — never requests, executes, or runs a shift.
+    expect(can(["administrateur"], "invoice.cancel.approve")).toBe(true);
+    expect(can(["administrateur"], "refund.read")).toBe(true);
+    expect(can(["administrateur"], "invoice.cancel.request")).toBe(false);
+    expect(can(["administrateur"], "refund.execute")).toBe(false);
+    expect(can(["administrateur"], "cashier.shift.manage")).toBe(false);
+
+    // Director has read-only oversight of refunds, no execution/approval.
+    expect(can(["directeur"], "refund.read")).toBe(true);
+    expect(can(["directeur"], "invoice.cancel.approve")).toBe(false);
+    expect(can(["directeur"], "cashier.shift.manage")).toBe(false);
+  });
+
   it("no roles grants nothing; multiple roles union their capabilities", () => {
     expect(can([], "patient.read")).toBe(false);
     expect(can(["agent_accueil", "caissier"], "payment.record")).toBe(true);

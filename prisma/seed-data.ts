@@ -432,6 +432,11 @@ export async function clearOperationalData(
   // FK-safe order (children before parents). Phase 1 (Gate 2) patient/consultation
   // child tables are cleared before patients/consultations. Config/tariff base data is
   // NOT cleared here — it is re-upserted idempotently by seedBaseData.
+  // Phase 2C — clear cancellation/refund/shift records before invoices/payments/users.
+  await prisma.cashierShiftCorrection.deleteMany();
+  await prisma.cashierShift.deleteMany();
+  await prisma.refundVoucher.deleteMany();
+  await prisma.invoiceCancellationRequest.deleteMany();
   await prisma.payment.deleteMany();
   await prisma.invoiceItem.deleteMany();
   await prisma.invoice.deleteMany();
