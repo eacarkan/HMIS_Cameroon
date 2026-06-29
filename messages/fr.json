@@ -168,7 +168,28 @@
     "lifecycleTerminal": "Cette visite est clôturée — aucune autre transition possible.",
     "assignService": "Affecter au service / département",
     "assign": "Affecter",
-    "statusHistory": "Historique des statuts"
+    "statusHistory": "Historique des statuts",
+    "viewNote": "Voir / imprimer"
+  },
+  "consultationNote": {
+    "title": "Compte rendu de consultation",
+    "patient": "Patient",
+    "patientNumber": "N° patient",
+    "encounter": "N° de visite",
+    "clinician": "Clinicien",
+    "date": "Date",
+    "status": "Statut",
+    "reason": "Motif",
+    "vitals": "Constantes",
+    "observations": "Constantes structurées",
+    "diagnoses": "Diagnostics",
+    "primary": "principal",
+    "clinicalNote": "Note clinique",
+    "provisionalDiagnosis": "Diagnostic provisoire",
+    "recommendation": "Conduite à tenir",
+    "clinicianSignature": "Signature du clinicien",
+    "print": "Imprimer le compte rendu",
+    "footerNote": "Document de démonstration — sans valeur médico-légale."
   },
   "timeline": {
     "title": "Chronologie du patient",
@@ -192,8 +213,17 @@
     "vitals": "Constantes",
     "vitalsPlaceholder": "Température, tension, pouls, poids…",
     "diagnosis": "Diagnostic provisoire",
+    "provisionalDiagnosis": "Diagnostic provisoire",
     "recommendation": "Conduite à tenir",
-    "save": "Enregistrer la consultation"
+    "save": "Enregistrer la consultation",
+    "saveAsDraft": "Enregistrer comme brouillon",
+    "summaryTitle": "Consultation",
+    "finalize": "Finaliser la consultation",
+    "finalizeTitle": "Finalisation",
+    "amend": "Enregistrer l'amendement",
+    "amendTitle": "Amender la consultation",
+    "amendHint": "Une consultation finalisée peut être corrigée ; chaque amendement est tracé dans l'historique.",
+    "history": "Historique"
   },
   "billing": {
     "newTitle": "Créer la facture",

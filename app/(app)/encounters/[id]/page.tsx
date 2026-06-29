@@ -176,8 +176,18 @@ export default async function EncounterPage({
                 {encounter.consultations.map((c) => (
                   <li key={c.id} className="rounded-md border p-3">
                     <div className="flex items-center justify-between gap-3">
-                      <span className="font-medium">{c.reason}</span>
-                      <Badge variant="secondary">{tCons(c.status)}</Badge>
+                      <Link
+                        href={`/consultations/${c.id}`}
+                        className="hover:text-primary font-medium"
+                      >
+                        {c.reason}
+                      </Link>
+                      <span className="flex items-center gap-2">
+                        <Badge variant="secondary">{tCons(c.status)}</Badge>
+                        <Button asChild size="sm" variant="ghost">
+                          <Link href={`/consultations/${c.id}`}>{t("viewNote")}</Link>
+                        </Button>
+                      </span>
                     </div>
                     {c.clinicalNote ? (
                       <p className="text-muted-foreground mt-1 text-xs">

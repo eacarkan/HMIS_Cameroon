@@ -84,7 +84,11 @@ export function ConsultationForm({
         </p>
       ) : null}
 
-      <div className="flex items-center justify-end gap-2 border-t pt-4">
+      <div className="flex items-center justify-between gap-2 border-t pt-4">
+        <label className="text-muted-foreground flex items-center gap-2 text-sm">
+          <input type="checkbox" name="draft" className="size-4" />
+          {t("saveAsDraft")}
+        </label>
         <Button type="submit" disabled={pending}>
           {tActions("save")}
         </Button>

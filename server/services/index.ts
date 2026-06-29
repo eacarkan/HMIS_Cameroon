@@ -47,7 +47,12 @@ export {
 } from "./encounter-service";
 export {
   type RecordConsultationInput,
+  type AmendConsultationInput,
   recordConsultation,
+  getConsultation,
+  getConsultationHistory,
+  finalizeConsultation,
+  amendConsultation,
 } from "./consultation-service";
 export {
   type InvoiceLineInput,

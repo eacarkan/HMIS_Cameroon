@@ -87,6 +87,8 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "encounter.assign": "Affectation de visite",
   "consultation.create": "Consultation",
   "consultation.update": "Mise à jour consultation",
+  "consultation.finalize": "Finalisation consultation",
+  "consultation.amend": "Amendement consultation",
   "invoice.create": "Création de facture",
   "payment.record": "Paiement",
   "receipt.print": "Impression de reçu",

@@ -27,3 +27,31 @@ export function findConsultationById(hospitalId: string, id: string) {
     where: { id, hospitalId, deletedAt: null },
   });
 }
+
+// --- Phase 1A (Batch 2) clinical note (hospital-scoped; service enforces RBAC/audit). ---
+
+export type UpdateConsultationData = {
+  status?: ConsultationStatus;
+  clinicalNote?: string | null;
+  vitals?: string | null;
+  provisionalDiagnosis?: string | null;
+  recommendation?: string | null;
+  updatedById?: string;
+};
+
+export function updateConsultation(id: string, data: UpdateConsultationData) {
+  return prisma.consultation.update({ where: { id }, data });
+}
+
+/** Full consultation for the summary / printable note — patient context + structured data. */
+export function findConsultationDetail(hospitalId: string, id: string) {
+  return prisma.consultation.findFirst({
+    where: { id, hospitalId, deletedAt: null },
+    include: {
+      performedBy: true,
+      encounter: { include: { patient: true } },
+      observations: { where: { deletedAt: null }, orderBy: { createdAt: "asc" } },
+      diagnoses: { where: { deletedAt: null }, orderBy: { createdAt: "asc" } },
+    },
+  });
+}

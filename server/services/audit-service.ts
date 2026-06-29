@@ -23,6 +23,9 @@ export const AUDIT_ACTIONS = {
   encounterAssign: "encounter.assign",
   consultationCreate: "consultation.create",
   consultationUpdate: "consultation.update",
+  // Phase 1A (Batch 2) — clinical note finalize / amend (amendment trace via append-only audit).
+  consultationFinalize: "consultation.finalize",
+  consultationAmend: "consultation.amend",
   invoiceCreate: "invoice.create",
   paymentRecord: "payment.record",
   receiptPrint: "receipt.print",

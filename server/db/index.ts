@@ -52,8 +52,11 @@ export {
 } from "./encounters";
 export {
   type CreateConsultationData,
+  type UpdateConsultationData,
   createConsultation,
   findConsultationById,
+  updateConsultation,
+  findConsultationDetail,
 } from "./consultations";
 export {
   type CreateInvoiceWithItemsData,
