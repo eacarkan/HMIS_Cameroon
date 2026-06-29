@@ -110,6 +110,26 @@ describe("lib/rbac — role capabilities (09 §6, 07 §4)", () => {
     expect(can(["directeur"], "cashier.shift.manage")).toBe(false);
   });
 
+  it("Phase 2D-1 — medication catalogue: admin manages, clinicians/pharmacy view", () => {
+    // Admin manages the catalogue (configuration); also views it.
+    expect(can(["administrateur"], "medication.manage")).toBe(true);
+    expect(can(["administrateur"], "medication.view")).toBe(true);
+    // Clinicians and pharmacy view but do not manage.
+    expect(can(["medecin"], "medication.view")).toBe(true);
+    expect(can(["medecin"], "medication.manage")).toBe(false);
+    expect(can(["pharmacien"], "medication.view")).toBe(true);
+    expect(can(["pharmacien"], "medication.manage")).toBe(false);
+    expect(can(["pharmacien_chef"], "medication.view")).toBe(true);
+    expect(can(["pharmacien_chef"], "medication.manage")).toBe(false);
+    expect(can(["directeur"], "medication.view")).toBe(true);
+    // Reception is not part of the medication flow.
+    expect(can(["agent_accueil"], "medication.view")).toBe(false);
+    // Pharmacy roles are not clinical/billing data-entry actors (de-scoped).
+    expect(can(["pharmacien"], "consultation.create")).toBe(false);
+    expect(can(["pharmacien"], "payment.record")).toBe(false);
+    expect(can(["pharmacien"], "invoice.create")).toBe(false);
+  });
+
   it("no roles grants nothing; multiple roles union their capabilities", () => {
     expect(can([], "patient.read")).toBe(false);
     expect(can(["agent_accueil", "caissier"], "payment.record")).toBe(true);

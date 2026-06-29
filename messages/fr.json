@@ -23,7 +23,9 @@
     "agent_accueil": "Agent d'accueil",
     "medecin": "Médecin",
     "caissier": "Caissier",
-    "directeur": "Directeur (lecture seule)"
+    "directeur": "Directeur (lecture seule)",
+    "pharmacien": "Pharmacien",
+    "pharmacien_chef": "Pharmacien responsable"
   },
   "hospital": {
     "selectTitle": "Sélection de l'hôpital",
@@ -415,6 +417,7 @@
     "priceLists": "Listes tarifaires",
     "tariffs": "Tarifs",
     "manageTariffs": "Gérer les tarifs",
+    "manageMedications": "Médicaments",
     "manageUsers": "Gérer les utilisateurs",
     "backToAdmin": "Retour à l'administration",
     "code": "Code",
@@ -601,6 +604,26 @@
     "correct": "Enregistrer la correction",
     "correctionNotice": "Les totaux figés ne sont jamais modifiés — la correction est ajoutée à l'historique.",
     "print": "Imprimer"
+  },
+  "medication": {
+    "title": "Catalogue des médicaments",
+    "subtitle": "Médicaments configurés pour l'hôpital actif (géré par l'administrateur)",
+    "backToAdmin": "Retour à l'administration",
+    "code": "Code",
+    "nameFr": "Nom (FR)",
+    "nameEn": "Nom (EN)",
+    "form": "Forme galénique",
+    "unit": "Unité",
+    "unitPlaceholder": "comprimé…",
+    "strength": "Dosage",
+    "status": "Statut",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "add": "Ajouter",
+    "deactivate": "Désactiver",
+    "reactivate": "Réactiver",
+    "noMedications": "Aucun médicament configuré.",
+    "manage": "Catalogue des médicaments"
   },
   "userAdmin": {
     "title": "Utilisateurs & comptes",

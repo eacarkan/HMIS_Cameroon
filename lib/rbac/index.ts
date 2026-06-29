@@ -8,7 +8,16 @@
  */
 
 export type Role =
-  "administrateur" | "agent_accueil" | "medecin" | "caissier" | "directeur";
+  | "administrateur"
+  | "agent_accueil"
+  | "medecin"
+  | "caissier"
+  | "directeur"
+  // Phase 2D — pharmacy roles. `pharmacien` dispenses + enters stock + requests adjustments;
+  // `pharmacien_chef` (Pharmacist-in-Charge) authorises FEFO overrides + approves stock adjustments
+  // (dual validation = pharmacien requests, pharmacien_chef approves).
+  | "pharmacien"
+  | "pharmacien_chef";
 
 export type Capability =
   // Phase 0 capabilities.
@@ -52,7 +61,11 @@ export type Capability =
   | "invoice.cancel.approve"
   | "refund.read"
   | "refund.execute"
-  | "cashier.shift.manage";
+  | "cashier.shift.manage"
+  // Phase 2D-1 — medication catalogue. `manage` = Hospital Admin (catalogue is configuration);
+  // `view` = clinicians + pharmacy + oversight (used by prescribing and dispensing later).
+  | "medication.manage"
+  | "medication.view";
 
 export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
   // Hospital administrator — configuration, tariffs, users, service catalogue, and oversight
@@ -81,6 +94,9 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     // a cashier).
     "invoice.cancel.approve",
     "refund.read",
+    // Phase 2D-1 — the administrator manages the medication catalogue (configuration).
+    "medication.manage",
+    "medication.view",
   ],
   agent_accueil: [
     "dashboard.read",
@@ -103,6 +119,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "clinical.structure.read",
     "clinical.structure.manage",
     "service.config.view",
+    // Phase 2D-1 — the doctor reads the catalogue to prescribe (no catalogue management).
+    "medication.view",
   ],
   caissier: [
     "dashboard.read",
@@ -135,6 +153,24 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "service.config.view",
     // Phase 2C — read-only oversight of refund vouchers.
     "refund.read",
+    // Phase 2D-1 — oversight view of the medication catalogue.
+    "medication.view",
+  ],
+  // Phase 2D — pharmacy roles. Baseline operational reads + catalogue view; the pharmacy-specific
+  // capabilities (dispense, stock, FEFO override, adjustment approval) are added in later 2D sub-batches.
+  pharmacien: [
+    "dashboard.read",
+    "patient.read",
+    "encounter.read",
+    "service.config.view",
+    "medication.view",
+  ],
+  pharmacien_chef: [
+    "dashboard.read",
+    "patient.read",
+    "encounter.read",
+    "service.config.view",
+    "medication.view",
   ],
 };
 

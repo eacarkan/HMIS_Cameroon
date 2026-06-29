@@ -103,6 +103,11 @@ export const AUDIT_ACTIONS = {
   cashierShiftOpened: "cashier.shift_opened",
   cashierShiftClosed: "cashier.shift_closed",
   cashierClosingCorrected: "cashier.closing_corrected",
+  // Phase 2D-1 — medication catalogue (hospital-scoped; admin-managed).
+  medicationCreated: "medication.created",
+  medicationUpdated: "medication.updated",
+  medicationDeactivated: "medication.deactivated",
+  medicationReactivated: "medication.reactivated",
 } as const;
 
 /**

@@ -1,4 +1,4 @@
-import { ReceiptText, Users } from "lucide-react";
+import { Pill, ReceiptText, Users } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -87,6 +87,14 @@ export default async function AdministrationPage() {
                 <Link href="/administration/tarifs">
                   <ReceiptText className="size-4" aria-hidden />
                   {t("manageTariffs")}
+                </Link>
+              </Button>
+            ) : null}
+            {can(actor.roles, "medication.manage") ? (
+              <Button asChild variant="secondary" size="sm">
+                <Link href="/administration/medicaments">
+                  <Pill className="size-4" aria-hidden />
+                  {t("manageMedications")}
                 </Link>
               </Button>
             ) : null}

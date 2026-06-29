@@ -161,6 +161,11 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "cashier.shift_opened": "Ouverture de caisse",
   "cashier.shift_closed": "Clôture de caisse (brouillard)",
   "cashier.closing_corrected": "Correction de brouillard de caisse",
+  // Phase 2D-1 — medication catalogue.
+  "medication.created": "Création d'un médicament",
+  "medication.updated": "Mise à jour d'un médicament",
+  "medication.deactivated": "Désactivation d'un médicament",
+  "medication.reactivated": "Réactivation d'un médicament",
 };
 
 /**

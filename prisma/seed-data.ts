@@ -120,6 +120,9 @@ export const ROLES: RoleSeed[] = [
     code: "directeur",
     name: "Directeur (lecture seule)",
   },
+  // Phase 2D — pharmacy roles.
+  { id: "role-pharmacien", code: "pharmacien", name: "Pharmacien" },
+  { id: "role-pharmacien-chef", code: "pharmacien_chef", name: "Pharmacien responsable" },
 ];
 
 type UserSeed = {
@@ -160,6 +163,19 @@ export const USERS: UserSeed[] = [
     displayName: "Dr Emmanuel TCHOUA",
     email: "emmanuel.tchoua@hrb-demo.cm",
     roleCode: "directeur",
+  },
+  // Phase 2D — pharmacy demo users (dual validation: pharmacien requests, pharmacien_chef approves).
+  {
+    id: "user-georges-mballa",
+    displayName: "Georges MBALLA",
+    email: "georges.mballa@hrb-demo.cm",
+    roleCode: "pharmacien",
+  },
+  {
+    id: "user-claire-fotso",
+    displayName: "Claire FOTSO",
+    email: "claire.fotso@hrb-demo.cm",
+    roleCode: "pharmacien_chef",
   },
 ];
 
@@ -238,6 +254,30 @@ export async function seedBaseData(prisma: PrismaClient): Promise<void> {
 
   await seedConfigAndTariffs(prisma);
   await seedDiagnosisCodes(prisma);
+  await seedMedications(prisma);
+}
+
+/**
+ * Phase 2D-1 — seed a small SYNTHETIC medication catalogue for HRB-DEMO (idempotent upsert).
+ * No quantities/prices (stock = 2D-3). Fictional / illustrative only.
+ */
+async function seedMedications(prisma: PrismaClient): Promise<void> {
+  const meds = [
+    { code: "MED-PARA-500", nameFr: "Paracétamol", nameEn: "Paracetamol", form: "Comprimé", unit: "comprimé", strength: "500 mg" },
+    { code: "MED-AMOX-500", nameFr: "Amoxicilline", nameEn: "Amoxicillin", form: "Gélule", unit: "gélule", strength: "500 mg" },
+    { code: "MED-METRO-250", nameFr: "Métronidazole", nameEn: "Metronidazole", form: "Comprimé", unit: "comprimé", strength: "250 mg" },
+    { code: "MED-ACT-2024", nameFr: "Artéméther-Luméfantrine (ACT)", nameEn: "Artemether-Lumefantrine (ACT)", form: "Comprimé", unit: "comprimé", strength: "20/120 mg" },
+    { code: "MED-IBU-400", nameFr: "Ibuprofène", nameEn: "Ibuprofen", form: "Comprimé", unit: "comprimé", strength: "400 mg" },
+    { code: "MED-SRO", nameFr: "Sels de réhydratation orale (SRO)", nameEn: "Oral rehydration salts (ORS)", form: "Suspension", unit: "sachet", strength: null },
+  ];
+  for (let i = 0; i < meds.length; i++) {
+    const m = meds[i];
+    await prisma.medication.upsert({
+      where: { hospitalId_code: { hospitalId: DEMO_HOSPITAL_ID, code: m.code } },
+      create: { hospitalId: DEMO_HOSPITAL_ID, ...m, displayOrder: i + 1 },
+      update: { nameFr: m.nameFr, nameEn: m.nameEn, form: m.form, unit: m.unit, strength: m.strength },
+    });
+  }
 }
 
 /**
@@ -453,6 +493,8 @@ export async function clearOperationalData(
   // ServiceUnit before Department, Tariff before PriceList.
   await prisma.tariff.deleteMany();
   await prisma.priceList.deleteMany();
+  // Phase 2D-1 — medication catalogue (re-upserted by seedBaseData). No FK children yet.
+  await prisma.medication.deleteMany();
   await prisma.serviceUnit.deleteMany();
   await prisma.department.deleteMany();
   await prisma.setting.deleteMany();

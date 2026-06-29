@@ -172,6 +172,16 @@ export {
   closeCashierShift,
   correctCashierShift,
 } from "./cashier-shift-service";
+
+// Phase 2D-1 — medication catalogue.
+export {
+  listMedicationCatalogue,
+  listActiveMedications,
+  createMedication,
+  updateMedication,
+  deactivateMedication,
+  reactivateMedication,
+} from "./medication-service";
 export {
   listUsers,
   createUserForActor,

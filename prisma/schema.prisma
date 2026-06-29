@@ -149,6 +149,9 @@ model Hospital {
   cashierShifts           CashierShift[]
   cashierShiftCorrections CashierShiftCorrection[]
 
+  // Phase 2D additive relations.
+  medications Medication[]
+
   // Phase 1 (Gate 2) additive relations.
   departments                Department[]
   serviceUnits               ServiceUnit[]
@@ -820,4 +823,32 @@ model CashierShiftCorrection {
   correctedBy  User         @relation("ShiftCorrectedBy", fields: [correctedById], references: [id])
 
   @@index([cashierShiftId])
+}
+
+// ===================== Phase 2D — pharmacy / medication =====================
+
+/// Hospital-scoped medication catalogue (Phase 2D-1). Fr/En names, galenic form, dispensing unit,
+/// optional strength, active flag, display order. Integer quantities live on the stock ledger
+/// (2D-3) and prescriptions (2D-2) — the catalogue itself carries no quantities or prices.
+model Medication {
+  id           String    @id @default(cuid())
+  hospitalId   String
+  code         String
+  nameFr       String
+  nameEn       String
+  form         String
+  unit         String
+  strength     String?
+  isActive     Boolean   @default(true)
+  displayOrder Int       @default(0)
+  deletedAt    DateTime?
+  createdById  String?
+  updatedById  String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+
+  @@unique([hospitalId, code])
+  @@index([hospitalId, isActive, displayOrder])
 }

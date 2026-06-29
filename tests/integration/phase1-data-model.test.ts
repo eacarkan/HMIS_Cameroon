@@ -49,7 +49,7 @@ describe("integration: Phase 1 (Gate 2) data-model foundation", () => {
 
     // Phase 0 base unchanged.
     expect(await prisma.hospital.count()).toBe(8);
-    expect(await prisma.user.count()).toBe(5);
+    expect(await prisma.user.count()).toBe(7); // Phase 2D: +2 pharmacy users
   });
 
   it("new config/tariff models are hospital-scoped — no cross-hospital leakage", async () => {

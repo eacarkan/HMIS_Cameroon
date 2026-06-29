@@ -7,7 +7,7 @@ import { prisma, resetTestDb } from "../helpers/db";
 describe("integration: auth + seed", () => {
   beforeEach(resetTestDb);
 
-  it("seeds HRB-DEMO active + 8 hospitals + 5 users + 5 roles", async () => {
+  it("seeds HRB-DEMO active + 8 hospitals + 7 users + 7 roles", async () => {
     const hospital = await prisma.hospital.findUnique({
       where: { code: "HRB-DEMO" },
     });
@@ -15,8 +15,9 @@ describe("integration: auth + seed", () => {
     expect(hospital?.isDemo).toBe(true);
     expect(await prisma.hospital.count()).toBe(8);
     expect(await prisma.hospital.count({ where: { isActive: true } })).toBe(1);
-    expect(await prisma.user.count()).toBe(5);
-    expect(await prisma.role.count()).toBe(5);
+    // Phase 2D added two pharmacy roles + two demo users (7 total each).
+    expect(await prisma.user.count()).toBe(7);
+    expect(await prisma.role.count()).toBe(7);
   });
 
   it("authenticates a demo user and writes auth.login", async () => {

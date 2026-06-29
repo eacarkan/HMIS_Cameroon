@@ -186,3 +186,14 @@ export {
   markCashierShiftCorrected,
   createShiftCorrection,
 } from "./cashier-shifts";
+
+// Phase 2D-1 — medication catalogue.
+export {
+  type CreateMedicationData,
+  listMedications,
+  listActiveMedications,
+  findMedicationById,
+  findMedicationByCode,
+  createMedication,
+  updateMedication,
+} from "./medications";

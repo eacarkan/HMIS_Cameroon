@@ -99,7 +99,8 @@ async function main() {
     where: { code: "HRB-DEMO" },
   });
   check("HRB-DEMO hospital exists and is active", hospital?.isActive === true);
-  check("five demo users seeded", (await prisma.user.count()) === 5);
+  // Phase 2D added two pharmacy demo users (7 total).
+  check("seven demo users seeded", (await prisma.user.count()) === 7);
 
   // Reception: patient + encounter
   const reception = await login("brigitte.mbarga@hrb-demo.cm");
