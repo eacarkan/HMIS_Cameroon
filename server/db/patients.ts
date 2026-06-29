@@ -23,26 +23,92 @@ export function createPatient(data: CreatePatientData) {
   return prisma.patient.create({ data });
 }
 
-/** Search patients within a hospital by name or patient number. */
-export function searchPatients(hospitalId: string, query: string) {
-  const q = query.trim();
+/** Structured patient search filters (Phase 1A Batch 1A). All optional; all hospital-scoped. */
+export type PatientSearchFilters = {
+  /** Free text: family name, given name, or patient number. */
+  query?: string;
+  /** Phone substring (matched against the stored phone). */
+  phone?: string;
+  /** Identifier value substring (matched against the patient's administrative identifiers). */
+  identifier?: string;
+  /** Exact sex filter. */
+  sex?: Sex;
+};
+
+/**
+ * Search patients within a hospital. Each provided filter narrows the result (AND); the
+ * free-text `query` matches name OR patient number. Identifier search joins the patient's
+ * (hospital-scoped, non-deleted) administrative identifiers. Soft-deleted patients excluded.
+ */
+export function searchPatientsAdvanced(hospitalId: string, filters: PatientSearchFilters) {
+  const and: Prisma.PatientWhereInput[] = [];
+
+  const q = filters.query?.trim();
+  if (q) {
+    and.push({
+      OR: [
+        { familyName: { contains: q, mode: "insensitive" } },
+        { givenName: { contains: q, mode: "insensitive" } },
+        { patientNumber: { contains: q, mode: "insensitive" } },
+      ],
+    });
+  }
+
+  const phone = filters.phone?.trim();
+  if (phone) and.push({ phone: { contains: phone, mode: "insensitive" } });
+
+  const identifier = filters.identifier?.trim();
+  if (identifier) {
+    and.push({
+      identifiers: {
+        some: { hospitalId, deletedAt: null, value: { contains: identifier, mode: "insensitive" } },
+      },
+    });
+  }
+
+  if (filters.sex) and.push({ sex: filters.sex });
+
   const where: Prisma.PatientWhereInput = {
     hospitalId,
     deletedAt: null,
-    ...(q
-      ? {
-          OR: [
-            { familyName: { contains: q, mode: "insensitive" } },
-            { givenName: { contains: q, mode: "insensitive" } },
-            { patientNumber: { contains: q, mode: "insensitive" } },
-          ],
-        }
-      : {}),
+    ...(and.length ? { AND: and } : {}),
   };
   return prisma.patient.findMany({
     where,
     orderBy: { createdAt: "desc" },
     take: 25,
+  });
+}
+
+/** Search patients within a hospital by name or patient number (free-text convenience). */
+export function searchPatients(hospitalId: string, query: string) {
+  return searchPatientsAdvanced(hospitalId, { query });
+}
+
+/**
+ * Coarse, hospital-scoped query for likely duplicates of new registration input
+ * (Phase 1A Batch 1A): exact family+given name + date of birth, OR an exact phone match.
+ * WARNING/REVIEW ONLY — callers classify precisely and never merge or block. Soft-deleted
+ * patients are excluded.
+ */
+export function findPotentialDuplicatePatients(
+  hospitalId: string,
+  input: { familyName: string; givenName: string; dateOfBirth: Date; phone: string | null },
+) {
+  const or: Prisma.PatientWhereInput[] = [
+    {
+      familyName: { equals: input.familyName.trim(), mode: "insensitive" },
+      givenName: { equals: input.givenName.trim(), mode: "insensitive" },
+      dateOfBirth: input.dateOfBirth,
+    },
+  ];
+  const phone = (input.phone ?? "").trim();
+  if (phone) or.push({ phone });
+
+  return prisma.patient.findMany({
+    where: { hospitalId, deletedAt: null, OR: or },
+    orderBy: { createdAt: "desc" },
+    take: 10,
   });
 }
 

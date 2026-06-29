@@ -30,8 +30,10 @@ export {
 export { generateNumber } from "./numbering-service";
 export {
   type CreatePatientInput,
+  type PatientDuplicateHit,
   searchPatientsForActor,
   getPatient,
+  findPatientDuplicatesForActor,
   createPatientForActor,
 } from "./patient-service";
 export {

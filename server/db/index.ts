@@ -34,8 +34,11 @@ export { findHospitalsForUser, findHospitalById } from "./hospitals";
 export { nextSequenceValue } from "./sequence";
 export {
   type CreatePatientData,
+  type PatientSearchFilters,
   createPatient,
   searchPatients,
+  searchPatientsAdvanced,
+  findPotentialDuplicatePatients,
   findPatientById,
 } from "./patients";
 export {

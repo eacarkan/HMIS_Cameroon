@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 
+import { DuplicateWarning } from "@/components/patients/duplicate-warning";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,24 +29,35 @@ export function PatientForm() {
     initialState,
   );
   const err = state.errors ?? {};
+  const duplicates = state.duplicates ?? [];
+  const hasDuplicateWarning = duplicates.length > 0;
+  // Echoed values repopulate the form after a duplicate warning (React 19 resets the
+  // form once an action returns, so uncontrolled inputs would otherwise be cleared).
+  const v = state.values;
 
   return (
-    <form action={formAction} className="space-y-8">
+    // Remount when the warning toggles so defaultValue/defaultSelected re-applies to every
+    // field (incl. the sex <select>) and survives React 19's post-action form reset.
+    <form
+      key={hasDuplicateWarning ? "with-warning" : "fresh"}
+      action={formAction}
+      className="space-y-8"
+    >
       <section className="space-y-4">
         <h2 className="text-foreground text-sm font-semibold">
           {t("sectionPrincipal")}
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t("familyName")} error={err.familyName}>
-            <Input name="familyName" autoComplete="off" required />
+            <Input name="familyName" autoComplete="off" defaultValue={v?.familyName ?? ""} required />
           </Field>
           <Field label={t("givenName")} error={err.givenName}>
-            <Input name="givenName" autoComplete="off" required />
+            <Input name="givenName" autoComplete="off" defaultValue={v?.givenName ?? ""} required />
           </Field>
           <Field label={t("sexLabel")} error={err.sex}>
             <select
               name="sex"
-              defaultValue=""
+              defaultValue={v?.sex ?? ""}
               required
               className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm shadow-xs"
             >
@@ -56,7 +69,7 @@ export function PatientForm() {
             </select>
           </Field>
           <Field label={t("dateOfBirth")} error={err.dateOfBirth}>
-            <Input name="dateOfBirth" type="date" required />
+            <Input name="dateOfBirth" type="date" defaultValue={v?.dateOfBirth ?? ""} required />
           </Field>
         </div>
       </section>
@@ -67,10 +80,10 @@ export function PatientForm() {
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t("phone")} error={err.phone}>
-            <Input name="phone" type="tel" autoComplete="off" />
+            <Input name="phone" type="tel" autoComplete="off" defaultValue={v?.phone ?? ""} />
           </Field>
           <Field label={t("residence")} error={err.residence}>
-            <Input name="residence" autoComplete="off" />
+            <Input name="residence" autoComplete="off" defaultValue={v?.residence ?? ""} />
           </Field>
         </div>
       </section>
@@ -81,12 +94,21 @@ export function PatientForm() {
         </p>
       ) : null}
 
+      {hasDuplicateWarning ? (
+        <>
+          <DuplicateWarning candidates={duplicates} />
+          {/* Carries the acknowledgement on the next submit. No merge, no block — the
+              user simply continues. Present only while the warning is shown. */}
+          <input type="hidden" name="confirmDuplicate" value="1" />
+        </>
+      ) : null}
+
       <div className="flex items-center justify-end gap-2 border-t pt-4">
-        <Button type="reset" variant="outline" disabled={pending}>
-          {tActions("cancel")}
+        <Button asChild type="button" variant="outline">
+          <Link href="/patients">{tActions("cancel")}</Link>
         </Button>
         <Button type="submit" disabled={pending}>
-          {tActions("save")}
+          {hasDuplicateWarning ? t("createAnyway") : tActions("save")}
         </Button>
       </div>
     </form>
