@@ -78,6 +78,19 @@ enum SequenceType {
   receipt
 }
 
+/// Phase 2A — service/department catalogue classification (neutral codes; Fr/En labels in UI).
+enum ServiceType {
+  OUTPATIENT
+  INPATIENT_WARD
+  SUPPORT
+  CASHIER
+  PHARMACY
+  LABORATORY
+  IMAGING
+  EMERGENCY
+  ADMINISTRATION
+}
+
 // ===================== Organization =====================
 
 /// One of the regional hospitals; the tenant root. Not itself hospital-scoped.
@@ -384,7 +397,10 @@ model Department {
   @@index([hospitalId])
 }
 
-/// A point of service within a department (caisse, salle de consultation). Config.
+/// A configurable service/department in the hospital catalogue (Phase 2A) — the foundation
+/// every later module routes through. Existing Phase 1 fields (name, kind, departmentId)
+/// are KEPT; Phase 2A adds bilingual labels, a typed classification, ordering, and
+/// eligibility flags additively (no removals/renames; Phase 1A flows untouched).
 model ServiceUnit {
   id           String    @id @default(cuid())
   hospitalId   String
@@ -397,11 +413,26 @@ model ServiceUnit {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
+  // Phase 2A — service-catalogue foundation (additive). nameFr/nameEn backfilled from `name`.
+  nameFr              String?
+  nameEn              String?
+  type                ServiceType @default(SUPPORT)
+  displayOrder        Int         @default(0)
+  acceptsQueue        Boolean     @default(false)
+  acceptsConsultation Boolean     @default(false)
+  supportsBilling     Boolean     @default(false)
+  supportsPharmacy    Boolean     @default(false)
+  supportsLab         Boolean     @default(false)
+  supportsImaging     Boolean     @default(false)
+  isInpatientWard     Boolean     @default(false)
+  isEmergency         Boolean     @default(false)
+
   hospital   Hospital    @relation(fields: [hospitalId], references: [id])
   department Department? @relation(fields: [departmentId], references: [id])
 
   @@unique([hospitalId, code])
   @@index([hospitalId, departmentId])
+  @@index([hospitalId, type])
 }
 
 /// Configurable key/value setting; per-hospital (hospitalId set) or global (null). Config.

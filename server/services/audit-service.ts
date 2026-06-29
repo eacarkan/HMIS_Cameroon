@@ -80,6 +80,13 @@ export const AUDIT_ACTIONS = {
   authPasswordChange: "auth.password_change",
   authPasswordReset: "auth.password_reset",
   sensitiveRead: "sensitive.read",
+  // Phase 2A — service/department catalogue configuration (capability-based; admin only).
+  serviceCreated: "service.created",
+  serviceUpdated: "service.updated",
+  serviceDeactivated: "service.deactivated",
+  serviceReactivated: "service.reactivated",
+  serviceReordered: "service.reordered",
+  serviceEligibilityChanged: "service.eligibility_changed",
 } as const;
 
 /**

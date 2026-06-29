@@ -40,31 +40,30 @@ export type Capability =
   | "tariff.use"
   // Phase 1 (Gate 5B) capabilities.
   | "cashier.report.read"
-  | "user.manage";
-
-/** All Phase 0 capabilities (the administrator's Phase 0 baseline). */
-const PHASE0_ALL: Capability[] = [
-  "dashboard.read",
-  "patient.read",
-  "patient.create",
-  "encounter.read",
-  "encounter.create",
-  "consultation.read",
-  "consultation.create",
-  "invoice.read",
-  "invoice.create",
-  "payment.record",
-  "receipt.print",
-  "audit.read",
-  "admin.manage",
-];
+  | "user.manage"
+  // Phase 2A capabilities — service/department catalogue. `manage` = Hospital Admin (and
+  // Local IT Lead when assigned); `view` = operational roles, scoped to ACTIVE services.
+  | "service.config.manage"
+  | "service.config.view";
 
 export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
-  // Admin manages configuration + tariffs; clinical/identity stay role-specific (23 §6).
+  // Hospital administrator — configuration, tariffs, users, service catalogue, and oversight
+  // READS. Phase 2A applies capability-based RBAC: the admin is NOT a clinical/billing
+  // superuser, so the data-entry capabilities (patient/encounter/consultation/invoice create,
+  // payment.record, receipt.print) are REMOVED — entry stays with reception/clinician/cashier.
+  // (This additively corrects the broad Phase 1A admin access flagged in the Phase 1A review.)
   administrateur: [
-    ...PHASE0_ALL,
+    "dashboard.read",
+    "patient.read",
+    "encounter.read",
+    "consultation.read",
+    "invoice.read",
+    "audit.read",
+    "admin.manage",
     "config.read",
     "config.manage",
+    "service.config.manage",
+    "service.config.view",
     "tariff.read",
     "tariff.manage",
     "cashier.report.read",
@@ -79,6 +78,7 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "patient.identity.read",
     "patient.identity.manage",
     "patient.duplicate.manage",
+    "service.config.view",
   ],
   medecin: [
     "dashboard.read",
@@ -89,6 +89,7 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "patient.identity.read",
     "clinical.structure.read",
     "clinical.structure.manage",
+    "service.config.view",
   ],
   caissier: [
     "dashboard.read",
@@ -101,6 +102,7 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "tariff.read",
     "tariff.use",
     "cashier.report.read",
+    "service.config.view",
   ],
   directeur: [
     "dashboard.read",
@@ -111,6 +113,7 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "audit.read",
     "config.read",
     "cashier.report.read",
+    "service.config.view",
   ],
 };
 

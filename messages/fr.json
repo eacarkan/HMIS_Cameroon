@@ -338,7 +338,58 @@
     "administration": "La gestion des utilisateurs et des rôles arrive à l'étape 4.",
     "audit": "Le journal d'audit arrive à l'étape 12."
   },
+  "language": {
+    "label": "Langue",
+    "fr": "FR",
+    "en": "EN"
+  },
+  "serviceType": {
+    "OUTPATIENT": "Consultation externe",
+    "INPATIENT_WARD": "Service d'hospitalisation",
+    "SUPPORT": "Support",
+    "CASHIER": "Caisse",
+    "PHARMACY": "Pharmacie",
+    "LABORATORY": "Laboratoire",
+    "IMAGING": "Imagerie",
+    "EMERGENCY": "Urgences",
+    "ADMINISTRATION": "Administration"
+  },
   "admin": {
+    "serviceCatalogue": {
+      "title": "Catalogue des services",
+      "subtitle": "Services et départements configurables — fondation des modules. Données fictives.",
+      "none": "Aucun service configuré.",
+      "addService": "Ajouter un service",
+      "editService": "Modifier le service",
+      "code": "Code",
+      "nameFr": "Nom (français)",
+      "nameEn": "Nom (anglais)",
+      "serviceType": "Type",
+      "displayOrder": "Ordre",
+      "department": "Département",
+      "departmentNone": "Aucun",
+      "eligibilities": "Éligibilités",
+      "status": "Statut",
+      "active": "Actif",
+      "inactive": "Inactif",
+      "add": "Ajouter",
+      "save": "Enregistrer",
+      "deactivate": "Désactiver",
+      "reactivate": "Réactiver",
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "saveEligibilities": "Enregistrer les éligibilités",
+      "flag": {
+        "acceptsQueue": "File d'attente",
+        "acceptsConsultation": "Consultation",
+        "supportsBilling": "Facturation",
+        "supportsPharmacy": "Pharmacie",
+        "supportsLab": "Laboratoire",
+        "supportsImaging": "Imagerie",
+        "isInpatientWard": "Hospitalisation",
+        "isEmergency": "Urgences"
+      }
+    },
     "title": "Administration",
     "subtitle": "Configuration de l'hôpital actif",
     "readOnlyNotice": "Lecture seule — la modification est réservée à l'administrateur.",

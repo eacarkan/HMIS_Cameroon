@@ -20,13 +20,24 @@ const SERVICES = [
   "Chirurgie",
 ];
 
-/** Open-a-visit form (06 §14): short form within the patient context. */
-export function EncounterForm({ patientId }: { patientId: string }) {
+/**
+ * Open-a-visit form (06 §14): short form within the patient context. Phase 2A — the service
+ * options are a DOWNSTREAM consumer of the active service catalogue (`services` prop); it
+ * falls back to the built-in list when none are configured/available.
+ */
+export function EncounterForm({
+  patientId,
+  services = [],
+}: {
+  patientId: string;
+  services?: string[];
+}) {
   const t = useTranslations("encounter");
   const tActions = useTranslations("actions");
   const action = openEncounterAction.bind(null, patientId);
   const [state, formAction, pending] = useActionState(action, initialState);
   const err = state.errors ?? {};
+  const options = services.length > 0 ? services : SERVICES;
 
   return (
     <form action={formAction} className="space-y-5">
@@ -35,10 +46,10 @@ export function EncounterForm({ patientId }: { patientId: string }) {
         <select
           id="serviceLabel"
           name="serviceLabel"
-          defaultValue={SERVICES[0]}
+          defaultValue={options[0]}
           className="border-input bg-background h-9 w-full max-w-md rounded-md border px-3 text-sm shadow-xs"
         >
-          {SERVICES.map((s) => (
+          {options.map((s) => (
             <option key={s} value={s}>
               {s}
             </option>

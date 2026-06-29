@@ -1,0 +1,52 @@
+{
+  "language": { "label": "Language", "fr": "FR", "en": "EN" },
+  "serviceType": {
+    "OUTPATIENT": "Outpatient",
+    "INPATIENT_WARD": "Inpatient ward",
+    "SUPPORT": "Support",
+    "CASHIER": "Cashier",
+    "PHARMACY": "Pharmacy",
+    "LABORATORY": "Laboratory",
+    "IMAGING": "Imaging",
+    "EMERGENCY": "Emergency",
+    "ADMINISTRATION": "Administration"
+  },
+  "admin": {
+    "title": "Administration",
+    "serviceCatalogue": {
+      "title": "Service catalogue",
+      "subtitle": "Configurable hospital services and departments — the module foundation. Synthetic data.",
+      "none": "No service configured.",
+      "addService": "Add a service",
+      "editService": "Edit service",
+      "code": "Code",
+      "nameFr": "Name (French)",
+      "nameEn": "Name (English)",
+      "serviceType": "Type",
+      "displayOrder": "Order",
+      "department": "Department",
+      "departmentNone": "None",
+      "eligibilities": "Eligibilities",
+      "status": "Status",
+      "active": "Active",
+      "inactive": "Inactive",
+      "add": "Add",
+      "save": "Save",
+      "deactivate": "Deactivate",
+      "reactivate": "Reactivate",
+      "moveUp": "Up",
+      "moveDown": "Down",
+      "saveEligibilities": "Save eligibilities",
+      "flag": {
+        "acceptsQueue": "Queue",
+        "acceptsConsultation": "Consultation",
+        "supportsBilling": "Billing",
+        "supportsPharmacy": "Pharmacy",
+        "supportsLab": "Laboratory",
+        "supportsImaging": "Imaging",
+        "isInpatientWard": "Inpatient ward",
+        "isEmergency": "Emergency"
+      }
+    }
+  }
+}

@@ -1,3 +1,5 @@
+import type { ServiceType } from "@prisma/client";
+
 import { prisma } from "./prisma";
 
 /**
@@ -63,13 +65,29 @@ export function updateDepartment(
   return prisma.department.update({ where: { id }, data });
 }
 
+/** Phase 2A — additive service-catalogue fields (bilingual labels, type, ordering, flags). */
+export type ServiceCatalogueFields = {
+  nameFr?: string | null;
+  nameEn?: string | null;
+  type?: ServiceType;
+  displayOrder?: number;
+  acceptsQueue?: boolean;
+  acceptsConsultation?: boolean;
+  supportsBilling?: boolean;
+  supportsPharmacy?: boolean;
+  supportsLab?: boolean;
+  supportsImaging?: boolean;
+  isInpatientWard?: boolean;
+  isEmergency?: boolean;
+};
+
 export type CreateServiceUnitData = {
   hospitalId: string;
   departmentId?: string | null;
   code: string;
   name: string;
   kind?: string | null;
-};
+} & ServiceCatalogueFields;
 export function createServiceUnit(data: CreateServiceUnitData) {
   return prisma.serviceUnit.create({ data });
 }
@@ -83,9 +101,40 @@ export function updateServiceUnit(
     kind?: string | null;
     departmentId?: string | null;
     isActive?: boolean;
-  },
+  } & ServiceCatalogueFields,
 ) {
   return prisma.serviceUnit.update({ where: { id }, data });
+}
+
+/** Catalogue view (Phase 2A): all non-deleted services, ordered for display (incl. inactive). */
+export function listServiceUnitsOrdered(hospitalId: string) {
+  return prisma.serviceUnit.findMany({
+    where: { hospitalId, deletedAt: null },
+    orderBy: [{ displayOrder: "asc" }, { code: "asc" }],
+  });
+}
+
+/** Active-only services for downstream pickers (Phase 2A), ordered for display. */
+export function listActiveServiceUnits(hospitalId: string) {
+  return prisma.serviceUnit.findMany({
+    where: { hospitalId, deletedAt: null, isActive: true },
+    orderBy: [{ displayOrder: "asc" }, { code: "asc" }],
+  });
+}
+
+/** Atomically set displayOrder for a set of services in ONE hospital (reorder use-case). */
+export function reorderServiceUnits(
+  hospitalId: string,
+  ordered: { id: string; displayOrder: number }[],
+) {
+  return prisma.$transaction(
+    ordered.map((o) =>
+      prisma.serviceUnit.updateMany({
+        where: { id: o.id, hospitalId },
+        data: { displayOrder: o.displayOrder },
+      }),
+    ),
+  );
 }
 
 /** Upsert a hospital-scoped setting (create or update its value). */

@@ -5,11 +5,11 @@ import { getTranslations } from "next-intl/server";
 
 import {
   CreateDepartmentForm,
-  CreateServiceUnitForm,
   UpdateSettingForm,
   CreateTemplateForm,
   DeactivateButton,
 } from "@/components/admin/config-forms";
+import { ServiceCatalogueSection } from "@/components/admin/service-catalogue";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,8 @@ import { can } from "@/lib/rbac";
 import { requireActorAndHospital } from "@/server/auth";
 import {
   listDepartments,
-  listServiceUnits,
+  listServiceCatalogue,
+  listActiveServices,
   listSettings,
   listDocumentTemplates,
 } from "@/server/services";
@@ -32,15 +33,39 @@ export default async function AdministrationPage() {
   const { actor, hospital } = await requireActorAndHospital();
   if (!can(actor.roles, "config.read")) redirect("/");
   const canManage = can(actor.roles, "config.manage");
+  const canManageServices = can(actor.roles, "service.config.manage");
 
   const t = await getTranslations("admin");
-  const [departments, serviceUnits, settings, templates] = await Promise.all([
+  const [departments, settings, templates] = await Promise.all([
     listDepartments(actor, hospital),
-    listServiceUnits(actor, hospital),
     listSettings(actor, hospital),
     listDocumentTemplates(actor, hospital),
   ]);
-  const deptNameById = new Map(departments.map((d) => [d.id, d.name]));
+  // Phase 2A — service catalogue: admins get the full (incl. inactive) management view; other
+  // config readers get the active-only read view (service.config.view).
+  const serviceUnits = canManageServices
+    ? await listServiceCatalogue(actor, hospital)
+    : await listActiveServices(actor, hospital);
+  const serviceRows = serviceUnits.map((u) => ({
+    id: u.id,
+    code: u.code,
+    name: u.name,
+    nameFr: u.nameFr,
+    nameEn: u.nameEn,
+    type: u.type,
+    displayOrder: u.displayOrder,
+    isActive: u.isActive,
+    departmentId: u.departmentId,
+    acceptsQueue: u.acceptsQueue,
+    acceptsConsultation: u.acceptsConsultation,
+    supportsBilling: u.supportsBilling,
+    supportsPharmacy: u.supportsPharmacy,
+    supportsLab: u.supportsLab,
+    supportsImaging: u.supportsImaging,
+    isInpatientWard: u.isInpatientWard,
+    isEmergency: u.isEmergency,
+  }));
+  const deptOptions = departments.map((d) => ({ id: d.id, name: d.name }));
 
   return (
     <>
@@ -98,33 +123,27 @@ export default async function AdministrationPage() {
           {canManage ? <CreateDepartmentForm /> : null}
         </Section>
 
-        <Section title={t("serviceUnits")}>
-          {serviceUnits.length === 0 ? (
-            <Empty>{t("noServiceUnits")}</Empty>
+        <Section title={t("serviceCatalogue.title")}>
+          <p className="text-muted-foreground -mt-2 mb-3 text-xs">
+            {t("serviceCatalogue.subtitle")}
+          </p>
+          {canManageServices ? (
+            <ServiceCatalogueSection services={serviceRows} departments={deptOptions} />
+          ) : serviceRows.length === 0 ? (
+            <Empty>{t("serviceCatalogue.none")}</Empty>
           ) : (
             <ul className="divide-y text-sm">
-              {serviceUnits.map((u) => (
+              {serviceRows.map((u) => (
                 <li key={u.id} className="flex items-center justify-between gap-3 py-2">
                   <span>
-                    <span className="font-medium">{u.name}</span>{" "}
-                    <span className="text-muted-foreground text-xs">
-                      ({u.code}
-                      {u.departmentId ? ` · ${deptNameById.get(u.departmentId) ?? ""}` : ""})
-                    </span>
+                    <span className="font-medium">{u.nameFr ?? u.name}</span>{" "}
+                    <span className="text-muted-foreground text-xs">({u.code})</span>
                   </span>
-                  <span className="flex items-center gap-2">
-                    <StatusBadge active={u.isActive} activeLabel={t("active")} inactiveLabel={t("inactive")} />
-                    {canManage && u.isActive ? (
-                      <DeactivateButton kind="serviceUnit" id={u.id} />
-                    ) : null}
-                  </span>
+                  <StatusBadge active={u.isActive} activeLabel={t("active")} inactiveLabel={t("inactive")} />
                 </li>
               ))}
             </ul>
           )}
-          {canManage ? (
-            <CreateServiceUnitForm departments={departments.map((d) => ({ id: d.id, name: d.name }))} />
-          ) : null}
         </Section>
 
         <Section title={t("settings")}>

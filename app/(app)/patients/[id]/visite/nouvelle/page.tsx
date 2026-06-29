@@ -7,7 +7,7 @@ import { PatientBanner } from "@/components/patients/patient-banner";
 import { Card, CardContent } from "@/components/ui/card";
 import { can } from "@/lib/rbac";
 import { requireActorAndHospital } from "@/server/auth";
-import { getPatient } from "@/server/services";
+import { getPatient, listActiveServices } from "@/server/services";
 
 export default async function NewEncounterPage({
   params,
@@ -21,6 +21,15 @@ export default async function NewEncounterPage({
   const patient = await getPatient(actor, hospital, id);
   if (!patient) notFound();
 
+  // Phase 2A — feed the visit form from the active service catalogue (downstream picker);
+  // fall back gracefully if the actor lacks the view capability.
+  let services: string[] = [];
+  try {
+    services = (await listActiveServices(actor, hospital)).map((s) => s.nameFr ?? s.name);
+  } catch {
+    services = [];
+  }
+
   const t = await getTranslations("encounter");
 
   return (
@@ -29,7 +38,7 @@ export default async function NewEncounterPage({
       <PageHeader title={t("newTitle")} description={t("newSubtitle")} />
       <Card className="max-w-2xl">
         <CardContent className="pt-2">
-          <EncounterForm patientId={patient.id} />
+          <EncounterForm patientId={patient.id} services={services} />
         </CardContent>
       </Card>
     </>

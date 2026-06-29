@@ -9,7 +9,12 @@ import {
   createDepartment,
   deactivateDepartment,
   createServiceUnit,
+  updateServiceUnit,
   deactivateServiceUnit,
+  reactivateServiceUnit,
+  reorderServices,
+  setServiceEligibility,
+  listServiceCatalogue,
   updateSetting,
   createDocumentTemplate,
   deactivateDocumentTemplate,
@@ -68,20 +73,77 @@ export async function deactivateDepartmentAction(id: string): Promise<void> {
   revalidatePath("/administration");
 }
 
+// ---- Service catalogue (Phase 2A) — capability-gated by the service layer ----
+
+function readServiceFlags(fd: FormData) {
+  return {
+    acceptsQueue: fd.get("acceptsQueue") === "on",
+    acceptsConsultation: fd.get("acceptsConsultation") === "on",
+    supportsBilling: fd.get("supportsBilling") === "on",
+    supportsPharmacy: fd.get("supportsPharmacy") === "on",
+    supportsLab: fd.get("supportsLab") === "on",
+    supportsImaging: fd.get("supportsImaging") === "on",
+    isInpatientWard: fd.get("isInpatientWard") === "on",
+    isEmergency: fd.get("isEmergency") === "on",
+  };
+}
+
+function readServiceInput(fd: FormData) {
+  const order = ((fd.get("displayOrder") as string) ?? "").trim();
+  return {
+    code: ((fd.get("code") as string) ?? "").trim(),
+    nameFr: ((fd.get("nameFr") as string) ?? "").trim(),
+    nameEn: (((fd.get("nameEn") as string) ?? "").trim() || null) as string | null,
+    type: ((fd.get("type") as string) ?? "SUPPORT").trim(),
+    displayOrder: order ? Number(order) : undefined,
+    departmentId: (((fd.get("departmentId") as string) || null)) as string | null,
+    kind: (((fd.get("kind") as string) ?? "").trim() || null) as string | null,
+  };
+}
+
 export async function createServiceUnitAction(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
   const { actor, hospital } = await requireActorAndHospital();
-  const parsed = codeName.safeParse({
-    code: formData.get("code"),
-    name: formData.get("name"),
-  });
-  if (!parsed.success) return { errors: flatten(parsed.error) };
-  const kind = (formData.get("kind") as string)?.trim() || null;
-  const departmentId = (formData.get("departmentId") as string) || null;
+  const input = readServiceInput(formData);
+  if (!input.code) return { errors: { code: "Le code est obligatoire." } };
+  if (!input.nameFr) return { errors: { nameFr: "Le nom (français) est obligatoire." } };
   try {
-    await createServiceUnit(actor, hospital, { ...parsed.data, kind, departmentId });
+    await createServiceUnit(actor, hospital, { ...input, ...readServiceFlags(formData) });
+  } catch (e) {
+    return fail(e);
+  }
+  revalidatePath("/administration");
+  return { ok: true };
+}
+
+export async function updateServiceUnitAction(
+  id: string,
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const { actor, hospital } = await requireActorAndHospital();
+  const input = readServiceInput(formData);
+  if (!input.nameFr) return { errors: { nameFr: "Le nom (français) est obligatoire." } };
+  try {
+    // No flags here — identity edit preserves eligibility (managed via setServiceEligibility).
+    await updateServiceUnit(actor, hospital, id, input);
+  } catch (e) {
+    return fail(e);
+  }
+  revalidatePath("/administration");
+  return { ok: true };
+}
+
+export async function setServiceEligibilityAction(
+  id: string,
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const { actor, hospital } = await requireActorAndHospital();
+  try {
+    await setServiceEligibility(actor, hospital, id, readServiceFlags(formData));
   } catch (e) {
     return fail(e);
   }
@@ -93,6 +155,36 @@ export async function deactivateServiceUnitAction(id: string): Promise<void> {
   const { actor, hospital } = await requireActorAndHospital();
   try {
     await deactivateServiceUnit(actor, hospital, id);
+  } catch (e) {
+    if (!(e instanceof AuthorizationError)) throw e;
+  }
+  revalidatePath("/administration");
+}
+
+export async function reactivateServiceUnitAction(id: string): Promise<void> {
+  const { actor, hospital } = await requireActorAndHospital();
+  try {
+    await reactivateServiceUnit(actor, hospital, id);
+  } catch (e) {
+    if (!(e instanceof AuthorizationError)) throw e;
+  }
+  revalidatePath("/administration");
+}
+
+export async function moveServiceAction(
+  id: string,
+  direction: "up" | "down",
+): Promise<void> {
+  const { actor, hospital } = await requireActorAndHospital();
+  try {
+    const list = await listServiceCatalogue(actor, hospital);
+    const ids = list.map((s) => s.id);
+    const i = ids.indexOf(id);
+    if (i < 0) return;
+    const j = direction === "up" ? i - 1 : i + 1;
+    if (j < 0 || j >= ids.length) return;
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+    await reorderServices(actor, hospital, ids);
   } catch (e) {
     if (!(e instanceof AuthorizationError)) throw e;
   }

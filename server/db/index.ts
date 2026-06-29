@@ -87,9 +87,13 @@ export {
 export {
   type CreateDepartmentData,
   type CreateServiceUnitData,
+  type ServiceCatalogueFields,
   type CreateDocumentTemplateData,
   listDepartments,
   listServiceUnits,
+  listServiceUnitsOrdered,
+  listActiveServiceUnits,
+  reorderServiceUnits,
   listSettings,
   getSetting,
   listDocumentTemplates,

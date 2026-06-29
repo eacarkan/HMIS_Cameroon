@@ -38,11 +38,22 @@ describe("lib/rbac — role capabilities (09 §6, 07 §4)", () => {
     expect(can(["directeur"], "payment.record")).toBe(false);
   });
 
-  it("administrateur has every Phase 0 capability + config/tariff management", () => {
+  it("administrateur manages config/tariff/user/service but is de-scoped from data entry (Phase 2A)", () => {
     expect(can(["administrateur"], "admin.manage")).toBe(true);
-    expect(can(["administrateur"], "payment.record")).toBe(true);
     expect(can(["administrateur"], "config.manage")).toBe(true);
     expect(can(["administrateur"], "tariff.manage")).toBe(true);
+    expect(can(["administrateur"], "user.manage")).toBe(true);
+    expect(can(["administrateur"], "service.config.manage")).toBe(true);
+    // Oversight reads retained.
+    expect(can(["administrateur"], "patient.read")).toBe(true);
+    expect(can(["administrateur"], "audit.read")).toBe(true);
+    // Clinical/billing DATA ENTRY removed — capability-based RBAC (not a clinical superuser).
+    expect(can(["administrateur"], "patient.create")).toBe(false);
+    expect(can(["administrateur"], "encounter.create")).toBe(false);
+    expect(can(["administrateur"], "consultation.create")).toBe(false);
+    expect(can(["administrateur"], "invoice.create")).toBe(false);
+    expect(can(["administrateur"], "payment.record")).toBe(false);
+    expect(can(["administrateur"], "receipt.print")).toBe(false);
   });
 
   it("administrateur is NOT a routine clinical/identity superuser (23 §6)", () => {

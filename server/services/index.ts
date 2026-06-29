@@ -84,13 +84,20 @@ export {
 // Phase 1 (Gate 3) — service wrappers (RBAC + hospital scoping + audit) over the Gate 2
 // data-access modules. No UI; no schema change.
 export {
+  type ServiceConfigInput,
   listDepartments,
   createDepartment,
   updateDepartment,
   deactivateDepartment,
   listServiceUnits,
+  listServiceCatalogue,
+  listActiveServices,
   createServiceUnit,
+  updateServiceUnit,
   deactivateServiceUnit,
+  reactivateServiceUnit,
+  reorderServices,
+  setServiceEligibility,
   listSettings,
   updateSetting,
   listDocumentTemplates,

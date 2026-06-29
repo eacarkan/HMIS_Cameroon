@@ -140,6 +140,29 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "user.deactivate": "Désactivation utilisateur",
   "role.assign": "Attribution de rôle",
   "role.remove": "Retrait de rôle",
+  // Phase 2A — service / department catalogue configuration.
+  "service.created": "Création service",
+  "service.updated": "Mise à jour service",
+  "service.deactivated": "Désactivation service",
+  "service.reactivated": "Réactivation service",
+  "service.reordered": "Réordonnancement des services",
+  "service.eligibility_changed": "Changement d'éligibilité du service",
+};
+
+/**
+ * French labels for the Phase 2A `ServiceType` codes — used in server-side audit summaries.
+ * The UI uses bilingual next-intl keys (`serviceType.*`); this is the French fallback.
+ */
+export const SERVICE_TYPE_LABELS_FR: Record<string, string> = {
+  OUTPATIENT: "Consultation externe",
+  INPATIENT_WARD: "Service d'hospitalisation",
+  SUPPORT: "Support",
+  CASHIER: "Caisse",
+  PHARMACY: "Pharmacie",
+  LABORATORY: "Laboratoire",
+  IMAGING: "Imagerie",
+  EMERGENCY: "Urgences",
+  ADMINISTRATION: "Administration",
 };
 
 /**

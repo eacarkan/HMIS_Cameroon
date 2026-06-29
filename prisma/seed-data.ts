@@ -262,8 +262,8 @@ async function seedConfigAndTariffs(prisma: PrismaClient): Promise<void> {
   }
 
   const serviceUnits = [
-    { code: "SU-CONSULT-1", name: "Salle de consultation 1", dept: "MED-GEN", kind: "consultation" },
-    { code: "SU-CAISSE-1", name: "Caisse 1", dept: "CAISSE", kind: "caisse" },
+    { code: "SU-CONSULT-1", name: "Salle de consultation 1", dept: "MED-GEN", kind: "consultation", order: 90 },
+    { code: "SU-CAISSE-1", name: "Caisse 1", dept: "CAISSE", kind: "caisse", order: 91 },
   ];
   for (const s of serviceUnits) {
     await prisma.serviceUnit.upsert({
@@ -272,10 +272,60 @@ async function seedConfigAndTariffs(prisma: PrismaClient): Promise<void> {
         hospitalId: DEMO_HOSPITAL_ID,
         code: s.code,
         name: s.name,
+        nameFr: s.name,
         kind: s.kind,
+        displayOrder: s.order,
         departmentId: deptIdByCode.get(s.dept) ?? null,
       },
-      update: { name: s.name, kind: s.kind, departmentId: deptIdByCode.get(s.dept) ?? null },
+      update: {
+        name: s.name,
+        nameFr: s.name,
+        kind: s.kind,
+        displayOrder: s.order,
+        departmentId: deptIdByCode.get(s.dept) ?? null,
+      },
+    });
+  }
+
+  // Phase 2A — Bertoua standard service catalogue (synthetic; ward-level only). Typed +
+  // bilingual + eligibility flags. Idempotent upsert by (hospital, code).
+  const catalogue = [
+    { code: "SRV-MED-GEN", nameFr: "Médecine générale", nameEn: "General Medicine", type: "OUTPATIENT", order: 1, dept: "MED-GEN", acceptsQueue: true, acceptsConsultation: true, supportsBilling: true, supportsPharmacy: false, supportsLab: false, supportsImaging: false, isInpatientWard: false, isEmergency: false },
+    { code: "SRV-PEDIATRIE", nameFr: "Pédiatrie", nameEn: "Pediatrics", type: "OUTPATIENT", order: 2, dept: "", acceptsQueue: true, acceptsConsultation: true, supportsBilling: true, supportsPharmacy: false, supportsLab: false, supportsImaging: false, isInpatientWard: false, isEmergency: false },
+    { code: "SRV-GYNECO", nameFr: "Gynéco-obstétrique", nameEn: "Obstetrics & Gynecology", type: "OUTPATIENT", order: 3, dept: "", acceptsQueue: true, acceptsConsultation: true, supportsBilling: true, supportsPharmacy: false, supportsLab: false, supportsImaging: false, isInpatientWard: false, isEmergency: false },
+    { code: "SRV-CHIRURGIE", nameFr: "Chirurgie", nameEn: "Surgery", type: "OUTPATIENT", order: 4, dept: "", acceptsQueue: true, acceptsConsultation: true, supportsBilling: true, supportsPharmacy: false, supportsLab: false, supportsImaging: false, isInpatientWard: false, isEmergency: false },
+    { code: "SRV-DENTAIRE", nameFr: "Dentaire", nameEn: "Dental", type: "OUTPATIENT", order: 5, dept: "", acceptsQueue: true, acceptsConsultation: true, supportsBilling: true, supportsPharmacy: false, supportsLab: false, supportsImaging: false, isInpatientWard: false, isEmergency: false },
+    { code: "SRV-MED-INTERNE", nameFr: "Médecine interne (hospitalisation)", nameEn: "Internal Medicine (ward)", type: "INPATIENT_WARD", order: 6, dept: "", acceptsQueue: false, acceptsConsultation: true, supportsBilling: true, supportsPharmacy: false, supportsLab: false, supportsImaging: false, isInpatientWard: true, isEmergency: false },
+    { code: "SRV-MATERNITE", nameFr: "Maternité", nameEn: "Maternity", type: "INPATIENT_WARD", order: 7, dept: "", acceptsQueue: false, acceptsConsultation: true, supportsBilling: true, supportsPharmacy: false, supportsLab: false, supportsImaging: false, isInpatientWard: true, isEmergency: false },
+    { code: "SRV-CHIR-HOSP", nameFr: "Chirurgie (hospitalisation)", nameEn: "Surgery (ward)", type: "INPATIENT_WARD", order: 8, dept: "", acceptsQueue: false, acceptsConsultation: true, supportsBilling: true, supportsPharmacy: false, supportsLab: false, supportsImaging: false, isInpatientWard: true, isEmergency: false },
+    { code: "SRV-PEDIA-HOSP", nameFr: "Pédiatrie (hospitalisation)", nameEn: "Pediatrics (ward)", type: "INPATIENT_WARD", order: 9, dept: "", acceptsQueue: false, acceptsConsultation: true, supportsBilling: true, supportsPharmacy: false, supportsLab: false, supportsImaging: false, isInpatientWard: true, isEmergency: false },
+    { code: "SRV-ACCUEIL", nameFr: "Accueil", nameEn: "Reception", type: "SUPPORT", order: 10, dept: "ACCUEIL", acceptsQueue: true, acceptsConsultation: false, supportsBilling: false, supportsPharmacy: false, supportsLab: false, supportsImaging: false, isInpatientWard: false, isEmergency: false },
+    { code: "SRV-CAISSE", nameFr: "Caisse", nameEn: "Cashier", type: "CASHIER", order: 11, dept: "CAISSE", acceptsQueue: true, acceptsConsultation: false, supportsBilling: true, supportsPharmacy: false, supportsLab: false, supportsImaging: false, isInpatientWard: false, isEmergency: false },
+    { code: "SRV-PHARMACIE", nameFr: "Pharmacie", nameEn: "Pharmacy", type: "PHARMACY", order: 12, dept: "", acceptsQueue: true, acceptsConsultation: false, supportsBilling: true, supportsPharmacy: true, supportsLab: false, supportsImaging: false, isInpatientWard: false, isEmergency: false },
+    { code: "SRV-LABO", nameFr: "Laboratoire", nameEn: "Laboratory", type: "LABORATORY", order: 13, dept: "", acceptsQueue: true, acceptsConsultation: false, supportsBilling: true, supportsPharmacy: false, supportsLab: true, supportsImaging: false, isInpatientWard: false, isEmergency: false },
+    { code: "SRV-IMAGERIE", nameFr: "Imagerie médicale", nameEn: "Medical Imaging", type: "IMAGING", order: 14, dept: "", acceptsQueue: true, acceptsConsultation: false, supportsBilling: true, supportsPharmacy: false, supportsLab: false, supportsImaging: true, isInpatientWard: false, isEmergency: false },
+  ] as const;
+  for (const s of catalogue) {
+    const data = {
+      name: s.nameFr,
+      nameFr: s.nameFr,
+      nameEn: s.nameEn,
+      type: s.type,
+      displayOrder: s.order,
+      departmentId: s.dept ? (deptIdByCode.get(s.dept) ?? null) : null,
+      acceptsQueue: s.acceptsQueue,
+      acceptsConsultation: s.acceptsConsultation,
+      supportsBilling: s.supportsBilling,
+      supportsPharmacy: s.supportsPharmacy,
+      supportsLab: s.supportsLab,
+      supportsImaging: s.supportsImaging,
+      isInpatientWard: s.isInpatientWard,
+      isEmergency: s.isEmergency,
+    };
+    await prisma.serviceUnit.upsert({
+      where: { hospitalId_code: { hospitalId: DEMO_HOSPITAL_ID, code: s.code } },
+      create: { hospitalId: DEMO_HOSPITAL_ID, code: s.code, ...data },
+      update: data,
     });
   }
 

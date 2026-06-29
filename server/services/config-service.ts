@@ -1,3 +1,11 @@
+import type { ServiceType } from "@prisma/client";
+
+import {
+  type ServiceEligibility,
+  ELIGIBILITY_FLAGS,
+  normalizeDisplayOrder,
+  validateServiceCatalogueInput,
+} from "@/lib/service-catalogue";
 import {
   type HospitalContext,
   listDepartments as dbListDepartments,
@@ -5,6 +13,9 @@ import {
   findDepartmentById,
   updateDepartment as dbUpdateDepartment,
   listServiceUnits as dbListServiceUnits,
+  listServiceUnitsOrdered as dbListServiceUnitsOrdered,
+  listActiveServiceUnits as dbListActiveServiceUnits,
+  reorderServiceUnits as dbReorderServiceUnits,
   createServiceUnit as dbCreateServiceUnit,
   findServiceUnitById,
   updateServiceUnit as dbUpdateServiceUnit,
@@ -95,37 +106,152 @@ export async function deactivateDepartment(
   return dept;
 }
 
-// ---- ServiceUnit ----
+// ---- ServiceUnit = the Phase 2A service/department catalogue ----
+// Capability-based RBAC: `service.config.manage` (Hospital Admin) for mutations + full
+// catalogue reads; `service.config.view` for downstream ACTIVE-service pickers. Hospital
+// scoped on every path; an audit event per mutation; validation via the pure lib.
+
+/** Full catalogue input (create/update). `name` (legacy) mirrors `nameFr` for back-compat. */
+export type ServiceConfigInput = {
+  code: string;
+  nameFr: string;
+  nameEn?: string | null;
+  type: string;
+  displayOrder?: number;
+  departmentId?: string | null;
+  kind?: string | null;
+} & Partial<ServiceEligibility>;
+
+/** Resolve all eight eligibility flags, defaulting unspecified ones to false. */
+function eligibilityFrom(input: Partial<ServiceEligibility>): ServiceEligibility {
+  return {
+    acceptsQueue: input.acceptsQueue ?? false,
+    acceptsConsultation: input.acceptsConsultation ?? false,
+    supportsBilling: input.supportsBilling ?? false,
+    supportsPharmacy: input.supportsPharmacy ?? false,
+    supportsLab: input.supportsLab ?? false,
+    supportsImaging: input.supportsImaging ?? false,
+    isInpatientWard: input.isInpatientWard ?? false,
+    isEmergency: input.isEmergency ?? false,
+  };
+}
+
+/** Back-compat minimal list (config.read). Kept for the existing administration view. */
 export async function listServiceUnits(actor: AuthenticatedActor, ctx: HospitalContext) {
   await requireCapability(actor, ctx, "config.read");
   return dbListServiceUnits(ctx.hospitalId);
 }
 
+/** Full ordered catalogue incl. inactive — management screen (service.config.manage). */
+export async function listServiceCatalogue(
+  actor: AuthenticatedActor,
+  ctx: HospitalContext,
+) {
+  await requireCapability(actor, ctx, "service.config.manage");
+  return dbListServiceUnitsOrdered(ctx.hospitalId);
+}
+
+/** Active services only — downstream read-only pickers (service.config.view). */
+export async function listActiveServices(
+  actor: AuthenticatedActor,
+  ctx: HospitalContext,
+) {
+  await requireCapability(actor, ctx, "service.config.view");
+  return dbListActiveServiceUnits(ctx.hospitalId);
+}
+
 export async function createServiceUnit(
   actor: AuthenticatedActor,
   ctx: HospitalContext,
-  input: { code: string; name: string; kind?: string | null; departmentId?: string | null },
+  input: ServiceConfigInput,
 ) {
-  await requireCapability(actor, ctx, "config.manage", { type: "ServiceUnit" });
-  // A service unit's department must belong to the SAME hospital.
+  await requireCapability(actor, ctx, "service.config.manage", { type: "ServiceUnit" });
+  const flags = eligibilityFrom(input);
+  const check = validateServiceCatalogueInput({
+    code: input.code,
+    nameFr: input.nameFr,
+    nameEn: input.nameEn,
+    type: input.type,
+    displayOrder: input.displayOrder,
+    ...flags,
+  });
+  if (!check.ok) throw new Error(check.errors[0]);
+  // A service's department must belong to the SAME hospital.
   if (input.departmentId) {
     const dept = await findDepartmentById(ctx.hospitalId, input.departmentId);
     if (!dept) throw new Error("Département invalide pour cet hôpital.");
   }
+  const nameFr = input.nameFr.trim();
   const unit = await dbCreateServiceUnit({
     hospitalId: ctx.hospitalId,
-    code: input.code,
-    name: input.name,
-    kind: input.kind ?? null,
+    code: input.code.trim(),
+    name: nameFr,
+    nameFr,
+    nameEn: input.nameEn?.trim() || null,
+    type: input.type as ServiceType,
+    displayOrder: input.displayOrder ?? 0,
+    kind: input.kind?.trim() || null,
     departmentId: input.departmentId ?? null,
+    ...flags,
   });
   await recordAudit({
     hospitalId: ctx.hospitalId,
     actorId: actor.id,
-    action: AUDIT_ACTIONS.serviceUnitCreate,
+    action: AUDIT_ACTIONS.serviceCreated,
     entityType: "ServiceUnit",
     entityId: unit.id,
-    summary: `Création de l'unité de service ${unit.name} (${unit.code})`,
+    summary: `Création du service ${nameFr} (${unit.code})`,
+  });
+  return unit;
+}
+
+export async function updateServiceUnit(
+  actor: AuthenticatedActor,
+  ctx: HospitalContext,
+  id: string,
+  input: ServiceConfigInput,
+) {
+  await requireCapability(actor, ctx, "service.config.manage", { type: "ServiceUnit", id });
+  const existing = await findServiceUnitById(ctx.hospitalId, id);
+  if (!existing) throw new Error("Service introuvable dans cet hôpital.");
+  // Preserve existing eligibility flags unless explicitly provided — flags are managed by the
+  // dedicated setServiceEligibility path (→ `service.eligibility_changed`), so an identity
+  // edit (name/type/order/department) never silently clears them.
+  const flags: ServiceEligibility = { ...eligibilityFrom(existing) };
+  for (const key of ELIGIBILITY_FLAGS) {
+    if (input[key] !== undefined) flags[key] = input[key] as boolean;
+  }
+  const check = validateServiceCatalogueInput({
+    code: existing.code, // code is immutable on update
+    nameFr: input.nameFr,
+    nameEn: input.nameEn,
+    type: input.type,
+    displayOrder: input.displayOrder,
+    ...flags,
+  });
+  if (!check.ok) throw new Error(check.errors[0]);
+  if (input.departmentId) {
+    const dept = await findDepartmentById(ctx.hospitalId, input.departmentId);
+    if (!dept) throw new Error("Département invalide pour cet hôpital.");
+  }
+  const nameFr = input.nameFr.trim();
+  const unit = await dbUpdateServiceUnit(id, {
+    name: nameFr,
+    nameFr,
+    nameEn: input.nameEn?.trim() || null,
+    type: input.type as ServiceType,
+    displayOrder: input.displayOrder,
+    kind: input.kind?.trim() || null,
+    departmentId: input.departmentId ?? null,
+    ...flags,
+  });
+  await recordAudit({
+    hospitalId: ctx.hospitalId,
+    actorId: actor.id,
+    action: AUDIT_ACTIONS.serviceUpdated,
+    entityType: "ServiceUnit",
+    entityId: unit.id,
+    summary: `Mise à jour du service ${nameFr} (${unit.code})`,
   });
   return unit;
 }
@@ -135,17 +261,89 @@ export async function deactivateServiceUnit(
   ctx: HospitalContext,
   id: string,
 ) {
-  await requireCapability(actor, ctx, "config.manage", { type: "ServiceUnit", id });
+  await requireCapability(actor, ctx, "service.config.manage", { type: "ServiceUnit", id });
   const existing = await findServiceUnitById(ctx.hospitalId, id);
-  if (!existing) throw new Error("Unité de service introuvable dans cet hôpital.");
+  if (!existing) throw new Error("Service introuvable dans cet hôpital.");
   const unit = await dbUpdateServiceUnit(id, { isActive: false });
   await recordAudit({
     hospitalId: ctx.hospitalId,
     actorId: actor.id,
-    action: AUDIT_ACTIONS.serviceUnitDeactivate,
+    action: AUDIT_ACTIONS.serviceDeactivated,
     entityType: "ServiceUnit",
     entityId: unit.id,
-    summary: `Désactivation de l'unité de service ${unit.code}`,
+    summary: `Désactivation du service ${unit.code}`,
+  });
+  return unit;
+}
+
+export async function reactivateServiceUnit(
+  actor: AuthenticatedActor,
+  ctx: HospitalContext,
+  id: string,
+) {
+  await requireCapability(actor, ctx, "service.config.manage", { type: "ServiceUnit", id });
+  const existing = await findServiceUnitById(ctx.hospitalId, id);
+  if (!existing) throw new Error("Service introuvable dans cet hôpital.");
+  const unit = await dbUpdateServiceUnit(id, { isActive: true });
+  await recordAudit({
+    hospitalId: ctx.hospitalId,
+    actorId: actor.id,
+    action: AUDIT_ACTIONS.serviceReactivated,
+    entityType: "ServiceUnit",
+    entityId: unit.id,
+    summary: `Réactivation du service ${unit.code}`,
+  });
+  return unit;
+}
+
+/** Reorder the catalogue: every id must belong to this hospital; order applied atomically. */
+export async function reorderServices(
+  actor: AuthenticatedActor,
+  ctx: HospitalContext,
+  orderedIds: string[],
+) {
+  await requireCapability(actor, ctx, "service.config.manage", { type: "ServiceUnit" });
+  for (const id of orderedIds) {
+    const exists = await findServiceUnitById(ctx.hospitalId, id);
+    if (!exists) throw new Error("Service introuvable dans cet hôpital.");
+  }
+  await dbReorderServiceUnits(ctx.hospitalId, normalizeDisplayOrder(orderedIds));
+  await recordAudit({
+    hospitalId: ctx.hospitalId,
+    actorId: actor.id,
+    action: AUDIT_ACTIONS.serviceReordered,
+    entityType: "ServiceUnit",
+    entityId: null,
+    summary: `Réordonnancement de ${orderedIds.length} service(s)`,
+  });
+}
+
+/** Toggle eligibility flags; validated against the service's existing type (spec §6/§9). */
+export async function setServiceEligibility(
+  actor: AuthenticatedActor,
+  ctx: HospitalContext,
+  id: string,
+  flags: Partial<ServiceEligibility>,
+) {
+  await requireCapability(actor, ctx, "service.config.manage", { type: "ServiceUnit", id });
+  const existing = await findServiceUnitById(ctx.hospitalId, id);
+  if (!existing) throw new Error("Service introuvable dans cet hôpital.");
+  const merged = { ...eligibilityFrom(existing), ...flags };
+  const check = validateServiceCatalogueInput({
+    code: existing.code,
+    nameFr: existing.nameFr ?? existing.name,
+    type: existing.type,
+    ...merged,
+  });
+  if (!check.ok) throw new Error(check.errors[0]);
+  const unit = await dbUpdateServiceUnit(id, merged);
+  await recordAudit({
+    hospitalId: ctx.hospitalId,
+    actorId: actor.id,
+    action: AUDIT_ACTIONS.serviceEligibilityChanged,
+    entityType: "ServiceUnit",
+    entityId: unit.id,
+    summary: `Mise à jour des éligibilités du service ${unit.code}`,
   });
   return unit;
 }

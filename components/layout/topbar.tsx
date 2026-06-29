@@ -5,12 +5,12 @@ import {
   Building2,
   Check,
   ChevronDown,
-  Globe,
   LogOut,
   Search,
   User,
 } from "lucide-react";
 
+import { LanguageToggle } from "@/components/layout/language-toggle";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -39,7 +39,6 @@ export function Topbar({
   hospitals: HospitalOption[];
 }) {
   const t = useTranslations("topbar");
-  const tApp = useTranslations("app");
   const tRoles = useTranslations("roles");
   const tHospital = useTranslations("hospital");
 
@@ -115,13 +114,7 @@ export function Topbar({
       </div>
 
       <div className="ml-auto flex items-center gap-2">
-        <span
-          className="text-muted-foreground flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium"
-          title={tApp("languageLabel")}
-        >
-          <Globe className="size-3.5" aria-hidden />
-          {tApp("languageShort")}
-        </span>
+        <LanguageToggle />
 
         <DropdownMenu>
           <DropdownMenuTrigger className="hover:bg-accent flex items-center gap-2 rounded-md px-1.5 py-1 transition-colors focus-visible:outline-none">
