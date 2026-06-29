@@ -2,7 +2,11 @@
 
 import { redirect } from "next/navigation";
 
-import type { DuplicateMatchBasis } from "@/lib/patient-matching";
+import {
+  isDuplicateOverrideConfirmed,
+  registrationFingerprint,
+  type DuplicateMatchBasis,
+} from "@/lib/patient-matching";
 import { z } from "@/lib/validation";
 import { AuthorizationError } from "@/server/authz";
 import { requireActorAndHospital } from "@/server/auth";
@@ -55,6 +59,11 @@ export type PatientFormState = {
   duplicates?: PatientDuplicateView[];
   /** Echoed values to repopulate the form when re-rendering with a warning. */
   values?: PatientFormValues;
+  /**
+   * Fingerprint of the identifying data that produced this warning. The next "create anyway"
+   * submit is honoured ONLY if the resubmitted data still matches it (Phase 1A QA — fix 2).
+   */
+  warnedFingerprint?: string;
 };
 
 export async function createPatientAction(
@@ -62,10 +71,6 @@ export async function createPatientAction(
   formData: FormData,
 ): Promise<PatientFormState> {
   const { actor, hospital } = await requireActorAndHospital();
-
-  // The user has already seen the duplicate warning for the previous submission, or
-  // explicitly confirmed via the form — either way they have acknowledged it.
-  const alreadyWarned = (_prev.duplicates?.length ?? 0) > 0;
 
   const parsed = patientSchema.safeParse({
     familyName: formData.get("familyName"),
@@ -85,8 +90,22 @@ export async function createPatientAction(
     return { errors };
   }
 
-  // The user has acknowledged a previously-shown duplicate warning and chose to continue.
-  const confirmedDuplicate = alreadyWarned || formData.get("confirmDuplicate") === "1";
+  // A "create anyway" override is honoured ONLY when the user explicitly confirmed AND the
+  // resubmitted identifying data is the SAME data that was warned about. Editing any
+  // identifying field after the warning invalidates the override, so detection re-runs below
+  // and a fresh warning is shown (Phase 1A QA — mentor fix 2: bind override to warned data).
+  const currentFingerprint = registrationFingerprint({
+    familyName: parsed.data.familyName,
+    givenName: parsed.data.givenName,
+    dateOfBirth: parsed.data.dateOfBirth,
+    phone: parsed.data.phone?.trim() || null,
+    sex: parsed.data.sex,
+  });
+  const confirmedDuplicate = isDuplicateOverrideConfirmed({
+    confirmIntent: formData.get("confirmDuplicate") === "1",
+    warnedFingerprint: _prev.warnedFingerprint,
+    currentFingerprint,
+  });
 
   const input: CreatePatientInput = {
     familyName: parsed.data.familyName,
@@ -117,6 +136,7 @@ export async function createPatientAction(
           phone: parsed.data.phone?.trim() ?? "",
           residence: parsed.data.residence?.trim() ?? "",
         },
+        warnedFingerprint: currentFingerprint,
       };
     }
 

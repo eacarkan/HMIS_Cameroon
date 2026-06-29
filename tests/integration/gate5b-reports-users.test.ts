@@ -156,6 +156,29 @@ describe("integration: Gate 5B user / account lifecycle", () => {
     }
     await deleteUserByEmail(email);
   });
+
+  it("refuses to assign a role to a user who does NOT belong to the active hospital (Phase 1A QA fix 4)", async () => {
+    const email = "outsider.qa@hrb-demo.cm";
+    await deleteUserByEmail(email);
+    const { actor: adm, ctx } = await loginAndSelect(ACCOUNTS.admin); // active hospital = HRB
+
+    // A user that belongs ONLY to another hospital — never assigned in HRB.
+    const outsider = await prisma.user.create({
+      data: { id: "user-outsider-qa", displayName: "Outsider", email, passwordHash: "x" },
+    });
+    const caissier = await prisma.role.findUniqueOrThrow({ where: { code: "caissier" } });
+    await prisma.userRole.create({ data: { userId: outsider.id, roleId: caissier.id, hospitalId: OTHER } });
+
+    // The hospital-membership guard must block pulling that global user into HRB via assignment.
+    await expect(assignRoleForActor(adm, ctx, outsider.id, "caissier")).rejects.toThrow(
+      "Utilisateur introuvable dans cet hôpital.",
+    );
+    // No HRB assignment was created (and the OTHER-hospital one is untouched).
+    expect(await prisma.userRole.count({ where: { userId: outsider.id, hospitalId: HRB } })).toBe(0);
+    expect(await prisma.userRole.count({ where: { userId: outsider.id, hospitalId: OTHER } })).toBe(1);
+
+    await deleteUserByEmail(email);
+  });
 });
 
 describe("integration: Gate 5B admin-lockout safeguards", () => {

@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import {
   classifyDuplicates,
+  isDuplicateOverrideConfirmed,
   matchesNameDob,
   matchesPhone,
   normalizeName,
   normalizePhone,
+  registrationFingerprint,
   type DuplicateComparable,
 } from "@/lib/patient-matching";
 
@@ -86,5 +88,63 @@ describe("unit: classifyDuplicates", () => {
       patient({ id: "p3", familyName: "AUTRE", givenName: "Autre", dateOfBirth: new Date("1970-01-01"), phone: "+237 6 00 00 00 00" }),
     ]);
     expect(matches).toHaveLength(0);
+  });
+});
+
+describe("unit: registrationFingerprint (binds an override to the warned data)", () => {
+  const identity = {
+    familyName: "BELLO",
+    givenName: "Aïssatou",
+    dateOfBirth: new Date("1990-03-14"),
+    phone: "+237 6 99 00 00 01",
+    sex: "female",
+  };
+
+  it("is stable across case / diacritics / phone formatting of the same identity", () => {
+    expect(registrationFingerprint(identity)).toBe(
+      registrationFingerprint({
+        ...identity,
+        familyName: "  bello ",
+        givenName: "aissatou",
+        phone: "237699000001",
+      }),
+    );
+  });
+
+  it("changes when ANY identifying field changes", () => {
+    const base = registrationFingerprint(identity);
+    expect(registrationFingerprint({ ...identity, dateOfBirth: new Date("1991-03-14") })).not.toBe(base);
+    expect(registrationFingerprint({ ...identity, familyName: "MBARGA" })).not.toBe(base);
+    expect(registrationFingerprint({ ...identity, givenName: "Fatou" })).not.toBe(base);
+    expect(registrationFingerprint({ ...identity, phone: "237600000000" })).not.toBe(base);
+    expect(registrationFingerprint({ ...identity, sex: "male" })).not.toBe(base);
+  });
+});
+
+describe("unit: isDuplicateOverrideConfirmed (edited-after-warning is NOT confirmed)", () => {
+  const fp = "bello|aissatou|1990-03-14|237699000001|female";
+
+  it("confirms only when intent is set AND the data matches the warned fingerprint", () => {
+    expect(
+      isDuplicateOverrideConfirmed({ confirmIntent: true, warnedFingerprint: fp, currentFingerprint: fp }),
+    ).toBe(true);
+  });
+
+  it("does NOT confirm when the user edited the data after the warning (fingerprint mismatch)", () => {
+    expect(
+      isDuplicateOverrideConfirmed({ confirmIntent: true, warnedFingerprint: fp, currentFingerprint: fp + "X" }),
+    ).toBe(false);
+  });
+
+  it("does NOT confirm without an explicit confirm intent", () => {
+    expect(
+      isDuplicateOverrideConfirmed({ confirmIntent: false, warnedFingerprint: fp, currentFingerprint: fp }),
+    ).toBe(false);
+  });
+
+  it("does NOT confirm on a first submit (no prior warning)", () => {
+    expect(
+      isDuplicateOverrideConfirmed({ confirmIntent: true, warnedFingerprint: undefined, currentFingerprint: fp }),
+    ).toBe(false);
   });
 });

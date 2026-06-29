@@ -97,3 +97,49 @@ export function classifyDuplicates<T extends DuplicateComparable>(
   }
   return matches;
 }
+
+/** Identifying fields whose change must invalidate a prior duplicate-warning override. */
+export type RegistrationIdentity = {
+  familyName: string;
+  givenName: string;
+  dateOfBirth: Date | string;
+  phone: string | null;
+  sex: string;
+};
+
+/**
+ * Stable, normalized fingerprint of the identifying fields that triggered a duplicate
+ * warning (Phase 1A QA — mentor fix 2). It binds a "create anyway" override to the EXACT
+ * data that was warned about: if any identifying field (family/given name, DOB, phone, sex)
+ * changes, the fingerprint changes and duplicate detection must re-run before another
+ * override is honoured. Normalization mirrors the matchers so cosmetic differences (case,
+ * diacritics, phone formatting) do not spuriously invalidate a confirmation.
+ */
+export function registrationFingerprint(input: RegistrationIdentity): string {
+  return [
+    normalizeName(input.familyName),
+    normalizeName(input.givenName),
+    isoDay(input.dateOfBirth),
+    normalizePhone(input.phone),
+    normalizeName(input.sex),
+  ].join("|");
+}
+
+/**
+ * Decide whether a duplicate-warning override is valid. The user must have explicitly
+ * confirmed ("create anyway") AND the current identifying data must match the exact data
+ * that was warned about. Editing any identifying field after the warning, or a first submit
+ * with no prior warning, is NOT a valid override — the caller re-runs detection and shows a
+ * fresh warning (Phase 1A QA — mentor fix 2).
+ */
+export function isDuplicateOverrideConfirmed(args: {
+  confirmIntent: boolean;
+  warnedFingerprint: string | null | undefined;
+  currentFingerprint: string;
+}): boolean {
+  return (
+    args.confirmIntent &&
+    Boolean(args.warnedFingerprint) &&
+    args.warnedFingerprint === args.currentFingerprint
+  );
+}

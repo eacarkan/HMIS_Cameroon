@@ -125,6 +125,12 @@ export async function assignRoleForActor(
   roleCode: string,
 ) {
   await requireCapability(actor, ctx, "user.manage", { type: "UserRole", id: userId });
+  // Hospital-membership guard (Phase 1A QA — mentor fix 4): a role may only be (re)assigned
+  // to a user who ALREADY belongs to the active hospital. This blocks pulling an arbitrary
+  // global userId into this hospital's scope via role assignment. Initial onboarding happens
+  // through createUserForActor (which assigns the first role atomically), not here.
+  const assigned = await findUserRoleInHospital(userId, ctx.hospitalId);
+  if (!assigned) throw new Error("Utilisateur introuvable dans cet hôpital.");
   // Role-assignment safeguard (Batch 4): only known coarse roles may be granted (no unknown
   // / over-privileged codes); admin-only is already enforced by the capability check above.
   if (!canAssignRole(roleCode)) throw new Error("Rôle non assignable.");

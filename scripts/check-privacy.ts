@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 
 /**
@@ -47,6 +47,46 @@ function walk(dir: string): string[] {
   return out;
 }
 
+/** Minimal .gitignore matcher for a basename (ordered; last match wins; `!` negates). */
+function gitignoreIgnores(patterns: string[], file: string): boolean {
+  let ignored = false;
+  for (const raw of patterns) {
+    const line = raw.trim();
+    if (!line || line.startsWith("#")) continue;
+    const negate = line.startsWith("!");
+    const body = (negate ? line.slice(1) : line).replace(/^\//, "").replace(/\/$/, "");
+    const re = new RegExp(
+      "^" +
+        body
+          .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+          .replace(/\*/g, "[^/]*")
+          .replace(/\?/g, "[^/]") +
+        "$",
+    );
+    if (re.test(file)) ignored = !negate;
+  }
+  return ignored;
+}
+
+/**
+ * Is `file` excluded from version control? Uses `git check-ignore` when this IS a working
+ * tree, otherwise parses .gitignore directly — so the check still works in an EXTRACTED
+ * mentor bundle that intentionally omits `.git` (Phase 1A QA — mentor fix 1). Without this
+ * fallback, `git check-ignore` fails with "not a git repository" and the bundle's own
+ * privacy check would spuriously fail.
+ */
+function isExcluded(file: string, gitignorePatterns: string[] | null): boolean {
+  if (existsSync(".git")) {
+    try {
+      execSync(`git check-ignore ${file}`, { stdio: "ignore" });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  return gitignorePatterns ? gitignoreIgnores(gitignorePatterns, file) : false;
+}
+
 const problems: string[] = [];
 
 for (const root of SCAN_ROOTS) {
@@ -58,11 +98,20 @@ for (const root of SCAN_ROOTS) {
   }
 }
 
-// .env must be gitignored (never committed).
-try {
-  execSync("git check-ignore .env", { stdio: "ignore" });
-} catch {
-  problems.push(".env is NOT gitignored — secrets could be committed");
+// .env must be excluded (never committed); .env.example MUST ship (safe template).
+// Works with or without a .git directory — extracted mentor bundles exclude .git.
+const gitignorePatterns = existsSync(".gitignore")
+  ? readFileSync(".gitignore", "utf8").split(/\r?\n/)
+  : null;
+if (!existsSync(".git") && !gitignorePatterns) {
+  problems.push("neither .git nor .gitignore present — cannot verify .env is excluded");
+} else {
+  if (!isExcluded(".env", gitignorePatterns)) {
+    problems.push(".env is NOT excluded from version control — secrets could be committed");
+  }
+  if (isExcluded(".env.example", gitignorePatterns)) {
+    problems.push(".env.example must NOT be excluded — it ships as a safe template");
+  }
 }
 
 // Prototype label must exist and be referenced where it matters.

@@ -39,7 +39,7 @@ export function PatientForm() {
     // Remount when the warning toggles so defaultValue/defaultSelected re-applies to every
     // field (incl. the sex <select>) and survives React 19's post-action form reset.
     <form
-      key={hasDuplicateWarning ? "with-warning" : "fresh"}
+      key={hasDuplicateWarning ? `warn:${state.warnedFingerprint ?? ""}` : "fresh"}
       action={formAction}
       className="space-y-8"
     >
