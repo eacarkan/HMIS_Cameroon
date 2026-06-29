@@ -2,9 +2,23 @@
 
 **Project:** MINSANTE SIGH/DME (HMIS/EMR) — French-first pilot-core prototype
 **Data:** fake / demo only · **Not** production, **not** real-data authorization (Gate 7), **no** Phase 2 modules.
-**Baseline:** Gate 6 (`b48b294`) → Phase 1A tip `2ac629f`, merged into `feature/gate4-ui-workflows` (tip `212fd0c`).
+**Baseline:** Gate 6 (`b48b294`) → Phase 1A → **QA patch `c1b1ace`** on `feature/gate4-ui-workflows`.
 
 > This bundle is **self-contained** — it contains everything needed to review Phase 1A **without access to the Git repository**.
+
+---
+
+## Status — second submission (mentor QA fixes applied)
+
+This bundle includes the **QA patch** for the three required fixes from your first review. Fix-by-fix detail + verification is in **`HMIS_Cameroon/docs/phase1a-implementation-logs/PHASE_1A_QA_PATCH.md`**.
+
+1. **`check:privacy` works without `.git`** — it now falls back to parsing `.gitignore`, so this extracted bundle passes its own privacy check (the issue you flagged). Verified by running it with `.git` absent.
+2. **Duplicate-warning override is bound to the exact warned data** — a normalized fingerprint of the identifying fields (name + DOB + phone + sex); editing any of them after a warning re-runs detection and shows a fresh warning instead of silently confirming.
+3. **`assignRoleForActor` requires existing hospital membership** — a role can no longer be assigned to a user who does not already belong to the active hospital.
+
+Tests added: **+6 unit** (fingerprint + the edited-after-warning case) and **+1 integration** (cross-hospital role assignment refused).
+
+**Deliberately not changed** (documented as a pre-pilot limitation, per your verdict): the broad `administrateur` RBAC — to be re-partitioned before any pilot / Gate 7, not now. Same for the other "before pilot" items you raised (failed-login lockout counters, EMR amendment version snapshots, a persistent `CashierShift` entity).
 
 ---
 
@@ -24,10 +38,11 @@ phase1a-mentor-review-complete/
 
 ## Where to start (review by reading)
 
-1. `HMIS_Cameroon/docs/phase1a-implementation-logs/00_PHASE_1A_SUMMARY.md` — one-page overview of all 6 batches + verification results.
-2. `HMIS_Cameroon/docs/phase1a-implementation-logs/BATCH_*.md` — per-batch implementation logs (objective, schema decision, files, services, RBAC, audit, tests, screenshots, boundaries).
-3. Cross-check each batch against its spec in `_SPECS_AND_PLANNING/Phase_1A_Batch_*.md`.
-4. Screenshots (fake data): `HMIS_Cameroon/docs/batch{1a,1b,2,3,4,5,6}-screenshots/`.
+1. `HMIS_Cameroon/docs/phase1a-implementation-logs/PHASE_1A_QA_PATCH.md` — **start here for the second review**: the three required fixes + their tests and verification.
+2. `HMIS_Cameroon/docs/phase1a-implementation-logs/00_PHASE_1A_SUMMARY.md` — one-page overview of all 6 batches + verification results.
+3. `HMIS_Cameroon/docs/phase1a-implementation-logs/BATCH_*.md` — per-batch implementation logs (objective, schema decision, files, services, RBAC, audit, tests, screenshots, boundaries).
+4. Cross-check each batch against its spec in `_SPECS_AND_PLANNING/Phase_1A_Batch_*.md`.
+5. Screenshots (fake data): `HMIS_Cameroon/docs/batch{1a,1b,2,3,4,5,6}-screenshots/`.
 
 **Architecture to keep in mind while reading:** pure libs (`lib/*`, client-safe, unit-tested) → `server/db` (only place Prisma is called) → `server/services` (RBAC + hospital scoping + append-only audit) → `server/actions` → `app/` pages & `components/`. Enforced by ESLint `no-restricted-imports` + `scripts/check-architecture.ts`.
 
@@ -46,7 +61,7 @@ npm run check:arch            # architecture-layering guardrail
 npm run check:privacy         # no secrets, fake accounts only, real-data path disabled
 ```
 
-Expected (cumulative): unit + component **104**, integration **85**, e2e **17**, smoke **GOLDEN PATH PASSED**, arch ✅, privacy ✅.
+Expected (cumulative, after the QA patch): unit + component **110**, integration **86**, e2e **17**, smoke **GOLDEN PATH PASSED**, arch ✅, privacy ✅ (now passes with **or without** `.git`).
 
 ## Cross-cutting guarantees
 
@@ -62,4 +77,4 @@ Fake/demo data only; no real-data/production authorization (Gate 7 untouched); n
 ## Note on excluded files
 
 - `.env` (real machine secrets) is **deliberately excluded** — copy `.env.example` to `.env` and fill local/fake values.
-- `node_modules/`, `.next/`, `.git/`, and build caches are excluded to keep the bundle small; `npm install` rebuilds `node_modules`.
+- `node_modules/`, `.next/`, `.git/`, and build caches are excluded to keep the bundle small; `npm install` rebuilds `node_modules`. `npm run check:privacy` no longer depends on `.git` — it falls back to reading `.gitignore`, so it passes in this extracted bundle (QA fix 1).
