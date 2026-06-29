@@ -30,14 +30,18 @@ export async function recordReceiptPrint(
   const payment = await findPaymentById(ctx.hospitalId, paymentId);
   if (!payment) throw new Error("Reçu introuvable dans cet hôpital.");
 
-  await markReceiptPrinted(ctx.hospitalId, paymentId);
+  // First print sets printedAt + audits `receipt.print`; any later print is a reprint
+  // (audited `receipt.reprint`) and the document is marked as a duplicate (Batch 3).
+  const isReprint = payment.printedAt != null;
+  if (!isReprint) await markReceiptPrinted(ctx.hospitalId, paymentId);
+
   await recordAudit({
     hospitalId: ctx.hospitalId,
     actorId: actor.id,
-    action: AUDIT_ACTIONS.receiptPrint,
+    action: isReprint ? AUDIT_ACTIONS.receiptReprint : AUDIT_ACTIONS.receiptPrint,
     entityType: "Payment",
     entityId: paymentId,
-    summary: `Impression du reçu ${payment.receiptNumber}`,
+    summary: `${isReprint ? "Réimpression" : "Impression"} du reçu ${payment.receiptNumber}`,
   });
 
   return payment;

@@ -29,6 +29,10 @@ export const AUDIT_ACTIONS = {
   invoiceCreate: "invoice.create",
   paymentRecord: "payment.record",
   receiptPrint: "receipt.print",
+  // Phase 1A (Batch 3) — billing/cashier financial-integrity controls.
+  invoiceVoid: "invoice.void",
+  receiptReprint: "receipt.reprint",
+  cashierShiftClose: "cashier.shift_close",
   authzDenied: "authz.denied",
   // Phase 1 (Gate 3) — configuration / master data.
   departmentCreate: "department.create",

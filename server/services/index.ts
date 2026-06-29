@@ -60,6 +60,7 @@ export {
   getInvoice,
   createInvoice,
   recordPayment,
+  voidInvoice,
   getTariffLineSource,
 } from "./billing-service";
 export { getReceipt, recordReceiptPrint } from "./receipt-service";
@@ -117,8 +118,12 @@ export {
 export {
   type CashierReportRow,
   type CashierDailyReport,
+  type CashierReportFilters,
+  type CashierShiftSummary,
   getCashierDailyReport,
   exportCashierDailyReportCsv,
+  getCashierShiftSummary,
+  closeCashierShift,
 } from "./reports-service";
 export {
   listUsers,

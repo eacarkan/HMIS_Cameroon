@@ -84,6 +84,15 @@ export function updateInvoiceStatus(
   });
 }
 
+/** Set a payment's status (Phase 1A Batch 3 — voiding a receipt; never deletes history). */
+export function updatePaymentStatus(
+  hospitalId: string,
+  id: string,
+  status: PaymentStatus,
+) {
+  return prisma.payment.updateMany({ where: { id, hospitalId }, data: { status } });
+}
+
 /** Mark a payment's receipt as printed (idempotent timestamp). */
 export function markReceiptPrinted(hospitalId: string, paymentId: string) {
   return prisma.payment.updateMany({

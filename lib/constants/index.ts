@@ -92,6 +92,9 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "invoice.create": "Création de facture",
   "payment.record": "Paiement",
   "receipt.print": "Impression de reçu",
+  "invoice.void": "Annulation de facture",
+  "receipt.reprint": "Réimpression de reçu",
+  "cashier.shift_close": "Clôture de caisse",
   "authz.denied": "Action refusée",
   // Phase 1 (Gate 3/4) — configuration / master data.
   "department.create": "Création département",

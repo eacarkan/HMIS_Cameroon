@@ -38,6 +38,9 @@ export default async function ReceiptPage({
     methodLabel: tMethod(payment.method),
     cashierName: payment.cashier?.displayName ?? "",
     dateLabel: formatDateTimeFr(new Date(payment.paidAt)),
+    // Batch 3: already-printed → duplicate; cancelled payment → voided receipt.
+    reprint: payment.printedAt != null,
+    voided: payment.status === "cancelled",
   };
 
   return (

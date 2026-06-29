@@ -65,6 +65,7 @@ export {
   findInvoiceById,
   createPayment,
   updateInvoiceStatus,
+  updatePaymentStatus,
   markReceiptPrinted,
   findPaymentById,
 } from "./invoices";

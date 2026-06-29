@@ -9,10 +9,12 @@ import { exportCashierDailyReportCsv } from "@/server/services";
  */
 export async function GET(request: Request) {
   const { actor, hospital } = await requireActorAndHospital();
-  const date = new URL(request.url).searchParams.get("date") ?? undefined;
+  const params = new URL(request.url).searchParams;
+  const date = params.get("date") ?? undefined;
+  const method = params.get("method") ?? undefined;
 
   try {
-    const { csv, report } = await exportCashierDailyReportCsv(actor, hospital, date);
+    const { csv, report } = await exportCashierDailyReportCsv(actor, hospital, { date, method });
     return new Response(csv, {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",

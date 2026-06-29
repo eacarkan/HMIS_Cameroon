@@ -245,7 +245,11 @@
     "cashier": "Caissier",
     "noPayments": "Aucun paiement enregistré.",
     "noTariffs": "Aucun tarif actif — contactez l'administrateur.",
-    "date": "Date"
+    "date": "Date",
+    "void": "Annuler la facture",
+    "voidReason": "Motif d'annulation",
+    "voidReasonPlaceholder": "Ex. erreur de saisie, doublon…",
+    "invoiceVoided": "Facture annulée — les reçus associés sont marqués « ANNULÉ »."
   },
   "receipt": {
     "title": "Reçu de paiement",
@@ -262,7 +266,9 @@
     "method": "Mode de paiement",
     "cashier": "Caissier",
     "signature": "Signature / cachet",
-    "footerNote": "Document généré par le système — veuillez conserver ce reçu."
+    "footerNote": "Document généré par le système — veuillez conserver ce reçu.",
+    "reprint": "Réimpression — duplicata",
+    "voided": "Reçu annulé"
   },
   "auditLog": {
     "title": "Journal d'audit",
@@ -378,6 +384,11 @@
     "invoiceNumber": "N° facture",
     "patient": "Patient",
     "method": "Mode",
+    "allMethods": "Tous les modes",
+    "byMethod": "Totaux par mode de paiement",
+    "shiftTitle": "Ma caisse (clôture de poste)",
+    "closeShift": "Clôturer la caisse",
+    "shiftClosed": "Caisse clôturée (enregistré dans l'audit).",
     "cashier": "Caissier",
     "amount": "Montant",
     "noPayments": "Aucun encaissement pour cette date."

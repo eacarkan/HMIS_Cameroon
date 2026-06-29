@@ -16,6 +16,10 @@ export type ReceiptData = {
   methodLabel: string;
   cashierName: string;
   dateLabel: string;
+  /** Marked when the receipt has already been printed before (a duplicate). */
+  reprint?: boolean;
+  /** Marked when the payment has been voided (invoice cancelled). */
+  voided?: boolean;
 };
 
 /**
@@ -41,6 +45,16 @@ export function ReceiptDocument({ data }: { data: ReceiptData }) {
         <p className="text-sm">{OFFICIAL_HEADER.ministry}</p>
         <p className="mt-1 font-medium">{data.hospitalName}</p>
       </header>
+
+      {data.voided ? (
+        <p className="mt-4 border-2 border-black py-1 text-center text-base font-bold tracking-widest uppercase">
+          {t("voided")}
+        </p>
+      ) : data.reprint ? (
+        <p className="mt-4 border border-neutral-500 py-1 text-center text-sm font-semibold tracking-widest text-neutral-700 uppercase">
+          {t("reprint")}
+        </p>
+      ) : null}
 
       <h1 className="mt-7 text-center text-lg font-bold uppercase">
         {t("title")}

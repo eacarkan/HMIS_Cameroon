@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
+import { VoidInvoiceForm } from "@/components/billing/cashier-controls";
 import { PaymentForm } from "@/components/billing/payment-form";
 import { PageHeader } from "@/components/layout/page-header";
 import { PatientBanner } from "@/components/patients/patient-banner";
@@ -141,6 +142,17 @@ export default async function InvoicePage({
                   {tActions("printReceipt")}
                 </Link>
               </Button>
+            ) : null}
+
+            {invoice.status !== "cancelled" && can(actor.roles, "invoice.create") ? (
+              <div className="border-t pt-3">
+                <VoidInvoiceForm invoiceId={invoice.id} />
+              </div>
+            ) : null}
+            {invoice.status === "cancelled" ? (
+              <p className="text-destructive border-t pt-3 text-sm font-medium">
+                {t("invoiceVoided")}
+              </p>
             ) : null}
           </CardContent>
         </Card>
