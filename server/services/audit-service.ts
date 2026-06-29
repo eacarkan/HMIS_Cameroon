@@ -18,6 +18,9 @@ export const AUDIT_ACTIONS = {
   hospitalSelect: "hospital.select",
   patientCreate: "patient.create",
   encounterCreate: "encounter.create",
+  // Phase 1A (Batch 1B) — encounter lifecycle (status history via append-only audit; no new table).
+  encounterStatusChange: "encounter.status_change",
+  encounterAssign: "encounter.assign",
   consultationCreate: "consultation.create",
   consultationUpdate: "consultation.update",
   invoiceCreate: "invoice.create",

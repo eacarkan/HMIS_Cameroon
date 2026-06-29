@@ -31,6 +31,28 @@ export function findAuditEntries(
   });
 }
 
+/**
+ * Chronological audit trail for one entity (Phase 1A Batch 1B). Hospital-scoped, oldest
+ * first — the source for an encounter's status history (no dedicated history table).
+ */
+export function findEntityAuditTrail(
+  hospitalId: string,
+  entityType: string,
+  entityId: string,
+  actions?: string[],
+) {
+  return prisma.auditLog.findMany({
+    where: {
+      hospitalId,
+      entityType,
+      entityId,
+      ...(actions && actions.length ? { action: { in: actions } } : {}),
+    },
+    orderBy: { createdAt: "asc" },
+    include: { actor: true },
+  });
+}
+
 export function createAuditEntry(entry: AuditEntryInput) {
   return prisma.auditLog.create({
     data: {

@@ -29,6 +29,7 @@ export {
   type AuditEntryInput,
   createAuditEntry,
   findAuditEntries,
+  findEntityAuditTrail,
 } from "./audit";
 export { findHospitalsForUser, findHospitalById } from "./hospitals";
 export { nextSequenceValue } from "./sequence";
@@ -45,6 +46,9 @@ export {
   type CreateEncounterData,
   createEncounter,
   findEncounterById,
+  updateEncounterStatus,
+  updateEncounterService,
+  findPatientTimelineData,
 } from "./encounters";
 export {
   type CreateConsultationData,

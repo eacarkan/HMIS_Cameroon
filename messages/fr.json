@@ -161,7 +161,27 @@
     "billing": "Facturation",
     "noInvoice": "Aucune facture pour cette visite.",
     "createInvoice": "Créer la facture",
-    "viewInvoice": "Voir la facture"
+    "viewInvoice": "Voir la facture",
+    "lifecycle": "Cycle de vie",
+    "closeEncounter": "Clôturer la visite",
+    "cancelEncounter": "Annuler la visite",
+    "lifecycleTerminal": "Cette visite est clôturée — aucune autre transition possible.",
+    "assignService": "Affecter au service / département",
+    "assign": "Affecter",
+    "statusHistory": "Historique des statuts"
+  },
+  "timeline": {
+    "title": "Chronologie du patient",
+    "empty": "Aucun événement pour le moment.",
+    "type": {
+      "patient_registered": "Patient enregistré",
+      "encounter_opened": "Visite ouverte",
+      "encounter_closed": "Visite clôturée",
+      "encounter_cancelled": "Visite annulée",
+      "consultation_recorded": "Consultation enregistrée",
+      "invoice_created": "Facture créée",
+      "payment_recorded": "Paiement enregistré"
+    }
   },
   "consultation": {
     "newTitle": "Nouvelle consultation",

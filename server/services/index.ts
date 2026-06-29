@@ -40,6 +40,10 @@ export {
   type OpenEncounterInput,
   getEncounter,
   openEncounter,
+  changeEncounterStatus,
+  assignEncounterService,
+  getEncounterStatusHistory,
+  getPatientTimeline,
 } from "./encounter-service";
 export {
   type RecordConsultationInput,

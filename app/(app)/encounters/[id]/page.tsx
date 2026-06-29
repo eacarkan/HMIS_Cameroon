@@ -4,6 +4,10 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { ClinicalStructurePanel } from "@/components/consultations/clinical-structure-panel";
+import {
+  EncounterServiceForm,
+  EncounterStatusControls,
+} from "@/components/encounters/encounter-lifecycle";
 import { PageHeader } from "@/components/layout/page-header";
 import { PatientBanner } from "@/components/patients/patient-banner";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +23,12 @@ import { formatDateTimeFr } from "@/lib/dates";
 import { formatFcfa } from "@/lib/money";
 import { can } from "@/lib/rbac";
 import { requireActorAndHospital } from "@/server/auth";
-import { getEncounter, listObservations, listDiagnoses } from "@/server/services";
+import {
+  getEncounter,
+  getEncounterStatusHistory,
+  listObservations,
+  listDiagnoses,
+} from "@/server/services";
 
 export default async function EncounterPage({
   params,
@@ -41,6 +50,11 @@ export default async function EncounterPage({
     encounter.assignedTo?.displayName ??
     encounter.consultations[0]?.performedBy?.displayName ??
     t("unassigned");
+
+  // Lifecycle (Batch 1B): status controls/assignment for encounter managers; status history
+  // (composed from append-only audit) is readable with encounter.read.
+  const canManageEncounter = can(actor.roles, "encounter.create");
+  const statusHistory = await getEncounterStatusHistory(actor, hospital, id);
 
   // Structured clinical data (Gate 4): clinician reads/manages; others don't see it.
   const canReadClinical = can(actor.roles, "clinical.structure.read");
@@ -94,6 +108,43 @@ export default async function EncounterPage({
             <div>
               <div className="text-muted-foreground">{t("reason")}</div>
               <div className="font-medium">{encounter.reason}</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("lifecycle")}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 text-sm">
+            {canManageEncounter ? (
+              <>
+                <EncounterStatusControls
+                  encounterId={encounter.id}
+                  status={encounter.status}
+                />
+                <EncounterServiceForm
+                  encounterId={encounter.id}
+                  current={encounter.serviceLabel}
+                />
+              </>
+            ) : (
+              <p className="text-muted-foreground">{tEnc(encounter.status)}</p>
+            )}
+            <div className="border-t pt-3">
+              <div className="text-muted-foreground mb-2 text-xs font-medium">
+                {t("statusHistory")}
+              </div>
+              <ol className="space-y-1.5">
+                {statusHistory.map((h) => (
+                  <li key={h.id} className="text-xs">
+                    <span className="text-muted-foreground tnum">
+                      {formatDateTimeFr(new Date(h.createdAt))}
+                    </span>{" "}
+                    — {h.summary}
+                  </li>
+                ))}
+              </ol>
             </div>
           </CardContent>
         </Card>

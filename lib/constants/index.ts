@@ -83,6 +83,8 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "hospital.select": "Sélection d'hôpital",
   "patient.create": "Création patient",
   "encounter.create": "Ouverture de visite",
+  "encounter.status_change": "Changement de statut de visite",
+  "encounter.assign": "Affectation de visite",
   "consultation.create": "Consultation",
   "consultation.update": "Mise à jour consultation",
   "invoice.create": "Création de facture",

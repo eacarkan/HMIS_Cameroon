@@ -6,6 +6,7 @@ import { getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/layout/page-header";
 import { PatientBanner } from "@/components/patients/patient-banner";
 import { PatientIdentityPanel } from "@/components/patients/patient-identity-panel";
+import { PatientTimeline } from "@/components/patients/patient-timeline";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +16,7 @@ import { can } from "@/lib/rbac";
 import { requireActorAndHospital } from "@/server/auth";
 import {
   getPatient,
+  getPatientTimeline,
   listPatientContacts,
   listPatientIdentifiers,
   listDuplicateCandidatesForActor,
@@ -34,10 +36,14 @@ export default async function PatientDetailPage({
   const tEnc = await getTranslations("encounterStatus");
   const tInv = await getTranslations("invoiceStatus");
   const tActions = await getTranslations("actions");
+  const tTimeline = await getTranslations("timeline");
 
   const activeEncounter =
     patient.encounters.find((e) => e.status === "open") ?? null;
   const invoices = patient.encounters.flatMap((e) => e.invoices);
+
+  // Read-only chronological timeline (Batch 1B), composed server-side from existing records.
+  const timeline = await getPatientTimeline(actor, hospital, id);
 
   // Identity/contact panel (Gate 4): reception manages, clinician may read. Data is
   // fetched through the Gate 3 service (server-side RBAC + hospital scoping).
@@ -136,6 +142,15 @@ export default async function PatientDetailPage({
                 ))}
               </ul>
             )}
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle className="text-base">{tTimeline("title")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PatientTimeline events={timeline} />
           </CardContent>
         </Card>
 
