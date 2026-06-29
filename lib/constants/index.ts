@@ -171,6 +171,8 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "prescription.finalized": "Finalisation d'une ordonnance",
   "prescription.sent_to_pharmacy": "Ordonnance envoyée à la pharmacie",
   "prescription.cancelled": "Annulation d'une ordonnance",
+  // Phase 2D-3 — stock batches.
+  "stock.batch_received": "Réception d'un lot de stock",
 };
 
 /**

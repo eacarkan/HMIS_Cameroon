@@ -146,6 +146,21 @@ describe("lib/rbac — role capabilities (09 §6, 07 §4)", () => {
     expect(can(["caissier"], "prescription.create")).toBe(false);
   });
 
+  it("Phase 2D-3 — stock: pharmacy receives + reads; oversight reads; others none", () => {
+    expect(can(["pharmacien"], "stock.receive")).toBe(true);
+    expect(can(["pharmacien"], "stock.read")).toBe(true);
+    expect(can(["pharmacien_chef"], "stock.receive")).toBe(true);
+    // Oversight reads but cannot receive (not pharmacy).
+    expect(can(["administrateur"], "stock.read")).toBe(true);
+    expect(can(["administrateur"], "stock.receive")).toBe(false);
+    expect(can(["directeur"], "stock.read")).toBe(true);
+    expect(can(["directeur"], "stock.receive")).toBe(false);
+    // Reception/doctor/cashier are not in the stock flow.
+    expect(can(["agent_accueil"], "stock.read")).toBe(false);
+    expect(can(["medecin"], "stock.receive")).toBe(false);
+    expect(can(["caissier"], "stock.read")).toBe(false);
+  });
+
   it("no roles grants nothing; multiple roles union their capabilities", () => {
     expect(can([], "patient.read")).toBe(false);
     expect(can(["agent_accueil", "caissier"], "payment.record")).toBe(true);

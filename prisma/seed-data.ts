@@ -255,6 +255,40 @@ export async function seedBaseData(prisma: PrismaClient): Promise<void> {
   await seedConfigAndTariffs(prisma);
   await seedDiagnosisCodes(prisma);
   await seedMedications(prisma);
+  await seedStock(prisma);
+}
+
+/**
+ * Phase 2D-3 — seed a small SYNTHETIC stock ledger for HRB-DEMO (idempotent: skips if any batch
+ * already exists). Fixed future expiry dates; integer quantities. Paracétamol has two lots so FEFO
+ * (2D-6) has an earliest-expiry choice. Fictional only.
+ */
+async function seedStock(prisma: PrismaClient): Promise<void> {
+  const existing = await prisma.medicationStockBatch.count({ where: { hospitalId: DEMO_HOSPITAL_ID } });
+  if (existing > 0) return;
+  const batches = [
+    { code: "MED-PARA-500", batchNumber: "LOT-PARA-B", expiry: "2026-12-31", qty: 200 },
+    { code: "MED-PARA-500", batchNumber: "LOT-PARA-A", expiry: "2027-06-30", qty: 500 },
+    { code: "MED-AMOX-500", batchNumber: "LOT-AMOX-A", expiry: "2027-03-31", qty: 300 },
+    { code: "MED-ACT-2024", batchNumber: "LOT-ACT-A", expiry: "2026-09-30", qty: 150 },
+  ];
+  for (const b of batches) {
+    const med = await prisma.medication.findFirst({
+      where: { hospitalId: DEMO_HOSPITAL_ID, code: b.code },
+    });
+    if (!med) continue;
+    await prisma.medicationStockBatch.create({
+      data: {
+        hospitalId: DEMO_HOSPITAL_ID,
+        medicationId: med.id,
+        batchNumber: b.batchNumber,
+        expiryDate: new Date(b.expiry),
+        quantityReceived: b.qty,
+        quantityOnHand: b.qty,
+        quantityReserved: 0,
+      },
+    });
+  }
 }
 
 /**
@@ -472,9 +506,10 @@ export async function clearOperationalData(
   // FK-safe order (children before parents). Phase 1 (Gate 2) patient/consultation
   // child tables are cleared before patients/consultations. Config/tariff base data is
   // NOT cleared here — it is re-upserted idempotently by seedBaseData.
-  // Phase 2D-2 — clear prescriptions before encounters/patients/medications (FK).
+  // Phase 2D-2/2D-3 — clear prescriptions + stock before encounters/patients/medications (FK).
   await prisma.prescriptionItem.deleteMany();
   await prisma.prescription.deleteMany();
+  await prisma.medicationStockBatch.deleteMany();
   // Phase 2C — clear cancellation/refund/shift records before invoices/payments/users.
   await prisma.cashierShiftCorrection.deleteMany();
   await prisma.cashierShift.deleteMany();

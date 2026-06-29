@@ -207,3 +207,13 @@ export {
   listPrescriptions,
   updatePrescriptionStatus,
 } from "./prescriptions";
+
+// Phase 2D-3 — medication stock batches.
+export {
+  type CreateStockBatchData,
+  createStockBatch,
+  listStockBatches,
+  listStockForMedication,
+  findStockBatchById,
+  adjustStockBatch,
+} from "./stock";

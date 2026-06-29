@@ -43,6 +43,7 @@
     "brouillard": "Brouillard de caisse",
     "cancellations": "Annulations",
     "refunds": "Remboursements",
+    "pharmacyStock": "Stock pharmacie",
     "administration": "Administration",
     "audit": "Journal d'audit",
     "systemStatus": "État du système",
@@ -661,6 +662,24 @@
     "partially_dispensed": "Partiellement délivrée",
     "dispensed": "Délivrée",
     "cancelled": "Annulée"
+  },
+  "stock": {
+    "title": "Stock pharmacie",
+    "subtitle": "Lots de médicaments, péremptions et quantités pour l'hôpital actif",
+    "receiveTitle": "Réception de stock",
+    "receive": "Réceptionner",
+    "summary": "Synthèse par médicament",
+    "batches": "Lots en stock",
+    "medication": "Médicament",
+    "batchNumber": "N° de lot",
+    "expiry": "Péremption",
+    "earliestExpiry": "Péremption la plus proche",
+    "quantity": "Quantité",
+    "onHand": "En stock",
+    "reserved": "Réservé",
+    "available": "Disponible",
+    "noStock": "Aucun stock enregistré.",
+    "noMedications": "Aucun médicament actif au catalogue."
   },
   "userAdmin": {
     "title": "Utilisateurs & comptes",

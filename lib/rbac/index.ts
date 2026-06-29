@@ -69,7 +69,11 @@ export type Capability =
   // Phase 2D-2 — prescriptions. `create` = doctor only (clinical act); `read` = doctor + pharmacy
   // (needed to dispense later) + oversight.
   | "prescription.create"
-  | "prescription.read";
+  | "prescription.read"
+  // Phase 2D-3 — medication stock. `receive` = pharmacy (enter batches); `read` = pharmacy +
+  // oversight. Adjustments (2D-7) get their own dual-validation capabilities.
+  | "stock.receive"
+  | "stock.read";
 
 export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
   // Hospital administrator — configuration, tariffs, users, service catalogue, and oversight
@@ -103,6 +107,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "medication.view",
     // Phase 2D-2 — oversight read of prescriptions.
     "prescription.read",
+    // Phase 2D-3 — oversight read of stock.
+    "stock.read",
   ],
   agent_accueil: [
     "dashboard.read",
@@ -166,6 +172,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "medication.view",
     // Phase 2D-2 — oversight read of prescriptions.
     "prescription.read",
+    // Phase 2D-3 — oversight read of stock.
+    "stock.read",
   ],
   // Phase 2D — pharmacy roles. Baseline operational reads + catalogue view; the pharmacy-specific
   // capabilities (dispense, stock, FEFO override, adjustment approval) are added in later 2D sub-batches.
@@ -177,6 +185,9 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "medication.view",
     // Phase 2D-2 — read prescriptions (needed to dispense them in 2D-5).
     "prescription.read",
+    // Phase 2D-3 — receive + read medication stock.
+    "stock.receive",
+    "stock.read",
   ],
   pharmacien_chef: [
     "dashboard.read",
@@ -185,6 +196,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "service.config.view",
     "medication.view",
     "prescription.read",
+    "stock.receive",
+    "stock.read",
   ],
 };
 

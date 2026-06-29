@@ -194,6 +194,14 @@ export {
   sendPrescriptionToPharmacy,
   cancelPrescription,
 } from "./prescription-service";
+
+// Phase 2D-3 — medication stock.
+export {
+  type StockSummaryRow,
+  listStock,
+  getStockSummary,
+  receiveStockBatch,
+} from "./stock-service";
 export {
   listUsers,
   createUserForActor,

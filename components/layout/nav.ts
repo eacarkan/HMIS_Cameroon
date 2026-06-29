@@ -7,6 +7,7 @@ import {
   Wallet,
   Ban,
   Undo2,
+  Boxes,
   Settings2,
   ScrollText,
   UserCog,
@@ -79,6 +80,13 @@ export const NAV_ITEMS: NavItem[] = [
     labelKey: "refunds",
     icon: Undo2,
     capability: "refund.read",
+  },
+  {
+    // Phase 2D-3 — pharmacy stock (pharmacy + oversight read).
+    href: "/pharmacie/stock",
+    labelKey: "pharmacyStock",
+    icon: Boxes,
+    capability: "stock.read",
   },
   {
     href: "/administration",

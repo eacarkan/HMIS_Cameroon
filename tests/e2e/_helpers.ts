@@ -6,6 +6,9 @@ export const ACCOUNTS = {
   cashier: "solange.abena@hrb-demo.cm",
   director: "emmanuel.tchoua@hrb-demo.cm",
   admin: "awa.njoya@hrb-demo.cm",
+  // Phase 2D — pharmacy demo accounts.
+  pharmacist: "georges.mballa@hrb-demo.cm",
+  pharmacistChief: "claire.fotso@hrb-demo.cm",
 };
 
 /** Log in (fresh context) and select HRB-DEMO, landing on the dashboard. */

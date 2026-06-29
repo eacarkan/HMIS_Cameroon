@@ -163,9 +163,10 @@ model Hospital {
   cashierShiftCorrections CashierShiftCorrection[]
 
   // Phase 2D additive relations.
-  medications       Medication[]
-  prescriptions     Prescription[]
-  prescriptionItems PrescriptionItem[]
+  medications            Medication[]
+  prescriptions          Prescription[]
+  prescriptionItems      PrescriptionItem[]
+  medicationStockBatches MedicationStockBatch[]
 
   // Phase 1 (Gate 2) additive relations.
   departments                Department[]
@@ -867,11 +868,35 @@ model Medication {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  hospital          Hospital           @relation(fields: [hospitalId], references: [id])
+  hospital          Hospital               @relation(fields: [hospitalId], references: [id])
   prescriptionItems PrescriptionItem[]
+  stockBatches      MedicationStockBatch[]
 
   @@unique([hospitalId, code])
   @@index([hospitalId, isActive, displayOrder])
+}
+
+/// Phase 2D-3 — a received batch/lot of a medication, with mandatory batch number + expiry date and
+/// integer quantities. `quantityOnHand` is the physical available stock; `quantityReserved` (Phase
+/// 2D-4) is held by finalized prescriptions; available-to-reserve = onHand − reserved. Dispensing
+/// (2D-5) deducts from `quantityOnHand`. FEFO (2D-6) selects the earliest `expiryDate` first.
+model MedicationStockBatch {
+  id               String   @id @default(cuid())
+  hospitalId       String
+  medicationId     String
+  batchNumber      String
+  expiryDate       DateTime @db.Date
+  quantityReceived Int
+  quantityOnHand   Int
+  quantityReserved Int      @default(0)
+  receivedById     String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  hospital   Hospital   @relation(fields: [hospitalId], references: [id])
+  medication Medication @relation(fields: [medicationId], references: [id])
+
+  @@index([hospitalId, medicationId, expiryDate])
 }
 
 /// Phase 2D-2 — a structured prescription ("ordonnance") raised by a doctor during an encounter.

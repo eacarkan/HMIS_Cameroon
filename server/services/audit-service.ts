@@ -113,6 +113,8 @@ export const AUDIT_ACTIONS = {
   prescriptionFinalized: "prescription.finalized",
   prescriptionSentToPharmacy: "prescription.sent_to_pharmacy",
   prescriptionCancelled: "prescription.cancelled",
+  // Phase 2D-3 — stock batches.
+  stockBatchReceived: "stock.batch_received",
 } as const;
 
 /**
