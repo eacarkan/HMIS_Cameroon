@@ -75,6 +75,11 @@ export {
   countPatientsRegisteredSince,
   countOpenEncounters,
   sumCollectionsSince,
+  countEncountersOpenedSince,
+  countEncountersClosedSince,
+  countConsultationsSince,
+  countInvoicesSince,
+  findPaymentsSince,
   recentAuditEntries,
 } from "./dashboard";
 

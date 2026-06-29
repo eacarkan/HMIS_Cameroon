@@ -64,9 +64,16 @@
   "dashboard": {
     "title": "Tableau de bord",
     "subtitle": "Vue d'ensemble de l'activité de l'hôpital actif",
+    "sectionActivity": "Activité du jour",
+    "sectionClinical": "Activité clinique",
+    "sectionBilling": "Facturation & caisse",
     "kpi": {
       "patientsToday": "Patients enregistrés aujourd'hui",
       "openEncounters": "Visites ouvertes",
+      "encountersOpenedToday": "Visites ouvertes aujourd'hui",
+      "encountersClosedToday": "Visites clôturées aujourd'hui",
+      "consultationsToday": "Consultations du jour",
+      "invoicesToday": "Factures du jour",
       "collectionsToday": "Encaissements du jour",
       "recentActivity": "Activité récente"
     },
