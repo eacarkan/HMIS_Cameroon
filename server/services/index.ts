@@ -182,6 +182,18 @@ export {
   deactivateMedication,
   reactivateMedication,
 } from "./medication-service";
+
+// Phase 2D-2 — prescriptions.
+export {
+  type CreatePrescriptionInput,
+  getPrescription,
+  listPrescriptionsForEncounter,
+  listPrescriptions,
+  createPrescription,
+  finalizePrescription,
+  sendPrescriptionToPharmacy,
+  cancelPrescription,
+} from "./prescription-service";
 export {
   listUsers,
   createUserForActor,

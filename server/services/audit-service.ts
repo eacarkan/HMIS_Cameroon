@@ -108,6 +108,11 @@ export const AUDIT_ACTIONS = {
   medicationUpdated: "medication.updated",
   medicationDeactivated: "medication.deactivated",
   medicationReactivated: "medication.reactivated",
+  // Phase 2D-2 — prescription lifecycle (no stock effect here).
+  prescriptionCreated: "prescription.created",
+  prescriptionFinalized: "prescription.finalized",
+  prescriptionSentToPharmacy: "prescription.sent_to_pharmacy",
+  prescriptionCancelled: "prescription.cancelled",
 } as const;
 
 /**

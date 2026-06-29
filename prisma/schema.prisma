@@ -79,6 +79,19 @@ enum SequenceType {
   // Phase 2C — refund voucher ("avoir") and cashier shift / Brouillard de Caisse numbers.
   refund_voucher
   cashier_shift
+  // Phase 2D-2 — prescription ("ordonnance") number.
+  prescription
+}
+
+/// Phase 2D-2 — structured prescription lifecycle. Dispensing transitions (partially_dispensed /
+/// dispensed) are driven later by 2D-5; 2D-2 itself produces draft → finalized → sent_to_pharmacy.
+enum PrescriptionStatus {
+  draft
+  finalized
+  sent_to_pharmacy
+  partially_dispensed
+  dispensed
+  cancelled
 }
 
 // ===================== Phase 2C — cashier/billing strengthening =====================
@@ -150,7 +163,9 @@ model Hospital {
   cashierShiftCorrections CashierShiftCorrection[]
 
   // Phase 2D additive relations.
-  medications Medication[]
+  medications       Medication[]
+  prescriptions     Prescription[]
+  prescriptionItems PrescriptionItem[]
 
   // Phase 1 (Gate 2) additive relations.
   departments                Department[]
@@ -206,6 +221,9 @@ model User {
   cashierShifts               CashierShift[]               @relation("ShiftCashier")
   cashierShiftsClosed         CashierShift[]               @relation("ShiftClosedBy")
   cashierShiftCorrections     CashierShiftCorrection[]     @relation("ShiftCorrectedBy")
+
+  // Phase 2D-2 additive relation.
+  prescriptionsPrescribed Prescription[] @relation("PrescriptionPrescribedBy")
 }
 
 /// Assignment of a Role to a User, scoped to a Hospital (minimal RBAC, 05 §4).
@@ -253,8 +271,9 @@ model Patient {
   isTemporaryIdentity Boolean @default(false)
   temporaryIdentifier String?
 
-  hospital   Hospital    @relation(fields: [hospitalId], references: [id])
-  encounters Encounter[]
+  hospital      Hospital       @relation(fields: [hospitalId], references: [id])
+  encounters    Encounter[]
+  prescriptions Prescription[]
 
   // Phase 1 (Gate 2) additive relations.
   contacts            PatientContact[]
@@ -295,6 +314,7 @@ model Encounter {
   assignedTo    User?          @relation("EncounterAssignedTo", fields: [assignedToId], references: [id])
   consultations Consultation[]
   invoices      Invoice[]
+  prescriptions Prescription[]
 
   @@unique([hospitalId, encounterNumber])
   @@index([hospitalId, patientId])
@@ -847,8 +867,67 @@ model Medication {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  hospital Hospital @relation(fields: [hospitalId], references: [id])
+  hospital          Hospital           @relation(fields: [hospitalId], references: [id])
+  prescriptionItems PrescriptionItem[]
 
   @@unique([hospitalId, code])
   @@index([hospitalId, isActive, displayOrder])
+}
+
+/// Phase 2D-2 — a structured prescription ("ordonnance") raised by a doctor during an encounter.
+/// Lifecycle draft → finalized → sent_to_pharmacy (dispensing transitions are added by 2D-5). A
+/// prescription has NO stock effect — it may later create a reservation (2D-4); dispensing (2D-5)
+/// deducts stock. The printable PDF carries the hospital header + tracking number + doctor name +
+/// signature space (e-signature deferred) + synthetic-data marker.
+model Prescription {
+  id                 String             @id @default(cuid())
+  hospitalId         String
+  prescriptionNumber String
+  patientId          String
+  encounterId        String
+  prescribedById     String
+  status             PrescriptionStatus @default(draft)
+  notes              String?
+  finalizedAt        DateTime?
+  sentAt             DateTime?
+  cancelledAt        DateTime?
+  createdById        String?
+  deletedAt          DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  hospital     Hospital           @relation(fields: [hospitalId], references: [id])
+  patient      Patient            @relation(fields: [patientId], references: [id])
+  encounter    Encounter          @relation(fields: [encounterId], references: [id])
+  prescribedBy User               @relation("PrescriptionPrescribedBy", fields: [prescribedById], references: [id])
+  items        PrescriptionItem[]
+
+  @@unique([hospitalId, prescriptionNumber])
+  @@index([hospitalId, status])
+  @@index([encounterId])
+}
+
+/// One prescribed line. `medicationLabel`/`unit` are a SNAPSHOT at prescribe time (the printed
+/// prescription is stable even if the catalogue later changes); `medicationId` is the source link.
+/// `quantity` is an integer (dispensing unit). No price here.
+model PrescriptionItem {
+  id              String   @id @default(cuid())
+  hospitalId      String
+  prescriptionId  String
+  medicationId    String
+  medicationLabel String
+  unit            String
+  dosage          String
+  frequency       String?
+  duration        String
+  quantity        Int
+  instructions    String?
+  createdAt       DateTime @default(now())
+
+  hospital     Hospital     @relation(fields: [hospitalId], references: [id])
+  prescription Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  medication   Medication   @relation(fields: [medicationId], references: [id])
+
+  @@index([prescriptionId])
+  @@index([medicationId])
 }

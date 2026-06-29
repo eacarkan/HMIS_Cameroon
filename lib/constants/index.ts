@@ -166,6 +166,11 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "medication.updated": "Mise à jour d'un médicament",
   "medication.deactivated": "Désactivation d'un médicament",
   "medication.reactivated": "Réactivation d'un médicament",
+  // Phase 2D-2 — prescription lifecycle.
+  "prescription.created": "Création d'une ordonnance",
+  "prescription.finalized": "Finalisation d'une ordonnance",
+  "prescription.sent_to_pharmacy": "Ordonnance envoyée à la pharmacie",
+  "prescription.cancelled": "Annulation d'une ordonnance",
 };
 
 /**

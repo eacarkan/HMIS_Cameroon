@@ -65,7 +65,11 @@ export type Capability =
   // Phase 2D-1 — medication catalogue. `manage` = Hospital Admin (catalogue is configuration);
   // `view` = clinicians + pharmacy + oversight (used by prescribing and dispensing later).
   | "medication.manage"
-  | "medication.view";
+  | "medication.view"
+  // Phase 2D-2 — prescriptions. `create` = doctor only (clinical act); `read` = doctor + pharmacy
+  // (needed to dispense later) + oversight.
+  | "prescription.create"
+  | "prescription.read";
 
 export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
   // Hospital administrator — configuration, tariffs, users, service catalogue, and oversight
@@ -97,6 +101,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     // Phase 2D-1 — the administrator manages the medication catalogue (configuration).
     "medication.manage",
     "medication.view",
+    // Phase 2D-2 — oversight read of prescriptions.
+    "prescription.read",
   ],
   agent_accueil: [
     "dashboard.read",
@@ -121,6 +127,9 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "service.config.view",
     // Phase 2D-1 — the doctor reads the catalogue to prescribe (no catalogue management).
     "medication.view",
+    // Phase 2D-2 — the doctor creates + reads prescriptions (clinical act).
+    "prescription.create",
+    "prescription.read",
   ],
   caissier: [
     "dashboard.read",
@@ -155,6 +164,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "refund.read",
     // Phase 2D-1 — oversight view of the medication catalogue.
     "medication.view",
+    // Phase 2D-2 — oversight read of prescriptions.
+    "prescription.read",
   ],
   // Phase 2D — pharmacy roles. Baseline operational reads + catalogue view; the pharmacy-specific
   // capabilities (dispense, stock, FEFO override, adjustment approval) are added in later 2D sub-batches.
@@ -164,6 +175,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "encounter.read",
     "service.config.view",
     "medication.view",
+    // Phase 2D-2 — read prescriptions (needed to dispense them in 2D-5).
+    "prescription.read",
   ],
   pharmacien_chef: [
     "dashboard.read",
@@ -171,6 +184,7 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "encounter.read",
     "service.config.view",
     "medication.view",
+    "prescription.read",
   ],
 };
 

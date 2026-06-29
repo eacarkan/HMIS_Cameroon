@@ -197,3 +197,13 @@ export {
   createMedication,
   updateMedication,
 } from "./medications";
+
+// Phase 2D-2 — prescriptions.
+export {
+  type CreatePrescriptionData,
+  createPrescriptionWithItems,
+  findPrescriptionById,
+  listPrescriptionsForEncounter,
+  listPrescriptions,
+  updatePrescriptionStatus,
+} from "./prescriptions";

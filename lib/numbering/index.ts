@@ -15,11 +15,13 @@ export type DocumentKind =
   | "receipt"
   // Phase 2C — refund voucher ("avoir") and cashier shift / Brouillard de Caisse.
   | "refund_voucher"
-  | "cashier_shift";
+  | "cashier_shift"
+  // Phase 2D-2 — prescription ("ordonnance").
+  | "prescription";
 
 /**
  * French-mnemonic letter per kind: P patient · V visite · F facture · R reçu ·
- * A avoir (bon de remboursement) · B brouillard de caisse.
+ * A avoir (bon de remboursement) · B brouillard de caisse · O ordonnance.
  */
 const KIND_LETTER: Record<DocumentKind, string> = {
   patient: "P",
@@ -28,6 +30,7 @@ const KIND_LETTER: Record<DocumentKind, string> = {
   receipt: "R",
   refund_voucher: "A",
   cashier_shift: "B",
+  prescription: "O",
 };
 
 /** Zero-padded width of the per-year counter (e.g. 1 → "000001"). */

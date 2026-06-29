@@ -30,6 +30,7 @@ import {
   listDiagnosisCodes,
   listObservations,
   listDiagnoses,
+  listPrescriptionsForEncounter,
 } from "@/server/services";
 
 export default async function EncounterPage({
@@ -46,6 +47,8 @@ export default async function EncounterPage({
   const tEnc = await getTranslations("encounterStatus");
   const tCons = await getTranslations("consultationStatus");
   const tInv = await getTranslations("invoiceStatus");
+  const tPresc = await getTranslations("prescription");
+  const tPrescStatus = await getTranslations("prescriptionStatus");
 
   const invoice = encounter.invoices[0] ?? null;
   const clinician =
@@ -76,6 +79,11 @@ export default async function EncounterPage({
       }))
     : [];
   const canManageClinical = can(actor.roles, "clinical.structure.manage");
+  // Phase 2D-2 — prescriptions for this encounter (read by clinicians/pharmacy; doctor creates).
+  const canReadPrescriptions = can(actor.roles, "prescription.read");
+  const prescriptions = canReadPrescriptions
+    ? await listPrescriptionsForEncounter(actor, hospital, id)
+    : [];
   const clinicalByConsultation = new Map<
     string,
     {
@@ -247,6 +255,50 @@ export default async function EncounterPage({
             )}
           </CardContent>
         </Card>
+
+        {canReadPrescriptions ? (
+          <Card className="lg:col-span-3">
+            <CardHeader>
+              <CardTitle className="text-base">{tPresc("title")}</CardTitle>
+              {can(actor.roles, "prescription.create") ? (
+                <CardAction>
+                  <Button asChild size="sm">
+                    <Link href={`/encounters/${encounter.id}/ordonnance/nouvelle`}>
+                      {tPresc("newTitle")}
+                    </Link>
+                  </Button>
+                </CardAction>
+              ) : null}
+            </CardHeader>
+            <CardContent>
+              {prescriptions.length === 0 ? (
+                <p className="text-muted-foreground text-sm">{tPresc("none")}</p>
+              ) : (
+                <ul className="space-y-2 text-sm">
+                  {prescriptions.map((p) => (
+                    <li
+                      key={p.id}
+                      className="flex items-center justify-between gap-3 rounded-md border p-2.5"
+                    >
+                      <span>
+                        <Link
+                          href={`/ordonnances/${p.id}`}
+                          className="hover:text-primary font-medium"
+                        >
+                          {p.prescriptionNumber}
+                        </Link>{" "}
+                        <span className="text-muted-foreground text-xs">
+                          {p.items.length} {tPresc("lines")} · {p.prescribedBy.displayName}
+                        </span>
+                      </span>
+                      <Badge variant="secondary">{tPrescStatus(p.status)}</Badge>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+        ) : null}
 
         <Card className="lg:col-span-3">
           <CardHeader>
