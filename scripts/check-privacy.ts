@@ -87,6 +87,15 @@ if (nonFake.length) {
   problems.push(`seed users use non-demo emails: ${nonFake.join(", ")}`);
 }
 
+// Phase 1A Batch 6: the real patient-data path must stay disabled (fail closed; Gate 7 only).
+const dataMode = readFileSync("lib/data-mode.ts", "utf8");
+if (!/REAL_DATA_ENABLED\s*=\s*false/.test(dataMode)) {
+  problems.push("lib/data-mode.ts: REAL_DATA_ENABLED must be false (real-data path stays disabled)");
+}
+if (!/DÉMO \/ PILOTE — données fictives/.test(dataMode)) {
+  problems.push("lib/data-mode.ts: visible fake-data marker (DATA_MODE_LABEL) missing");
+}
+
 if (problems.length) {
   console.error("✗ privacy/fake-data check found issues:");
   for (const p of problems) console.error("  - " + p);

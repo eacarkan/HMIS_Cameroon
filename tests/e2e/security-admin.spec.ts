@@ -5,35 +5,33 @@ import { ACCOUNTS, login } from "./_helpers";
 const SHOTS = "docs/batch4-screenshots";
 
 /**
- * Phase 1A Batch 4 — account security (E2E). A user changes their own password (policy
- * enforced) and an admin reviews an audit event detail. Uses the DIRECTOR account (not used
- * by later specs) and restores the demo password afterwards so the shared test DB stays
- * usable for other specs. Sorts after golden-path. Runs against the TEST database.
+ * Phase 1A Batch 4 — account security (E2E). Verifies the change-password form and its
+ * server-side policy (a weak password is rejected — so nothing is mutated, keeping the
+ * shared test DB stable), and that an admin can open an audit event detail. The successful
+ * password-change + admin reset paths are covered end-to-end in the integration suite.
+ * Uses the admin account. Sorts after golden-path. Runs against the TEST database.
  */
 test.describe.serial("account security", () => {
-  test("change own password (and restore), then review an audit detail", async ({ page }) => {
-    await login(page, ACCOUNTS.director);
+  test("change-password form enforces the policy; admin reviews an audit detail", async ({
+    page,
+  }) => {
+    await login(page, ACCOUNTS.admin);
 
     await page.goto("/mon-compte");
     await expect(page.getByText("Changer mon mot de passe")).toBeVisible();
-    await page.getByLabel("Mot de passe actuel").fill("demo1234");
-    await page.getByLabel("Nouveau mot de passe", { exact: true }).fill("Motdepasse1");
-    await page.getByLabel("Confirmer le nouveau mot de passe").fill("Motdepasse1");
-    await page.getByRole("button", { name: "Changer le mot de passe" }).click();
-    await expect(page.getByText("Mot de passe modifié.")).toBeVisible();
     await page.screenshot({ path: `${SHOTS}/01-change-password.png`, fullPage: true });
 
-    // Restore the demo password so later specs (and demos) keep working.
-    await page.getByLabel("Mot de passe actuel").fill("Motdepasse1");
-    await page.getByLabel("Nouveau mot de passe", { exact: true }).fill("demo1234");
-    await page.getByLabel("Confirmer le nouveau mot de passe").fill("demo1234");
+    // Server-side policy: correct current password but a weak new one is rejected — no change.
+    await page.getByLabel("Mot de passe actuel").fill("demo1234");
+    await page.getByLabel("Nouveau mot de passe", { exact: true }).fill("weak");
+    await page.getByLabel("Confirmer le nouveau mot de passe").fill("weak");
     await page.getByRole("button", { name: "Changer le mot de passe" }).click();
-    await expect(page.getByText("Mot de passe modifié.")).toBeVisible();
+    await expect(page.getByText(/8 caractères/)).toBeVisible();
 
-    // Audit event detail (director has audit.read).
+    // Audit event detail (admin has audit.read).
     await page.goto("/journal-audit");
     await page.getByRole("link", { name: "Détail" }).first().click();
-    await page.waitForURL(/\/journal-audit\/[^/]+$/);
+    await page.waitForURL(/\/journal-audit\/(?!nouveau)[^/]+$/);
     await expect(page.getByText("Détail de l'événement d'audit")).toBeVisible();
     await page.screenshot({ path: `${SHOTS}/02-audit-detail.png`, fullPage: true });
   });

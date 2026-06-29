@@ -7,6 +7,7 @@ import {
   Settings2,
   ScrollText,
   UserCog,
+  HeartPulse,
   type LucideIcon,
 } from "lucide-react";
 
@@ -67,6 +68,13 @@ export const NAV_ITEMS: NavItem[] = [
     labelKey: "audit",
     icon: ScrollText,
     capability: "audit.read",
+  },
+  {
+    href: "/etat-systeme",
+    labelKey: "systemStatus",
+    icon: HeartPulse,
+    // Oversight roles (admin manages config; director reads it).
+    capability: "config.read",
   },
   {
     // Visible to every authenticated user (all roles have dashboard.read).

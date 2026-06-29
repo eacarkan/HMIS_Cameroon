@@ -15,7 +15,11 @@
  * called-too-early path fails loudly instead of silently doing nothing.
  */
 
-export { getDatabaseStatus } from "./system-service";
+export {
+  type SystemStatus,
+  getDatabaseStatus,
+  getSystemStatus,
+} from "./system-service";
 export {
   type AuthenticatedActor,
   authenticateCredentials,

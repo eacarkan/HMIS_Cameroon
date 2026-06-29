@@ -56,6 +56,17 @@ for (const root of UI_ROOTS) {
   }
 }
 
+// Phase 1A Batch 6: `lib/` must stay pure — no imports from the server layer (so the pure
+// libs added across Batches 1A–5 remain client-safe and unit-testable in isolation).
+for (const file of walk("lib")) {
+  const src = readFileSync(file, "utf8");
+  if (/from\s+["']@\/server(\/[^"']*)?["']/.test(src)) {
+    violations.push(
+      `${file} imports @/server (lib/ must stay pure — keep server logic in server/services)`,
+    );
+  }
+}
+
 const missingLayers = REQUIRED_LAYERS.filter((l) => {
   try {
     return !statSync(l).isDirectory();

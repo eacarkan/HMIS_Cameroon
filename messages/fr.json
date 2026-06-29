@@ -40,6 +40,7 @@
     "cashierReport": "Rapport de caisse",
     "administration": "Administration",
     "audit": "Journal d'audit",
+    "systemStatus": "État du système",
     "myAccount": "Mon compte"
   },
   "topbar": {
@@ -292,6 +293,27 @@
     "detail": "Détail",
     "detailTitle": "Détail de l'événement d'audit",
     "backToList": "Retour au journal"
+  },
+  "systemStatus": {
+    "title": "État du système",
+    "subtitle": "Santé applicative et aptitude au pilote (données fictives)",
+    "health": "Santé applicative",
+    "appVersion": "Version de l'application",
+    "dataMode": "Mode de données",
+    "database": "Base de données",
+    "serverTime": "Heure du serveur",
+    "envValid": "Environnement valide",
+    "envMissing": "Variables manquantes",
+    "realData": "Chemin données réelles",
+    "enabled": "Activé",
+    "disabled": "Désactivé (Gate 7 requis)",
+    "readiness": "Aptitude au pilote (niveau application)",
+    "readinessNote": "Les sauvegardes et l'infrastructure relèvent d'un fournisseur spécialisé — hors application."
+  },
+  "errors": {
+    "title": "Une erreur est survenue",
+    "description": "Une erreur inattendue s'est produite. Vous pouvez réessayer ; si le problème persiste, contactez l'administrateur.",
+    "retry": "Réessayer"
   },
   "account": {
     "title": "Mon compte",
