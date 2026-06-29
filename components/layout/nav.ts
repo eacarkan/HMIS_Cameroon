@@ -6,6 +6,7 @@ import {
   Banknote,
   Settings2,
   ScrollText,
+  UserCog,
   type LucideIcon,
 } from "lucide-react";
 
@@ -66,5 +67,12 @@ export const NAV_ITEMS: NavItem[] = [
     labelKey: "audit",
     icon: ScrollText,
     capability: "audit.read",
+  },
+  {
+    // Visible to every authenticated user (all roles have dashboard.read).
+    href: "/mon-compte",
+    labelKey: "myAccount",
+    icon: UserCog,
+    capability: "dashboard.read",
   },
 ];

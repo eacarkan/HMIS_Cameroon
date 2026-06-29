@@ -16,6 +16,7 @@ export {
   listUsersForHospital,
   createUserRecord,
   setUserStatus,
+  updateUserPassword,
   findRoleByCode,
   findUserRoleInHospital,
   assignUserRole,
@@ -30,6 +31,7 @@ export {
   createAuditEntry,
   findAuditEntries,
   findEntityAuditTrail,
+  findAuditEntryById,
 } from "./audit";
 export { findHospitalsForUser, findHospitalById } from "./hospitals";
 export { nextSequenceValue } from "./sequence";

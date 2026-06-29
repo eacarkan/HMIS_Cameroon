@@ -1,6 +1,11 @@
 import bcrypt from "bcryptjs";
 
-import { findUserByEmailWithRoles } from "@/server/db";
+import { validatePassword } from "@/lib/password-policy";
+import {
+  findUserByEmailWithRoles,
+  findUserByIdWithRoles,
+  updateUserPassword,
+} from "@/server/db";
 import { AUDIT_ACTIONS, recordAudit } from "./audit-service";
 
 /**
@@ -65,4 +70,34 @@ export async function authenticateCredentials(
     hospitalCode,
     hospitalName,
   };
+}
+
+/**
+ * Change the current actor's own password (Phase 1A Batch 4): verify the current password,
+ * enforce the password policy, store a fresh bcrypt hash, and audit `auth.password_change`.
+ * No reset tokens, no secrets logged.
+ */
+export async function changeOwnPassword(
+  actor: AuthenticatedActor,
+  currentPassword: string,
+  newPassword: string,
+): Promise<void> {
+  const user = await findUserByIdWithRoles(actor.id);
+  if (!user) throw new Error("Utilisateur introuvable.");
+
+  const currentOk = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!currentOk) throw new Error("Le mot de passe actuel est incorrect.");
+
+  const check = validatePassword(newPassword);
+  if (!check.ok) throw new Error(check.errors[0]);
+
+  await updateUserPassword(actor.id, bcrypt.hashSync(newPassword, 10));
+  await recordAudit({
+    hospitalId: actor.hospitalId,
+    actorId: actor.id,
+    action: AUDIT_ACTIONS.authPasswordChange,
+    entityType: "User",
+    entityId: actor.id,
+    summary: `Changement de mot de passe — ${user.displayName}`,
+  });
 }

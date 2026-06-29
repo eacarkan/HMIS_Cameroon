@@ -190,7 +190,14 @@ export async function seedBaseData(prisma: PrismaClient): Promise<void> {
         email: u.email,
         passwordHash,
       },
-      update: { displayName: u.displayName, email: u.email },
+      // Restore the demo password + active status on reseed so tests that change a
+      // password (Phase 1A Batch 4) stay isolated. Fake demo password only.
+      update: {
+        displayName: u.displayName,
+        email: u.email,
+        passwordHash,
+        status: "active",
+      },
     });
 
     const role = roleByCode.get(u.roleCode);

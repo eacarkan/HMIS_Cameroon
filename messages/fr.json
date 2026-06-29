@@ -39,7 +39,8 @@
     "billing": "Facturation",
     "cashierReport": "Rapport de caisse",
     "administration": "Administration",
-    "audit": "Journal d'audit"
+    "audit": "Journal d'audit",
+    "myAccount": "Mon compte"
   },
   "topbar": {
     "hospitalLabel": "Hôpital actif",
@@ -280,7 +281,23 @@
     "colAction": "Action",
     "colEntity": "Entité",
     "colSummary": "Résumé",
-    "empty": "Aucune entrée."
+    "empty": "Aucune entrée.",
+    "detail": "Détail",
+    "detailTitle": "Détail de l'événement d'audit",
+    "backToList": "Retour au journal"
+  },
+  "account": {
+    "title": "Mon compte",
+    "changePasswordTitle": "Changer mon mot de passe",
+    "currentPassword": "Mot de passe actuel",
+    "newPassword": "Nouveau mot de passe",
+    "confirmPassword": "Confirmer le nouveau mot de passe",
+    "policyHint": "Au moins 8 caractères, avec une majuscule, une minuscule et un chiffre.",
+    "changePassword": "Changer le mot de passe",
+    "passwordChanged": "Mot de passe modifié.",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "reset": "Réinitialiser",
+    "done": "Fait"
   },
   "comingSoon": {
     "badge": "À venir",

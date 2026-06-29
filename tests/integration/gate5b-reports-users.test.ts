@@ -120,7 +120,7 @@ describe("integration: Gate 5B user / account lifecycle", () => {
     const { actor: rec, ctx: rctx } = await loginAndSelect(ACCOUNTS.reception);
     await expect(listUsers(rec, rctx)).rejects.toBeInstanceOf(AuthorizationError);
     await expect(
-      createUserForActor(rec, rctx, { displayName: "X", email: "x@hrb-demo.cm", password: "demo1234", roleCode: "agent_accueil" }),
+      createUserForActor(rec, rctx, { displayName: "X", email: "x@hrb-demo.cm", password: "Demo1234", roleCode: "agent_accueil" }),
     ).rejects.toBeInstanceOf(AuthorizationError);
     await expect(setUserActive(rec, rctx, "user-awa-njoya", false)).rejects.toBeInstanceOf(AuthorizationError);
     await expect(assignRoleForActor(rec, rctx, "user-awa-njoya", "caissier")).rejects.toBeInstanceOf(AuthorizationError);
@@ -134,7 +134,7 @@ describe("integration: Gate 5B user / account lifecycle", () => {
     const created = await createUserForActor(adm, ctx, {
       displayName: "Test User",
       email,
-      password: "demo1234",
+      password: "Demo1234",
       roleCode: "agent_accueil",
     });
     // The new user is assigned ONLY to the active hospital (no cross-hospital leakage).
@@ -177,7 +177,7 @@ describe("integration: Gate 5B admin-lockout safeguards", () => {
     return createUserForActor(adm, ctx, {
       displayName: "Second Admin",
       email,
-      password: "demo-temp-123",
+      password: "DemoTemp123",
       roleCode: "administrateur",
     });
   }

@@ -19,8 +19,16 @@ export { getDatabaseStatus } from "./system-service";
 export {
   type AuthenticatedActor,
   authenticateCredentials,
+  changeOwnPassword,
 } from "./auth-service";
-export { AUDIT_ACTIONS, recordAudit, listAuditEntries } from "./audit-service";
+export {
+  AUDIT_ACTIONS,
+  recordAudit,
+  recordSensitiveRead,
+  SENSITIVE_READ_AUDIT_ENABLED,
+  listAuditEntries,
+  getAuditEntry,
+} from "./audit-service";
 export { requireCapability } from "./authz-service";
 export {
   getAccessibleHospitals,
@@ -131,6 +139,7 @@ export {
   setUserActive,
   assignRoleForActor,
   removeRoleForActor,
+  resetUserPassword,
   LAST_ADMIN_ERROR,
   SELF_DEACTIVATE_ERROR,
   SELF_ADMIN_REMOVAL_ERROR,

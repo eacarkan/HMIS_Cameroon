@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
@@ -62,13 +63,14 @@ export default async function JournalAuditPage({
               <th className="px-4 py-2.5 font-medium">{t("colAction")}</th>
               <th className="px-4 py-2.5 font-medium">{t("colEntity")}</th>
               <th className="px-4 py-2.5 font-medium">{t("colSummary")}</th>
+              <th className="px-4 py-2.5"></th>
             </tr>
           </thead>
           <tbody>
             {entries.length === 0 ? (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={6}
                   className="text-muted-foreground px-4 py-8 text-center"
                 >
                   {t("empty")}
@@ -98,6 +100,14 @@ export default async function JournalAuditPage({
                     {entry.entityType}
                   </td>
                   <td className="px-4 py-2.5">{entry.summary}</td>
+                  <td className="px-4 py-2.5 text-right">
+                    <Link
+                      href={`/journal-audit/${entry.id}`}
+                      className="text-primary text-xs hover:underline"
+                    >
+                      {t("detail")}
+                    </Link>
+                  </td>
                 </tr>
               ))
             )}

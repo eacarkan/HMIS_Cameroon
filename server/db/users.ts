@@ -55,6 +55,11 @@ export function setUserStatus(id: string, status: UserStatus) {
   return prisma.user.update({ where: { id }, data: { status } });
 }
 
+/** Update a user's password hash (Phase 1A Batch 4 — change / admin reset). */
+export function updateUserPassword(id: string, passwordHash: string) {
+  return prisma.user.update({ where: { id }, data: { passwordHash } });
+}
+
 export function findRoleByCode(code: string) {
   return prisma.role.findUnique({ where: { code } });
 }

@@ -53,6 +53,14 @@ export function findEntityAuditTrail(
   });
 }
 
+/** A single audit entry within a hospital, with its actor (for the detail view). */
+export function findAuditEntryById(hospitalId: string, id: string) {
+  return prisma.auditLog.findFirst({
+    where: { id, hospitalId },
+    include: { actor: true },
+  });
+}
+
 export function createAuditEntry(entry: AuditEntryInput) {
   return prisma.auditLog.create({
     data: {

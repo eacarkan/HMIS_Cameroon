@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
+import { ResetPasswordForm } from "@/components/account/change-password-form";
 import {
   CreateUserForm,
   UserStatusToggle,
@@ -97,7 +98,10 @@ export default async function UsersAdminPage() {
                       </Badge>
                     </td>
                     <td className="py-3 text-right">
-                      <UserStatusToggle userId={u.id} active={u.status === "active"} />
+                      <div className="flex flex-col items-end gap-2">
+                        <UserStatusToggle userId={u.id} active={u.status === "active"} />
+                        <ResetPasswordForm userId={u.id} />
+                      </div>
                     </td>
                   </tr>
                 ))}

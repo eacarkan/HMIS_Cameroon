@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
 import { authenticateCredentials } from "@/server/services";
+import { SESSION_MAX_AGE_SECONDS } from "@/lib/account-security";
 import { z } from "@/lib/validation";
 
 /**
@@ -16,7 +17,7 @@ const credentialsSchema = z.object({
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  session: { strategy: "jwt" },
+  session: { strategy: "jwt", maxAge: SESSION_MAX_AGE_SECONDS },
   trustHost: true,
   pages: { signIn: "/connexion" },
   providers: [

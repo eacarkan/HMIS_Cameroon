@@ -2,11 +2,14 @@ import { randomUUID } from "node:crypto";
 
 import bcrypt from "bcryptjs";
 
+import { canAssignRole } from "@/lib/account-security";
+import { validatePassword } from "@/lib/password-policy";
 import {
   type HospitalContext,
   listUsersForHospital,
   createUserRecord,
   setUserStatus,
+  updateUserPassword,
   findRoleByCode,
   findUserRoleInHospital,
   assignUserRole,
@@ -51,9 +54,9 @@ export async function createUserForActor(
   input: { displayName: string; email: string; password: string; roleCode: string },
 ) {
   await requireCapability(actor, ctx, "user.manage", { type: "User" });
-  if (input.password.trim().length < 6) {
-    throw new Error("Mot de passe temporaire trop court (6 caractères minimum).");
-  }
+  const policy = validatePassword(input.password);
+  if (!policy.ok) throw new Error(policy.errors[0]);
+  if (!canAssignRole(input.roleCode)) throw new Error("Rôle non assignable.");
   const role = await findRoleByCode(input.roleCode);
   if (!role) throw new Error("Rôle inconnu.");
 
@@ -122,6 +125,9 @@ export async function assignRoleForActor(
   roleCode: string,
 ) {
   await requireCapability(actor, ctx, "user.manage", { type: "UserRole", id: userId });
+  // Role-assignment safeguard (Batch 4): only known coarse roles may be granted (no unknown
+  // / over-privileged codes); admin-only is already enforced by the capability check above.
+  if (!canAssignRole(roleCode)) throw new Error("Rôle non assignable.");
   const role = await findRoleByCode(roleCode);
   if (!role) throw new Error("Rôle inconnu.");
   await assignUserRole(userId, role.id, ctx.hospitalId);
@@ -133,6 +139,35 @@ export async function assignRoleForActor(
     entityId: userId,
     summary: `Attribution du rôle ${role.name}`,
   });
+}
+
+/**
+ * Admin password reset (Phase 1A Batch 4): an administrator sets a new password for a user
+ * in the active hospital (policy-checked, bcrypt-hashed, audited). No reset tokens / email
+ * (prototype). Hospital-scoped via UserRole.
+ */
+export async function resetUserPassword(
+  actor: AuthenticatedActor,
+  ctx: HospitalContext,
+  userId: string,
+  newPassword: string,
+) {
+  await requireCapability(actor, ctx, "user.manage", { type: "User", id: userId });
+  const assigned = await findUserRoleInHospital(userId, ctx.hospitalId);
+  if (!assigned) throw new Error("Utilisateur introuvable dans cet hôpital.");
+  const policy = validatePassword(newPassword);
+  if (!policy.ok) throw new Error(policy.errors[0]);
+
+  const user = await updateUserPassword(userId, bcrypt.hashSync(newPassword, 10));
+  await recordAudit({
+    hospitalId: ctx.hospitalId,
+    actorId: actor.id,
+    action: AUDIT_ACTIONS.authPasswordReset,
+    entityType: "User",
+    entityId: userId,
+    summary: `Réinitialisation du mot de passe — ${user.displayName}`,
+  });
+  return user;
 }
 
 export async function removeRoleForActor(

@@ -3,6 +3,7 @@ import {
   type HospitalContext,
   createAuditEntry,
   findAuditEntries,
+  findAuditEntryById,
 } from "@/server/db";
 import { AuthorizationError, can } from "@/server/authz";
 import type { AuthenticatedActor } from "./auth-service";
@@ -75,7 +76,38 @@ export const AUDIT_ACTIONS = {
   userDeactivate: "user.deactivate",
   roleAssign: "role.assign",
   roleRemove: "role.remove",
+  // Phase 1A (Batch 4) — account security.
+  authPasswordChange: "auth.password_change",
+  authPasswordReset: "auth.password_reset",
+  sensitiveRead: "sensitive.read",
 } as const;
+
+/**
+ * Sensitive-read audit hook (Phase 1A Batch 4) — WIRED BUT INERT. Logging which users read
+ * which sensitive records is a privacy decision for the MINSANTE (`à confirmer par le
+ * MINSANTE`). Until that policy is set, this flag stays `false` and `recordSensitiveRead`
+ * is a no-op. Activating it must be a deliberate, reviewed change — not done here.
+ */
+export const SENSITIVE_READ_AUDIT_ENABLED = false;
+
+/** Inert by default — records a `sensitive.read` audit ONLY if the policy is activated. */
+export async function recordSensitiveRead(entry: {
+  hospitalId: string;
+  actorId: string;
+  entityType: string;
+  entityId: string;
+  summary: string;
+}) {
+  if (!SENSITIVE_READ_AUDIT_ENABLED) return; // pending MINSANTE policy — no-op
+  await recordAudit({
+    hospitalId: entry.hospitalId,
+    actorId: entry.actorId,
+    action: AUDIT_ACTIONS.sensitiveRead,
+    entityType: entry.entityType,
+    entityId: entry.entityId,
+    summary: entry.summary,
+  });
+}
 
 export function recordAudit(entry: AuditEntryInput) {
   return createAuditEntry(entry);
@@ -94,4 +126,16 @@ export async function listAuditEntries(
     throw new AuthorizationError("audit.read");
   }
   return findAuditEntries(ctx.hospitalId, { action: opts.action, limit: 100 });
+}
+
+/** Read a single audit entry (detail view). Requires `audit.read`; hospital-scoped. */
+export async function getAuditEntry(
+  actor: AuthenticatedActor,
+  ctx: HospitalContext,
+  id: string,
+) {
+  if (!can(actor.roles, "audit.read")) {
+    throw new AuthorizationError("audit.read");
+  }
+  return findAuditEntryById(ctx.hospitalId, id);
 }
