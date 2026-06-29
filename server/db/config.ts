@@ -122,6 +122,23 @@ export function listActiveServiceUnits(hospitalId: string) {
   });
 }
 
+/** Phase 2 QA — active OUTPATIENT services that accept consultation, for the outpatient
+ *  visit picker. Hospital-scoped at the DB layer; mirrors lib `isOutpatientConsultationService`
+ *  (active + type OUTPATIENT + acceptsConsultation). Excludes support/cashier/pharmacy/lab/
+ *  imaging/inpatient/inactive services and other hospitals. */
+export function listActiveOutpatientConsultationServices(hospitalId: string) {
+  return prisma.serviceUnit.findMany({
+    where: {
+      hospitalId,
+      deletedAt: null,
+      isActive: true,
+      type: "OUTPATIENT",
+      acceptsConsultation: true,
+    },
+    orderBy: [{ displayOrder: "asc" }, { code: "asc" }],
+  });
+}
+
 /** Resolve an active service in a hospital by label (nameFr / name) or code — Phase 2B link
  *  from the visit-form selection to the configured ServiceUnit. */
 export function findActiveServiceUnitByLabel(hospitalId: string, label: string) {

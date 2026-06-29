@@ -7,7 +7,7 @@ import { PatientBanner } from "@/components/patients/patient-banner";
 import { Card, CardContent } from "@/components/ui/card";
 import { can } from "@/lib/rbac";
 import { requireActorAndHospital } from "@/server/auth";
-import { getPatient, listActiveServices } from "@/server/services";
+import { getPatient, listActiveOutpatientConsultationServices } from "@/server/services";
 
 export default async function NewEncounterPage({
   params,
@@ -21,11 +21,15 @@ export default async function NewEncounterPage({
   const patient = await getPatient(actor, hospital, id);
   if (!patient) notFound();
 
-  // Phase 2A — feed the visit form from the active service catalogue (downstream picker);
-  // fall back gracefully if the actor lacks the view capability.
+  // Phase 2 QA — the outpatient visit form is restricted to ACTIVE OUTPATIENT services that
+  // accept consultation (excludes support/cashier/pharmacy/lab/imaging/inpatient). Falls back
+  // to the built-in list ONLY when no such service is configured (the form handles the empty
+  // case); a valid configured catalogue is never overridden.
   let services: string[] = [];
   try {
-    services = (await listActiveServices(actor, hospital)).map((s) => s.nameFr ?? s.name);
+    services = (await listActiveOutpatientConsultationServices(actor, hospital)).map(
+      (s) => s.nameFr ?? s.name,
+    );
   } catch {
     services = [];
   }

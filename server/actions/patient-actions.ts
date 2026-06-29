@@ -48,7 +48,8 @@ function resolveAge(
 ): { dateOfBirth: Date; isEstimatedAge: boolean; estimatedAge: number | null } | { error: string } {
   const estStr = (estimatedAgeRaw ?? "").trim();
   const estimatedAge = estStr ? Number(estStr) : null;
-  const check = validateAgeInput({ dateOfBirth, estimatedAge });
+  // Phase 2 QA — pass `now` so a provided DOB is also checked for parse / future / >130y.
+  const check = validateAgeInput({ dateOfBirth, estimatedAge }, new Date());
   if (!check.ok) return { error: check.error! };
   if (estimatedAge !== null) {
     return {

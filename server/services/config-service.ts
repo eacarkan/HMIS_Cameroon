@@ -15,6 +15,7 @@ import {
   listServiceUnits as dbListServiceUnits,
   listServiceUnitsOrdered as dbListServiceUnitsOrdered,
   listActiveServiceUnits as dbListActiveServiceUnits,
+  listActiveOutpatientConsultationServices as dbListActiveOutpatientConsultationServices,
   reorderServiceUnits as dbReorderServiceUnits,
   createServiceUnit as dbCreateServiceUnit,
   findServiceUnitById,
@@ -158,6 +159,17 @@ export async function listActiveServices(
 ) {
   await requireCapability(actor, ctx, "service.config.view");
   return dbListActiveServiceUnits(ctx.hospitalId);
+}
+
+/** Active OUTPATIENT services that accept consultation — the OUTPATIENT VISIT picker (Phase 2
+ *  QA). Hospital-scoped (service-layer capability + DB-layer where clause); excludes
+ *  support/cashier/pharmacy/lab/imaging/inpatient/inactive services. */
+export async function listActiveOutpatientConsultationServices(
+  actor: AuthenticatedActor,
+  ctx: HospitalContext,
+) {
+  await requireCapability(actor, ctx, "service.config.view");
+  return dbListActiveOutpatientConsultationServices(ctx.hospitalId);
 }
 
 export async function createServiceUnit(

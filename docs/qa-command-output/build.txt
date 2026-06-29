@@ -9,39 +9,47 @@
 - Environments: .env
 
   Creating an optimized production build ...
-✓ Compiled successfully in 2.3s
+✓ Compiled successfully in 2.2s
   Running TypeScript ...
-  Finished TypeScript in 3.0s ...
+  Finished TypeScript in 4.3s ...
   Collecting page data using 9 workers ...
-  Generating static pages using 9 workers (0/12) ...
-  Generating static pages using 9 workers (3/12) 
-  Generating static pages using 9 workers (6/12) 
-  Generating static pages using 9 workers (9/12) 
-✓ Generating static pages using 9 workers (12/12) in 148ms
+  Generating static pages using 9 workers (0/19) ...
+  Generating static pages using 9 workers (4/19) 
+  Generating static pages using 9 workers (9/19) 
+  Generating static pages using 9 workers (14/19) 
+✓ Generating static pages using 9 workers (19/19) in 151ms
   Finalizing page optimization ...
 
 Route (app)
 ┌ ƒ /
-├ ○ /_not-found
+├ ƒ /_not-found
 ├ ƒ /administration
+├ ƒ /administration/tarifs
+├ ƒ /administration/utilisateurs
 ├ ƒ /api/auth/[...nextauth]
 ├ ƒ /connexion
 ├ ƒ /consultations
+├ ƒ /consultations/[id]
 ├ ƒ /encounters/[id]
 ├ ƒ /encounters/[id]/consultation/nouvelle
 ├ ƒ /encounters/[id]/facturation
+├ ƒ /etat-systeme
 ├ ƒ /facturation
 ├ ƒ /factures/[id]
 ├ ƒ /journal-audit
+├ ƒ /journal-audit/[id]
+├ ƒ /mon-compte
 ├ ƒ /patients
 ├ ƒ /patients/[id]
 ├ ƒ /patients/[id]/visite/nouvelle
 ├ ƒ /patients/nouveau
+├ ƒ /patients/temporaire
+├ ƒ /rapports-caisse
+├ ƒ /rapports-caisse/export
 ├ ƒ /recus/[id]
 └ ƒ /selection-hopital
 
 
-○  (Static)   prerendered as static content
 ƒ  (Dynamic)  server-rendered on demand
 
 # exit code: 0

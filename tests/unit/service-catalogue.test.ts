@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { can } from "@/lib/rbac";
 import {
   SERVICE_TYPES,
+  isOutpatientConsultationService,
   isServiceType,
   normalizeDisplayOrder,
   validateServiceCatalogueInput,
@@ -101,5 +102,38 @@ describe("unit: RBAC — Phase 2A capability re-scope (admin is not a clinical s
   it("reception keeps patient entry; cashier keeps payment (unchanged)", () => {
     expect(can(["agent_accueil"], "patient.create")).toBe(true);
     expect(can(["caissier"], "payment.record")).toBe(true);
+  });
+});
+
+describe("unit: isOutpatientConsultationService (Phase 2 QA — visit picker eligibility)", () => {
+  const svc = (over: Partial<{ type: string; isActive: boolean; acceptsConsultation: boolean }>) => ({
+    type: "OUTPATIENT",
+    isActive: true,
+    acceptsConsultation: true,
+    ...over,
+  });
+
+  it("accepts an active OUTPATIENT service that accepts consultation", () => {
+    expect(isOutpatientConsultationService(svc({}))).toBe(true);
+  });
+
+  it("excludes non-outpatient/support/inpatient types", () => {
+    for (const type of [
+      "SUPPORT",
+      "CASHIER",
+      "PHARMACY",
+      "LABORATORY",
+      "IMAGING",
+      "INPATIENT_WARD",
+      "ADMINISTRATION",
+      "EMERGENCY",
+    ]) {
+      expect(isOutpatientConsultationService(svc({ type }))).toBe(false);
+    }
+  });
+
+  it("excludes inactive services and those that do not accept consultation", () => {
+    expect(isOutpatientConsultationService(svc({ isActive: false }))).toBe(false);
+    expect(isOutpatientConsultationService(svc({ acceptsConsultation: false }))).toBe(false);
   });
 });

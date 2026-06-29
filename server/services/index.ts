@@ -95,6 +95,7 @@ export {
   listServiceUnits,
   listServiceCatalogue,
   listActiveServices,
+  listActiveOutpatientConsultationServices,
   createServiceUnit,
   updateServiceUnit,
   deactivateServiceUnit,

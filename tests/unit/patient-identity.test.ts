@@ -39,4 +39,13 @@ describe("unit: patient-identity (Phase 2B)", () => {
     expect(validateAgeInput({ estimatedAge: 1.5 }).ok).toBe(false);
     expect(validateAgeInput({ estimatedAge: MAX_ESTIMATED_AGE + 1 }).ok).toBe(false);
   });
+
+  it("validateAgeInput hardens a provided DOB (Phase 2 QA): parse / future / >130y", () => {
+    const now = new Date("2026-06-29T00:00:00Z");
+    expect(validateAgeInput({ dateOfBirth: "not-a-date" }, now).ok).toBe(false);
+    expect(validateAgeInput({ dateOfBirth: "2030-01-01" }, now).ok).toBe(false); // future
+    expect(validateAgeInput({ dateOfBirth: "1880-01-01" }, now).ok).toBe(false); // >130y
+    expect(validateAgeInput({ dateOfBirth: "1990-05-05" }, now).ok).toBe(true); // valid
+    expect(validateAgeInput({ estimatedAge: 30 }, now).ok).toBe(true); // estimated path intact
+  });
 });

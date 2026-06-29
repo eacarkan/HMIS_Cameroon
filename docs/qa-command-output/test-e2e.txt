@@ -12,17 +12,1218 @@
 ✓ Reset complete — known starting state restored:
   operational records cleared (patients=0, encounters=0, invoices=0, payments=0); counters at 0; base demo data re-seeded.
 
-Running 8 tests using 1 worker
+Running 22 tests using 1 worker
 
-  ✓  1 [chromium] › tests/e2e/golden-path.spec.ts:11:7 › golden path › E2E-01 login + hospital selection → dashboard (1.8s)
-  ✓  2 [chromium] › tests/e2e/golden-path.spec.ts:27:7 › golden path › E2E-02 patient search-before-create (2.3s)
-  ✓  3 [chromium] › tests/e2e/golden-path.spec.ts:56:7 › golden path › E2E-03 open a visit (2.2s)
-  ✓  4 [chromium] › tests/e2e/golden-path.spec.ts:73:7 › golden path › E2E-03b record the consultation (doctor) (1.8s)
-  ✓  5 [chromium] › tests/e2e/golden-path.spec.ts:94:7 › golden path › E2E-04 invoice + payment + receipt (cashier) (3.0s)
-  ✓  6 [chromium] › tests/e2e/golden-path.spec.ts:127:7 › golden path › E2E-05 dashboard + audit (director) (1.1s)
-  ✓  7 [chromium] › tests/e2e/logout.spec.ts:9:5 › logout returns the user to the login screen (1.1s)
-  ✓  8 [chromium] › tests/e2e/rbac.spec.ts:11:5 › E2E-06 receptionist nav is filtered and guarded routes redirect (1.2s)
+  ✓   1 [chromium] › tests/e2e/golden-path.spec.ts:11:7 › golden path › E2E-01 login + hospital selection → dashboard (2.0s)
+  ✓   2 [chromium] › tests/e2e/golden-path.spec.ts:27:7 › golden path › E2E-02 patient search-before-create (2.5s)
+  ✓   3 [chromium] › tests/e2e/golden-path.spec.ts:56:7 › golden path › E2E-03 open a visit (2.4s)
+  ✓   4 [chromium] › tests/e2e/golden-path.spec.ts:73:7 › golden path › E2E-03b record the consultation (doctor) (2.2s)
+  ✓   5 [chromium] › tests/e2e/golden-path.spec.ts:94:7 › golden path › E2E-04 invoice + payment + receipt (cashier) (3.1s)
+  ✓   6 [chromium] › tests/e2e/golden-path.spec.ts:130:7 › golden path › E2E-05 dashboard + audit (director) (1.3s)
+  ✓   7 [chromium] › tests/e2e/lifecycle-encounter.spec.ts:14:7 › encounter lifecycle › open a visit, view timeline, assign service, then close it (2.2s)
+  ✓   8 [chromium] › tests/e2e/logout.spec.ts:9:5 › logout returns the user to the login screen (1.2s)
+  ✓   9 [chromium] › tests/e2e/note-clinical.spec.ts:14:7 › clinical note › draft → finalize → print → amend (6.0s)
+[WebServer] [browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+[WebServer] 
+[WebServer] - A server/client branch `if (typeof window !== 'undefined')`.
+[WebServer] - Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+[WebServer] - Date formatting in a user's locale which doesn't match the server.
+[WebServer] - External changing data without sending a snapshot of it along with the HTML.
+[WebServer] - Invalid HTML tag nesting.
+[WebServer] 
+[WebServer] It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+[WebServer] 
+[WebServer] https://react.dev/link/hydration-mismatch
+[WebServer] 
+[WebServer]   ...
+[WebServer]     <HTTPAccessFallbackBoundary notFound={<SegmentViewNode>} forbidden={undefined} unauthorized={undefined}>
+[WebServer]       <HTTPAccessFallbackErrorBoundary pathname="/patients" notFound={<SegmentViewNode>} forbidden={undefined} ...>
+[WebServer]         <RedirectBoundary>
+[WebServer]           <RedirectErrorBoundary router={{...}}>
+[WebServer]             <InnerLayoutRouter url={"/patient..."} tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>
+[WebServer]               <SegmentViewNode type="layout" pagePath="(app)/layo...">
+[WebServer]                 <SegmentTrieNode>
+[WebServer]                 <script>
+[WebServer]                 <script>
+[WebServer]                 <script>
+[WebServer]                 <AppLayout>
+[WebServer]                   <AppShell>
+[WebServer]                     <div className="flex h-scr...">
+[WebServer]                       <div>
+[WebServer]                       <div className="flex min-h...">
+[WebServer]                         <Sidebar>
+[WebServer]                         <div className="flex min-w...">
+[WebServer]                           <Topbar actor={{id:"user-b...", ...}} hospital={{...}} hospitals={[...]}>
+[WebServer]                             <header className="bg-card fl...">
+[WebServer]                               <DropdownMenu>
+[WebServer]                               <div className="relative m...">
+[WebServer]                                 <Search>
+[WebServer]                                 <input
+[WebServer]                                   type="search"
+[WebServer]                                   disabled={true}
+[WebServer]                                   placeholder="Rechercher…"
+[WebServer]                                   className="bg-background w-full rounded-md border py-1.5 pr-3 pl-9 text-sm disabled:..."
+[WebServer] -                                 style={{caret-color:"transparent"}}
+[WebServer]                                 >
+[WebServer]                               ...
+[WebServer]                           ...
+[WebServer]                             <PatientsPage>
+[WebServer]                               <div>
+[WebServer]                               <PatientSearchForm values={{q:"NDONGO", ...}}>
+[WebServer]                                 <form action="/patients" className="mb-5 grid ...">
+[WebServer]                                   <div className="relative s...">
+[WebServer]                                     <Search>
+[WebServer]                                     <input
+[WebServer]                                       type="search"
+[WebServer]                                       name="q"
+[WebServer]                                       defaultValue="NDONGO"
+[WebServer]                                       aria-label="Nom, prénom ou n° patient…"
+[WebServer]                                       placeholder="Nom, prénom ou n° patient…"
+[WebServer]                                       className="border-input bg-card h-9 w-full rounded-md border py-1.5 pr-3 pl-9 te..."
+[WebServer] -                                     style={{caret-color:"transparent"}}
+[WebServer]                                     >
+[WebServer]                                   <input
+[WebServer]                                     type="tel"
+[WebServer]                                     name="phone"
+[WebServer]                                     defaultValue=""
+[WebServer]                                     aria-label="Téléphone"
+[WebServer]                                     placeholder="Téléphone"
+[WebServer]                                     className="border-input bg-card h-9 w-full rounded-md border px-3 py-1.5 text-sm"
+[WebServer] -                                   style={{caret-color:"transparent"}}
+[WebServer]                                   >
+[WebServer]                                   <input
+[WebServer]                                     type="text"
+[WebServer]                                     name="identifier"
+[WebServer]                                     defaultValue=""
+[WebServer]                                     aria-label="Identifiant"
+[WebServer]                                     placeholder="Identifiant"
+[WebServer]                                     className="border-input bg-card h-9 w-full rounded-md border px-3 py-1.5 text-sm"
+[WebServer] -                                   style={{caret-color:"transparent"}}
+[WebServer]                                   >
+[WebServer]                                   ...
+[WebServer]                               ...
+[WebServer]             ...
+[WebServer]  
+[WebServer]     at <unknown> (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:3439:25)
+[WebServer]     at runWithFiberInDEV (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:965:74)
+[WebServer]     at emitPendingHydrationWarnings (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:3438:13)
+[WebServer]     at completeWork (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:6885:102)
+[WebServer]     at runWithFiberInDEV (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:965:131)
+[WebServer]     at completeUnitOfWork (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9622:23)
+[WebServer]     at performUnitOfWork (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9557:28)
+[WebServer]     at workLoopConcurrentByScheduler (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9551:58)
+[WebServer]     at renderRootConcurrent (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9534:71)
+[WebServer]     at performWorkOnRoot (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9061:150)
+[WebServer]     at performWorkOnRootViaSchedulerTask (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:10255:9)
+[WebServer]     at MessagePort.performWorkUntilDeadline (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_1amofcm._.js:2647:64) (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:3439:25)
+  ✓  10 [chromium] › tests/e2e/patient-duplicate.spec.ts:18:7 › patient duplicate warning › reception searches (no match) then registers without a warning (2.7s)
+  ✓  11 [chromium] › tests/e2e/patient-duplicate.spec.ts:48:7 › patient duplicate warning › registering the same identity shows a warning, then 'Créer quand même' creates it (1.5s)
+  ✓  12 [chromium] › tests/e2e/patient-duplicate.spec.ts:73:7 › patient duplicate warning › the duplicate-warning override is recorded in the audit log (1.3s)
+  ✓  13 [chromium] › tests/e2e/patients-identity-2b.spec.ts:7:7 › Phase 2B — patient identity › reception registers a patient by estimated age + guardian phone (1.5s)
+  ✓  14 [chromium] › tests/e2e/patients-identity-2b.spec.ts:20:7 › Phase 2B — patient identity › reception creates a temporary (unidentified) patient with an Inconnu_ id (1.9s)
+  ✓  15 [chromium] › tests/e2e/rbac.spec.ts:11:5 › E2E-06 receptionist nav is filtered and guarded routes redirect (1.3s)
+  ✓  16 [chromium] › tests/e2e/security-admin.spec.ts:15:7 › account security › change-password form enforces the policy; admin reviews an audit detail (2.1s)
+[WebServer] [browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+[WebServer] 
+[WebServer] - A server/client branch `if (typeof window !== 'undefined')`.
+[WebServer] - Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+[WebServer] - Date formatting in a user's locale which doesn't match the server.
+[WebServer] - External changing data without sending a snapshot of it along with the HTML.
+[WebServer] - Invalid HTML tag nesting.
+[WebServer] 
+[WebServer] It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+[WebServer] 
+[WebServer] https://react.dev/link/hydration-mismatch
+[WebServer] 
+[WebServer]   ...
+[WebServer]     <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
+[WebServer]       <RedirectBoundary>
+[WebServer]         <RedirectErrorBoundary router={{...}}>
+[WebServer]           <InnerLayoutRouter url="/administr..." tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>
+[WebServer]             <SegmentViewNode type="page" pagePath="(app)/admi...">
+[WebServer]               <SegmentTrieNode>
+[WebServer]               <AdministrationPage>
+[WebServer]                 <div>
+[WebServer]                 <div className="grid gap-6...">
+[WebServer]                   <div>
+[WebServer]                   ...
+[WebServer]                     <ServiceCatalogueSection services={[...]} departments={[...]}>
+[WebServer]                       <div>
+[WebServer]                         <ul className="divide-y t...">
+[WebServer]                           <li>
+[WebServer]                           <li>
+[WebServer]                           <li>
+[WebServer]                           <li>
+[WebServer]                           <li>
+[WebServer]                           <li>
+[WebServer]                           <li>
+[WebServer]                           <li>
+[WebServer]                           ...
+[WebServer]                             <FlagCheckboxes values={{id:"cmqzp6...", ...}}>
+[WebServer]                               <div className="flex flex-...">
+[WebServer]                                 <label className="flex items...">
+[WebServer]                                   <input
+[WebServer]                                     type="checkbox"
+[WebServer]                                     name="acceptsQueue"
+[WebServer]                                     defaultChecked={false}
+[WebServer] -                                   style={{caret-color:"transparent"}}
+[WebServer]                                   >
+[WebServer]                                   ...
+[WebServer]                                 <label className="flex items...">
+[WebServer]                                   <input
+[WebServer]                                     type="checkbox"
+[WebServer]                                     name="acceptsConsultation"
+[WebServer]                                     defaultChecked={true}
+[WebServer] -                                   style={{caret-color:"transparent"}}
+[WebServer]                                   >
+[WebServer]                                   ...
+[WebServer]                                 <label className="flex items...">
+[WebServer]                                   <input
+[WebServer]                                     type="checkbox"
+[WebServer]                                     name="supportsBilling"
+[WebServer]                                     defaultChecked={true}
+[WebServer] -                                   style={{caret-color:"transparent"}}
+[WebServer]                                   >
+[WebServer]                                   ...
+[WebServer]                                 <label className="flex items...">
+[WebServer]                                   <input
+[WebServer]                                     type="checkbox"
+[WebServer]                                     name="supportsPharmacy"
+[WebServer]                                     defaultChecked={false}
+[WebServer] -                                   style={{caret-color:"transparent"}}
+[WebServer]                                   >
+[WebServer]                                   ...
+[WebServer]                                 <label className="flex items...">
+[WebServer]                                   <input
+[WebServer]                                     type="checkbox"
+[WebServer]                                     name="supportsLab"
+[WebServer]                                     defaultChecked={false}
+[WebServer] -                                   style={{caret-color:"transparent"}}
+[WebServer]                                   >
+[WebServer]                                   ...
+[WebServer]                                 <label className="flex items...">
+[WebServer]                                   <input
+[WebServer]                                     type="checkbox"
+[WebServer]                                     name="supportsImaging"
+[WebServer]                                     defaultChecked={false}
+[WebServer] -                                   style={{caret-color:"transparent"}}
+[WebServer]                                   >
+[WebServer]                                   ...
+[WebServer]                                 <label className="flex items...">
+[WebServer]                                   <input
+[WebServer]                                     type="checkbox"
+[WebServer]                                     name="isInpatientWard"
+[WebServer]                                     defaultChecked={true}
+[WebServer] -                                   style={{caret-color:"transparent"}}
+[WebServer]                                   >
+[WebServer]                                   ...
+[WebServer]                                 <label className="flex items...">
+[WebServer]                                   <input
+[WebServer]                                     type="checkbox"
+[WebServer]                                     name="isEmergency"
+[WebServer]                                     defaultChecked={false}
+[WebServer] -                                   style={{caret-color:"transparent"}}
+[WebServer]                                   >
+[WebServer]                                   ...
+[WebServer]                           ...
+[WebServer]                             <div className="mt-3 space...">
+[WebServer]                               <ServiceEditForm service={{id:"cmqzp6...", ...}} departments={[...]}>
+[WebServer]                                 <form action={function bound dispatchActionState} className="grid gap-3...">
+[WebServer]                                   <Field label="Nom (franç...">
+[WebServer]                                     <div className="grid gap-1">
+[WebServer]                                       <Label>
+[WebServer]                                       <Input name="nameFr" defaultValue="Accueil" required={true}>
+[WebServer]                                         <input
+[WebServer]                                           type={undefined}
+[WebServer]                                           data-slot="input"
+[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
+[WebServer]                                           name="nameFr"
+[WebServer]                                           defaultValue="Accueil"
+[WebServer]                                           required={true}
+[WebServer] -                                         style={{caret-color:"transparent"}}
+[WebServer]                                         >
+[WebServer]                                   <Field label="Nom (anglais)">
+[WebServer]                                     <div className="grid gap-1">
+[WebServer]                                       <Label>
+[WebServer]                                       <Input name="nameEn" defaultValue="Reception">
+[WebServer]                                         <input
+[WebServer]                                           type={undefined}
+[WebServer]                                           data-slot="input"
+[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
+[WebServer]                                           name="nameEn"
+[WebServer]                                           defaultValue="Reception"
+[WebServer] -                                         style={{caret-color:"transparent"}}
+[WebServer]                                         >
+[WebServer]                                   <Field>
+[WebServer]                                   <Field label="Ordre">
+[WebServer]                                     <div className="grid gap-1">
+[WebServer]                                       <Label>
+[WebServer]                                       <Input name="displayOrder" type="number" min={0} defaultValue={10}>
+[WebServer]                                         <input
+[WebServer]                                           type="number"
+[WebServer]                                           data-slot="input"
+[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
+[WebServer]                                           name="displayOrder"
+[WebServer]                                           min={0}
+[WebServer]                                           defaultValue={10}
+[WebServer] -                                         style={{caret-color:"transparent"}}
+[WebServer]                                         >
+[WebServer]                                   ...
+[WebServer]                               ...
+[WebServer]                                 <FlagCheckboxes values={{id:"cmqzp6...", ...}}>
+[WebServer]                                   <div className="flex flex-...">
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="acceptsQueue"
+[WebServer]                                         defaultChecked={true}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="acceptsConsultation"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsBilling"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsPharmacy"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsLab"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsImaging"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="isInpatientWard"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="isEmergency"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                           ...
+[WebServer]                             <div className="mt-3 space...">
+[WebServer]                               <ServiceEditForm service={{id:"cmqzp6...", ...}} departments={[...]}>
+[WebServer]                                 <form action={function bound dispatchActionState} className="grid gap-3...">
+[WebServer]                                   <Field label="Nom (franç...">
+[WebServer]                                     <div className="grid gap-1">
+[WebServer]                                       <Label>
+[WebServer]                                       <Input name="nameFr" defaultValue="Caisse" required={true}>
+[WebServer]                                         <input
+[WebServer]                                           type={undefined}
+[WebServer]                                           data-slot="input"
+[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
+[WebServer]                                           name="nameFr"
+[WebServer]                                           defaultValue="Caisse"
+[WebServer]                                           required={true}
+[WebServer] -                                         style={{caret-color:"transparent"}}
+[WebServer]                                         >
+[WebServer]                                   <Field label="Nom (anglais)">
+[WebServer]                                     <div className="grid gap-1">
+[WebServer]                                       <Label>
+[WebServer]                                       <Input name="nameEn" defaultValue="Cashier">
+[WebServer]                                         <input
+[WebServer]                                           type={undefined}
+[WebServer]                                           data-slot="input"
+[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
+[WebServer]                                           name="nameEn"
+[WebServer]                                           defaultValue="Cashier"
+[WebServer] -                                         style={{caret-color:"transparent"}}
+[WebServer]                                         >
+[WebServer]                                   <Field>
+[WebServer]                                   <Field label="Ordre">
+[WebServer]                                     <div className="grid gap-1">
+[WebServer]                                       <Label>
+[WebServer]                                       <Input name="displayOrder" type="number" min={0} defaultValue={11}>
+[WebServer]                                         <input
+[WebServer]                                           type="number"
+[WebServer]                                           data-slot="input"
+[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
+[WebServer]                                           name="displayOrder"
+[WebServer]                                           min={0}
+[WebServer]                                           defaultValue={11}
+[WebServer] -                                         style={{caret-color:"transparent"}}
+[WebServer]                                         >
+[WebServer]                                   ...
+[WebServer]                               ...
+[WebServer]                                 <FlagCheckboxes values={{id:"cmqzp6...", ...}}>
+[WebServer]                                   <div className="flex flex-...">
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="acceptsQueue"
+[WebServer]                                         defaultChecked={true}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="acceptsConsultation"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsBilling"
+[WebServer]                                         defaultChecked={true}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsPharmacy"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsLab"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsImaging"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="isInpatientWard"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="isEmergency"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                           ...
+[WebServer]                             <div className="mt-3 space...">
+[WebServer]                               <ServiceEditForm service={{id:"cmqzp6...", ...}} departments={[...]}>
+[WebServer]                                 <form action={function bound dispatchActionState} className="grid gap-3...">
+[WebServer]                                   <Field label="Nom (franç...">
+[WebServer]                                     <div className="grid gap-1">
+[WebServer]                                       <Label>
+[WebServer]                                       <Input name="nameFr" defaultValue="Pharmacie" required={true}>
+[WebServer]                                         <input
+[WebServer]                                           type={undefined}
+[WebServer]                                           data-slot="input"
+[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
+[WebServer]                                           name="nameFr"
+[WebServer]                                           defaultValue="Pharmacie"
+[WebServer]                                           required={true}
+[WebServer] -                                         style={{caret-color:"transparent"}}
+[WebServer]                                         >
+[WebServer]                                   <Field label="Nom (anglais)">
+[WebServer]                                     <div className="grid gap-1">
+[WebServer]                                       <Label>
+[WebServer]                                       <Input name="nameEn" defaultValue="Pharmacy">
+[WebServer]                                         <input
+[WebServer]                                           type={undefined}
+[WebServer]                                           data-slot="input"
+[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
+[WebServer]                                           name="nameEn"
+[WebServer]                                           defaultValue="Pharmacy"
+[WebServer] -                                         style={{caret-color:"transparent"}}
+[WebServer]                                         >
+[WebServer]                                   <Field>
+[WebServer]                                   <Field label="Ordre">
+[WebServer]                                     <div className="grid gap-1">
+[WebServer]                                       <Label>
+[WebServer]                                       <Input name="displayOrder" type="number" min={0} defaultValue={12}>
+[WebServer]                                         <input
+[WebServer]                                           type="number"
+[WebServer]                                           data-slot="input"
+[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
+[WebServer]                                           name="displayOrder"
+[WebServer]                                           min={0}
+[WebServer]                                           defaultValue={12}
+[WebServer] -                                         style={{caret-color:"transparent"}}
+[WebServer]                                         >
+[WebServer]                                   ...
+[WebServer]                               ...
+[WebServer]                                 <FlagCheckboxes values={{id:"cmqzp6...", ...}}>
+[WebServer]                                   <div className="flex flex-...">
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="acceptsQueue"
+[WebServer]                                         defaultChecked={true}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="acceptsConsultation"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsBilling"
+[WebServer]                                         defaultChecked={true}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsPharmacy"
+[WebServer]                                         defaultChecked={true}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsLab"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsImaging"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="isInpatientWard"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="isEmergency"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                           ...
+[WebServer]                             <div className="mt-3 space...">
+[WebServer]                               <ServiceEditForm service={{id:"cmqzp6...", ...}} departments={[...]}>
+[WebServer]                                 <form action={function bound dispatchActionState} className="grid gap-3...">
+[WebServer]                                   <Field label="Nom (franç...">
+[WebServer]                                     <div className="grid gap-1">
+[WebServer]                                       <Label>
+[WebServer]                                       <Input name="nameFr" defaultValue="Laboratoire" required={true}>
+[WebServer]                                         <input
+[WebServer]                                           type={undefined}
+[WebServer]                                           data-slot="input"
+[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
+[WebServer]                                           name="nameFr"
+[WebServer]                                           defaultValue="Laboratoire"
+[WebServer]                                           required={true}
+[WebServer] -                                         style={{caret-color:"transparent"}}
+[WebServer]                                         >
+[WebServer]                                   <Field label="Nom (anglais)">
+[WebServer]                                     <div className="grid gap-1">
+[WebServer]                                       <Label>
+[WebServer]                                       <Input name="nameEn" defaultValue="Laboratory">
+[WebServer]                                         <input
+[WebServer]                                           type={undefined}
+[WebServer]                                           data-slot="input"
+[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
+[WebServer]                                           name="nameEn"
+[WebServer]                                           defaultValue="Laboratory"
+[WebServer] -                                         style={{caret-color:"transparent"}}
+[WebServer]                                         >
+[WebServer]                                   <Field>
+[WebServer]                                   <Field label="Ordre">
+[WebServer]                                     <div className="grid gap-1">
+[WebServer]                                       <Label>
+[WebServer]                                       <Input name="displayOrder" type="number" min={0} defaultValue={13}>
+[WebServer]                                         <input
+[WebServer]                                           type="number"
+[WebServer]                                           data-slot="input"
+[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
+[WebServer]                                           name="displayOrder"
+[WebServer]                                           min={0}
+[WebServer]                                           defaultValue={13}
+[WebServer] -                                         style={{caret-color:"transparent"}}
+[WebServer]                                         >
+[WebServer]                                   ...
+[WebServer]                               ...
+[WebServer]                                 <FlagCheckboxes values={{id:"cmqzp6...", ...}}>
+[WebServer]                                   <div className="flex flex-...">
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="acceptsQueue"
+[WebServer]                                         defaultChecked={true}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="acceptsConsultation"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsBilling"
+[WebServer]                                         defaultChecked={true}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsPharmacy"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsLab"
+[WebServer]                                         defaultChecked={true}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsImaging"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="isInpatientWard"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="isEmergency"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                           ...
+[WebServer]                             <div className="mt-3 space...">
+[WebServer]                               <ServiceEditForm service={{id:"cmqzp6...", ...}} departments={[...]}>
+[WebServer]                                 <form action={function bound dispatchActionState} className="grid gap-3...">
+[WebServer]                                   <Field label="Nom (franç...">
+[WebServer]                                     <div className="grid gap-1">
+[WebServer]                                       <Label>
+[WebServer]                                       <Input name="nameFr" defaultValue="Imagerie m..." required={true}>
+[WebServer]                                         <input
+[WebServer]                                           type={undefined}
+[WebServer]                                           data-slot="input"
+[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
+[WebServer]                                           name="nameFr"
+[WebServer]                                           defaultValue="Imagerie médicale"
+[WebServer]                                           required={true}
+[WebServer] -                                         style={{caret-color:"transparent"}}
+[WebServer]                                         >
+[WebServer]                                   <Field label="Nom (anglais)">
+[WebServer]                                     <div className="grid gap-1">
+[WebServer]                                       <Label>
+[WebServer]                                       <Input name="nameEn" defaultValue="Medical Im...">
+[WebServer]                                         <input
+[WebServer]                                           type={undefined}
+[WebServer]                                           data-slot="input"
+[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
+[WebServer]                                           name="nameEn"
+[WebServer]                                           defaultValue="Medical Imaging"
+[WebServer] -                                         style={{caret-color:"transparent"}}
+[WebServer]                                         >
+[WebServer]                                   <Field>
+[WebServer]                                   <Field label="Ordre">
+[WebServer]                                     <div className="grid gap-1">
+[WebServer]                                       <Label>
+[WebServer]                                       <Input name="displayOrder" type="number" min={0} defaultValue={14}>
+[WebServer]                                         <input
+[WebServer]                                           type="number"
+[WebServer]                                           data-slot="input"
+[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
+[WebServer]                                           name="displayOrder"
+[WebServer]                                           min={0}
+[WebServer]                                           defaultValue={14}
+[WebServer] -                                         style={{caret-color:"transparent"}}
+[WebServer]                                         >
+[WebServer]                                   ...
+[WebServer]                               ...
+[WebServer]                                 <FlagCheckboxes values={{id:"cmqzp6...", ...}}>
+[WebServer]                                   <div className="flex flex-...">
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="acceptsQueue"
+[WebServer]                                         defaultChecked={true}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="acceptsConsultation"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsBilling"
+[WebServer]                                         defaultChecked={true}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsPharmacy"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsLab"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsImaging"
+[WebServer]                                         defaultChecked={true}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="isInpatientWard"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="isEmergency"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                           ...
+[WebServer]                             <div className="mt-3 space...">
+[WebServer]                               <ServiceEditForm service={{id:"cmqzp6...", ...}} departments={[...]}>
+[WebServer]                                 <form action={function bound dispatchActionState} className="grid gap-3...">
+[WebServer]                                   <Field label="Nom (franç...">
+[WebServer]                                     <div className="grid gap-1">
+[WebServer]                                       <Label>
+[WebServer]                                       <Input name="nameFr" defaultValue="Salle de c..." required={true}>
+[WebServer]                                         <input
+[WebServer]                                           type={undefined}
+[WebServer]                                           data-slot="input"
+[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
+[WebServer]                                           name="nameFr"
+[WebServer]                                           defaultValue="Salle de consultation 1"
+[WebServer]                                           required={true}
+[WebServer] -                                         style={{caret-color:"transparent"}}
+[WebServer]                                         >
+[WebServer]                                   <Field label="Nom (anglais)">
+[WebServer]                                     <div className="grid gap-1">
+[WebServer]                                       <Label>
+[WebServer]                                       <Input name="nameEn" defaultValue="">
+[WebServer]                                         <input
+[WebServer]                                           type={undefined}
+[WebServer]                                           data-slot="input"
+[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
+[WebServer]                                           name="nameEn"
+[WebServer]                                           defaultValue=""
+[WebServer] -                                         style={{caret-color:"transparent"}}
+[WebServer]                                         >
+[WebServer]                                   <Field>
+[WebServer]                                   <Field label="Ordre">
+[WebServer]                                     <div className="grid gap-1">
+[WebServer]                                       <Label>
+[WebServer]                                       <Input name="displayOrder" type="number" min={0} defaultValue={90}>
+[WebServer]                                         <input
+[WebServer]                                           type="number"
+[WebServer]                                           data-slot="input"
+[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
+[WebServer]                                           name="displayOrder"
+[WebServer]                                           min={0}
+[WebServer]                                           defaultValue={90}
+[WebServer] -                                         style={{caret-color:"transparent"}}
+[WebServer]                                         >
+[WebServer]                                   ...
+[WebServer]                               ...
+[WebServer]                                 <FlagCheckboxes values={{id:"cmqzp6...", ...}}>
+[WebServer]                                   <div className="flex flex-...">
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="acceptsQueue"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="acceptsConsultation"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsBilling"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsPharmacy"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsLab"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsImaging"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="isInpatientWard"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="isEmergency"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                           ...
+[WebServer]                             <div className="mt-3 space...">
+[WebServer]                               <ServiceEditForm service={{id:"cmqzp6...", ...}} departments={[...]}>
+[WebServer]                                 <form action={function bound dispatchActionState} className="grid gap-3...">
+[WebServer]                                   <Field label="Nom (franç...">
+[WebServer]                                     <div className="grid gap-1">
+[WebServer]                                       <Label>
+[WebServer]                                       <Input name="nameFr" defaultValue="Caisse 1" required={true}>
+[WebServer]                                         <input
+[WebServer]                                           type={undefined}
+[WebServer]                                           data-slot="input"
+[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
+[WebServer]                                           name="nameFr"
+[WebServer]                                           defaultValue="Caisse 1"
+[WebServer]                                           required={true}
+[WebServer] -                                         style={{caret-color:"transparent"}}
+[WebServer]                                         >
+[WebServer]                                   <Field label="Nom (anglais)">
+[WebServer]                                     <div className="grid gap-1">
+[WebServer]                                       <Label>
+[WebServer]                                       <Input name="nameEn" defaultValue="">
+[WebServer]                                         <input
+[WebServer]                                           type={undefined}
+[WebServer]                                           data-slot="input"
+[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
+[WebServer]                                           name="nameEn"
+[WebServer]                                           defaultValue=""
+[WebServer] -                                         style={{caret-color:"transparent"}}
+[WebServer]                                         >
+[WebServer]                                   <Field>
+[WebServer]                                   <Field label="Ordre">
+[WebServer]                                     <div className="grid gap-1">
+[WebServer]                                       <Label>
+[WebServer]                                       <Input name="displayOrder" type="number" min={0} defaultValue={91}>
+[WebServer]                                         <input
+[WebServer]                                           type="number"
+[WebServer]                                           data-slot="input"
+[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
+[WebServer]                                           name="displayOrder"
+[WebServer]                                           min={0}
+[WebServer]                                           defaultValue={91}
+[WebServer] -                                         style={{caret-color:"transparent"}}
+[WebServer]                                         >
+[WebServer]                                   ...
+[WebServer]                               ...
+[WebServer]                                 <FlagCheckboxes values={{id:"cmqzp6...", ...}}>
+[WebServer]                                   <div className="flex flex-...">
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="acceptsQueue"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="acceptsConsultation"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsBilling"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsPharmacy"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsLab"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="supportsImaging"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="isInpatientWard"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                                     <label className="flex items...">
+[WebServer]                                       <input
+[WebServer]                                         type="checkbox"
+[WebServer]                                         name="isEmergency"
+[WebServer]                                         defaultChecked={false}
+[WebServer] -                                       style={{caret-color:"transparent"}}
+[WebServer]                                       >
+[WebServer]                                       ...
+[WebServer]                         <ServiceCreateForm departments={[...]}>
+[WebServer]                           <form ref={{current:null}} action={function bound dispatchActionState} ...>
+[WebServer]                             <Field label="Code">
+[WebServer]                               <div className="grid gap-1">
+[WebServer]                                 <Label>
+[WebServer]                                 <Input name="code" required={true}>
+[WebServer]                                   <input
+[WebServer]                                     type={undefined}
+[WebServer]                                     data-slot="input"
+[WebServer]                                     className="border-input file:text-foreground placeholder:text-muted-foreground foc..."
+[WebServer]                                     name="code"
+[WebServer]                                     required={true}
+[WebServer] -                                   style={{caret-color:"transparent"}}
+[WebServer]                                   >
+[WebServer]                             <Field label="Nom (franç...">
+[WebServer]                               <div className="grid gap-1">
+[WebServer]                                 <Label>
+[WebServer]                                 <Input name="nameFr" required={true}>
+[WebServer]                                   <input
+[WebServer]                                     type={undefined}
+[WebServer]                                     data-slot="input"
+[WebServer]                                     className="border-input file:text-foreground placeholder:text-muted-foreground foc..."
+[WebServer]                                     name="nameFr"
+[WebServer]                                     required={true}
+[WebServer] -                                   style={{caret-color:"transparent"}}
+[WebServer]                                   >
+[WebServer]                             <Field label="Nom (anglais)">
+[WebServer]                               <div className="grid gap-1">
+[WebServer]                                 <Label>
+[WebServer]                                 <Input name="nameEn">
+[WebServer]                                   <input
+[WebServer]                                     type={undefined}
+[WebServer]                                     data-slot="input"
+[WebServer]                                     className="border-input file:text-foreground placeholder:text-muted-foreground foc..."
+[WebServer]                                     name="nameEn"
+[WebServer] -                                   style={{caret-color:"transparent"}}
+[WebServer]                                   >
+[WebServer]                             <Field>
+[WebServer]                             <Field label="Ordre">
+[WebServer]                               <div className="grid gap-1">
+[WebServer]                                 <Label>
+[WebServer]                                 <Input name="displayOrder" type="number" min={0} defaultValue={0}>
+[WebServer]                                   <input
+[WebServer]                                     type="number"
+[WebServer]                                     data-slot="input"
+[WebServer]                                     className="border-input file:text-foreground placeholder:text-muted-foreground foc..."
+[WebServer]                                     name="displayOrder"
+[WebServer]                                     min={0}
+[WebServer]                                     defaultValue={0}
+[WebServer] -                                   style={{caret-color:"transparent"}}
+[WebServer]                                   >
+[WebServer]                             <Field>
+[WebServer]                             <fieldset className="sm:col-spa...">
+[WebServer]                               <legend>
+[WebServer]                               <FlagCheckboxes>
+[WebServer]                                 <div className="flex flex-...">
+[WebServer]                                   <label className="flex items...">
+[WebServer]                                     <input
+[WebServer]                                       type="checkbox"
+[WebServer]                                       name="acceptsQueue"
+[WebServer]                                       defaultChecked={false}
+[WebServer] -                                     style={{caret-color:"transparent"}}
+[WebServer]                                     >
+[WebServer]                                     ...
+[WebServer]                                   <label className="flex items...">
+[WebServer]                                     <input
+[WebServer]                                       type="checkbox"
+[WebServer]                                       name="acceptsConsultation"
+[WebServer]                                       defaultChecked={false}
+[WebServer] -                                     style={{caret-color:"transparent"}}
+[WebServer]                                     >
+[WebServer]                                     ...
+[WebServer]                                   <label className="flex items...">
+[WebServer]                                     <input
+[WebServer]                                       type="checkbox"
+[WebServer]                                       name="supportsBilling"
+[WebServer]                                       defaultChecked={false}
+[WebServer] -                                     style={{caret-color:"transparent"}}
+[WebServer]                                     >
+[WebServer]                                     ...
+[WebServer]                                   <label className="flex items...">
+[WebServer]                                     <input
+[WebServer]                                       type="checkbox"
+[WebServer]                                       name="supportsPharmacy"
+[WebServer]                                       defaultChecked={false}
+[WebServer] -                                     style={{caret-color:"transparent"}}
+[WebServer]                                     >
+[WebServer]                                     ...
+[WebServer]                                   <label className="flex items...">
+[WebServer]                                     <input
+[WebServer]                                       type="checkbox"
+[WebServer]                                       name="supportsLab"
+[WebServer]                                       defaultChecked={false}
+[WebServer] -                                     style={{caret-color:"transparent"}}
+[WebServer]                                     >
+[WebServer]                                     ...
+[WebServer]                                   <label className="flex items...">
+[WebServer]                                     <input
+[WebServer]                                       type="checkbox"
+[WebServer]                                       name="supportsImaging"
+[WebServer]                                       defaultChecked={false}
+[WebServer] -                                     style={{caret-color:"transparent"}}
+[WebServer]                                     >
+[WebServer]                                     ...
+[WebServer]                                   <label className="flex items...">
+[WebServer]                                     <input
+[WebServer]                                       type="checkbox"
+[WebServer]                                       name="isInpatientWard"
+[WebServer]                                       defaultChecked={false}
+[WebServer] -                                     style={{caret-color:"transparent"}}
+[WebServer]                                     >
+[WebServer]                                     ...
+[WebServer]                                   <label className="flex items...">
+[WebServer]                                     <input
+[WebServer]                                       type="checkbox"
+[WebServer]                                       name="isEmergency"
+[WebServer]                                       defaultChecked={false}
+[WebServer] -                                     style={{caret-color:"transparent"}}
+[WebServer]                                     >
+[WebServer]                                     ...
+[WebServer]                             ...
+[WebServer]                   <Section>
+[WebServer]                     <Card>
+[WebServer]                       <div data-slot="card" data-size="default" className={"group/ca..."}>
+[WebServer]                         <div>
+[WebServer]                         <CardContent>
+[WebServer]                           <div data-slot="card-content" className="px-(--card...">
+[WebServer]                             <ul>
+[WebServer]                             <UpdateSettingForm>
+[WebServer]                               <form action={function bound dispatchActionState} className="mt-3 flex ...">
+[WebServer]                                 <div className="grid gap-1.5">
+[WebServer]                                   <Label>
+[WebServer]                                   <Input id="set-key" name="key" className="w-56" required={true}>
+[WebServer]                                     <input
+[WebServer]                                       type={undefined}
+[WebServer]                                       data-slot="input"
+[WebServer]                                       className="border-input file:text-foreground placeholder:text-muted-foreground f..."
+[WebServer]                                       id="set-key"
+[WebServer]                                       name="key"
+[WebServer]                                       required={true}
+[WebServer] -                                     style={{caret-color:"transparent"}}
+[WebServer]                                     >
+[WebServer]                                 <div className="grid gap-1.5">
+[WebServer]                                   <Label>
+[WebServer]                                   <Input id="set-value" name="value" className="w-56">
+[WebServer]                                     <input
+[WebServer]                                       type={undefined}
+[WebServer]                                       data-slot="input"
+[WebServer]                                       className="border-input file:text-foreground placeholder:text-muted-foreground f..."
+[WebServer]                                       id="set-value"
+[WebServer]                                       name="value"
+[WebServer] -                                     style={{caret-color:"transparent"}}
+[WebServer]                                     >
+[WebServer]                                 ...
+[WebServer]                   <Section>
+[WebServer]                     <Card>
+[WebServer]                       <div data-slot="card" data-size="default" className={"group/ca..."}>
+[WebServer]                         <div>
+[WebServer]                         <CardContent>
+[WebServer]                           <div data-slot="card-content" className="px-(--card...">
+[WebServer]                             <ul>
+[WebServer]                             <CreateTemplateForm>
+[WebServer]                               <form action={function bound dispatchActionState} className="mt-3 flex ...">
+[WebServer]                                 <div className="grid gap-1.5">
+[WebServer]                                   <Label>
+[WebServer]                                   <Input id="tpl-type" name="type" className="w-32" defaultValue="receipt" ...>
+[WebServer]                                     <input
+[WebServer]                                       type={undefined}
+[WebServer]                                       data-slot="input"
+[WebServer]                                       className="border-input file:text-foreground placeholder:text-muted-foreground f..."
+[WebServer]                                       id="tpl-type"
+[WebServer]                                       name="type"
+[WebServer]                                       defaultValue="receipt"
+[WebServer]                                       required={true}
+[WebServer] -                                     style={{caret-color:"transparent"}}
+[WebServer]                                     >
+[WebServer]                                 <div className="grid gap-1.5">
+[WebServer]                                   <Label>
+[WebServer]                                   <Input id="tpl-name" name="name" className="w-48" required={true}>
+[WebServer]                                     <input
+[WebServer]                                       type={undefined}
+[WebServer]                                       data-slot="input"
+[WebServer]                                       className="border-input file:text-foreground placeholder:text-muted-foreground f..."
+[WebServer]                                       id="tpl-name"
+[WebServer]                                       name="name"
+[WebServer]                                       required={true}
+[WebServer] -                                     style={{caret-color:"transparent"}}
+[WebServer]                                     >
+[WebServer]                                 <div className="grid gap-1.5">
+[WebServer]                                   <Label>
+[WebServer]                                   <Input id="tpl-header" name="header" className="w-64">
+[WebServer]                                     <input
+[WebServer]                                       type={undefined}
+[WebServer]                                       data-slot="input"
+[WebServer]                                       className="border-input file:text-foreground placeholder:text-muted-foreground f..."
+[WebServer]                                       id="tpl-header"
+[WebServer]                                       name="header"
+[WebServer] -                                     style={{caret-color:"transparent"}}
+[WebServer]                                     >
+[WebServer]                                 ...
+[WebServer]             ...
+[WebServer]           ...
+[WebServer]  
+[WebServer]     at <unknown> (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:3439:25)
+[WebServer]     at runWithFiberInDEV (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:965:74)
+[WebServer]     at emitPendingHydrationWarnings (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:3438:13)
+[WebServer]     at completeWork (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:6885:102)
+[WebServer]     at runWithFiberInDEV (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:965:131)
+[WebServer]     at completeUnitOfWork (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9622:23)
+[WebServer]     at performUnitOfWork (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9557:28)
+[WebServer]     at workLoopConcurrentByScheduler (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9551:58)
+[WebServer]     at renderRootConcurrent (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9534:71)
+[WebServer]     at performWorkOnRoot (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_[WebServer] react-dom_096_9a-._.js:9061:150)
+[WebServer]     at performWorkOnRootViaSchedulerTask (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:10255:9)
+[WebServer]     at MessagePort.performWorkUntilDeadline (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_1amofcm._.js:2647:64) (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:3439:25)
+  ✓  17 [chromium] › tests/e2e/service-catalogue.spec.ts:7:7 › Phase 2A — service catalogue › admin manages the Bertoua catalogue; the language toggle switches Fr/En (2.8s)
+  ✓  18 [chromium] › tests/e2e/service-catalogue.spec.ts:36:7 › Phase 2A — service catalogue › reception cannot reach administration (capability-based RBAC) (1.2s)
+  ✓  19 [chromium] › tests/e2e/shift-cashier.spec.ts:13:7 › cashier controls › issue → pay → report → close shift → void → voided receipt (4.1s)
+  ✓  20 [chromium] › tests/e2e/views-dashboard.spec.ts:13:7 › role dashboards › cashier sees billing section; reception does not (1.7s)
+  ✓  21 [chromium] › tests/e2e/views-system.spec.ts:13:7 › system status › status page shows health, data-mode marker and disabled real-data path (1.8s)
+  ✓  22 [chromium] › tests/e2e/visit-services-2qa.spec.ts:7:7 › Phase 2 QA — outpatient visit service picker › new-visit form lists outpatient services and EXCLUDES support/inpatient (2.1s)
 
-  8 passed (17.8s)
+  22 passed (53.6s)
 
 # exit code: 0

@@ -104,3 +104,17 @@ export function normalizeDisplayOrder(
 ): { id: string; displayOrder: number }[] {
   return orderedIds.map((id, index) => ({ id, displayOrder: index }));
 }
+
+/**
+ * Phase 2 QA — eligibility rule for the OUTPATIENT VISIT service picker: a service may host
+ * an outpatient consultation only when it is active, typed `OUTPATIENT`, and explicitly
+ * `acceptsConsultation`. Support/cashier/pharmacy/lab/imaging/inpatient services are excluded.
+ * Pure + unit-tested; the DB read path (`listActiveOutpatientConsultationServices`) mirrors it.
+ */
+export function isOutpatientConsultationService(service: {
+  type: string;
+  isActive: boolean;
+  acceptsConsultation: boolean;
+}): boolean {
+  return service.isActive && service.type === "OUTPATIENT" && service.acceptsConsultation;
+}

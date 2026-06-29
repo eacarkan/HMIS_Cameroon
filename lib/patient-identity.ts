@@ -45,9 +45,15 @@ export type AgeInput = {
 
 /**
  * Validate the age input: exactly ONE of DOB or estimated age must be provided (mutually
- * exclusive, mutually aware), and an estimated age must be a sane integer. French messages.
+ * exclusive, mutually aware); an estimated age must be a sane integer; and (Phase 2 QA) when
+ * a DOB is given it must PARSE, not be in the future, and not imply an impossible age (>130y).
+ * Pass `now` (e.g. `new Date()` from the action) to enable the future/too-old checks. French
+ * messages.
  */
-export function validateAgeInput(input: AgeInput): { ok: boolean; error?: string } {
+export function validateAgeInput(
+  input: AgeInput,
+  now?: Date,
+): { ok: boolean; error?: string } {
   const hasDob = Boolean(input.dateOfBirth && input.dateOfBirth.trim());
   const hasEstimate = input.estimatedAge !== null && input.estimatedAge !== undefined;
   if (hasDob && hasEstimate) {
@@ -63,6 +69,23 @@ export function validateAgeInput(input: AgeInput): { ok: boolean; error?: string
     const age = input.estimatedAge as number;
     if (!Number.isInteger(age) || age < 0 || age > MAX_ESTIMATED_AGE) {
       return { ok: false, error: "L'âge estimé doit être un entier entre 0 et 130." };
+    }
+  }
+  if (hasDob) {
+    const dob = new Date(input.dateOfBirth as string);
+    if (Number.isNaN(dob.getTime())) {
+      return { ok: false, error: "La date de naissance est invalide." };
+    }
+    if (now) {
+      if (dob.getTime() > now.getTime()) {
+        return { ok: false, error: "La date de naissance ne peut pas être dans le futur." };
+      }
+      if (now.getFullYear() - dob.getFullYear() > MAX_ESTIMATED_AGE) {
+        return {
+          ok: false,
+          error: "La date de naissance implique un âge invalide (supérieur à 130 ans).",
+        };
+      }
     }
   }
   return { ok: true };
