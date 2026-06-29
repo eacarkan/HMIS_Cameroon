@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { PageHeader } from "@/components/layout/page-header";
+import { IdentityCorrectionForm } from "@/components/patients/identity-correction-form";
 import { PatientBanner } from "@/components/patients/patient-banner";
 import { PatientIdentityPanel } from "@/components/patients/patient-identity-panel";
 import { PatientTimeline } from "@/components/patients/patient-timeline";
@@ -109,6 +110,19 @@ export default async function PatientDetailPage({
             />
             <Row label={t("phone")} value={patient.phone ?? "—"} />
             <Row label={t("residence")} value={patient.residence ?? "—"} />
+            {patient.isTemporaryIdentity ? (
+              <>
+                <Row label={t("temporaryBadge")} value={patient.temporaryIdentifier ?? "—"} />
+                {canManageIdentity ? (
+                  <div className="border-t pt-3">
+                    <p className="text-foreground text-sm font-medium">
+                      {t("correctIdentityTitle")}
+                    </p>
+                    <IdentityCorrectionForm patientId={patient.id} />
+                  </div>
+                ) : null}
+              </>
+            ) : null}
           </CardContent>
         </Card>
 

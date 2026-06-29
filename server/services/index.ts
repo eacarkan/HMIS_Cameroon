@@ -42,11 +42,14 @@ export {
 export { generateNumber } from "./numbering-service";
 export {
   type CreatePatientInput,
+  type CorrectPatientIdentityInput,
   type PatientDuplicateHit,
   searchPatientsForActor,
   getPatient,
   findPatientDuplicatesForActor,
   createPatientForActor,
+  createTemporaryPatient,
+  correctPatientIdentity,
 } from "./patient-service";
 export {
   type OpenEncounterInput,
@@ -119,6 +122,7 @@ export {
   listObservations,
   addObservation,
   updateObservation,
+  listDiagnosisCodes,
   listDiagnoses,
   addDiagnosis,
   updateDiagnosis,

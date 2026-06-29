@@ -195,6 +195,16 @@ model Patient {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  // Phase 2B — patient identity enhancements (additive). When the DOB is unknown, an
+  // estimated age derives an approximate birth year stored in `dateOfBirth` (Jan 1) with
+  // `isEstimatedAge = true`. Temporary/unidentified patients carry an immutable original
+  // `temporaryIdentifier` (`Inconnu_YYMMDD_NN`) that is also retained in the audit log.
+  guardianPhone       String?
+  estimatedAge        Int?
+  isEstimatedAge      Boolean @default(false)
+  isTemporaryIdentity Boolean @default(false)
+  temporaryIdentifier String?
+
   hospital   Hospital    @relation(fields: [hospitalId], references: [id])
   encounters Encounter[]
 
@@ -217,6 +227,9 @@ model Encounter {
   patientId       String
   encounterNumber String
   serviceLabel    String
+  // Phase 2B — optional link to the configured service catalogue (ServiceUnit). `serviceLabel`
+  // (free text) is kept for back-compat; new visits also record the picked service id.
+  serviceUnitId   String?
   reason          String
   status          EncounterStatus @default(open)
   assignedToId    String?
@@ -230,6 +243,7 @@ model Encounter {
 
   hospital      Hospital       @relation(fields: [hospitalId], references: [id])
   patient       Patient        @relation(fields: [patientId], references: [id])
+  serviceUnit   ServiceUnit?   @relation(fields: [serviceUnitId], references: [id])
   assignedTo    User?          @relation("EncounterAssignedTo", fields: [assignedToId], references: [id])
   consultations Consultation[]
   invoices      Invoice[]
@@ -429,6 +443,7 @@ model ServiceUnit {
 
   hospital   Hospital    @relation(fields: [hospitalId], references: [id])
   department Department? @relation(fields: [departmentId], references: [id])
+  encounters Encounter[]
 
   @@unique([hospitalId, code])
   @@index([hospitalId, departmentId])
@@ -618,4 +633,24 @@ model Tariff {
 
   @@unique([hospitalId, code])
   @@index([hospitalId, priceListId])
+}
+
+// ============ Phase 2B — Diagnosis code reference (ICD-10 subset, GLOBAL) ============
+
+/// Configurable ICD-10 diagnosis-code reference subset (GLOBAL standard data, not
+/// hospital-scoped). Seeded with a small subset for UAT; importing the full ICD-10
+/// catalogue is a documented extension path, NOT done here. The per-consultation
+/// `Diagnosis` rows record a `code` + `label` chosen from this reference.
+model DiagnosisCode {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  labelFr      String
+  labelEn      String
+  category     String?
+  isActive     Boolean  @default(true)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([isActive, displayOrder])
 }

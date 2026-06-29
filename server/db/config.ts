@@ -122,6 +122,20 @@ export function listActiveServiceUnits(hospitalId: string) {
   });
 }
 
+/** Resolve an active service in a hospital by label (nameFr / name) or code — Phase 2B link
+ *  from the visit-form selection to the configured ServiceUnit. */
+export function findActiveServiceUnitByLabel(hospitalId: string, label: string) {
+  const value = label.trim();
+  return prisma.serviceUnit.findFirst({
+    where: {
+      hospitalId,
+      deletedAt: null,
+      isActive: true,
+      OR: [{ nameFr: value }, { name: value }, { code: value }],
+    },
+  });
+}
+
 /** Atomically set displayOrder for a set of services in ONE hospital (reorder use-case). */
 export function reorderServiceUnits(
   hospitalId: string,

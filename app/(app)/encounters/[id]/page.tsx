@@ -26,6 +26,7 @@ import { requireActorAndHospital } from "@/server/auth";
 import {
   getEncounter,
   getEncounterStatusHistory,
+  listDiagnosisCodes,
   listObservations,
   listDiagnoses,
 } from "@/server/services";
@@ -58,6 +59,14 @@ export default async function EncounterPage({
 
   // Structured clinical data (Gate 4): clinician reads/manages; others don't see it.
   const canReadClinical = can(actor.roles, "clinical.structure.read");
+  // Phase 2B — the configurable ICD-10 subset offered as a diagnosis picker.
+  const diagnosisCodes = canReadClinical
+    ? (await listDiagnosisCodes(actor, hospital)).map((c) => ({
+        code: c.code,
+        labelFr: c.labelFr,
+        labelEn: c.labelEn,
+      }))
+    : [];
   const canManageClinical = can(actor.roles, "clinical.structure.manage");
   const clinicalByConsultation = new Map<
     string,
@@ -203,6 +212,7 @@ export default async function EncounterPage({
                       <ClinicalStructurePanel
                         encounterId={encounter.id}
                         consultationId={c.id}
+                        diagnosisCodes={diagnosisCodes}
                         canManage={canManageClinical}
                         observations={(
                           clinicalByConsultation.get(c.id)?.observations ?? []

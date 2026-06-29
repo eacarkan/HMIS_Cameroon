@@ -39,11 +39,14 @@ export {
   type CreatePatientData,
   type PatientSearchFilters,
   createPatient,
+  updatePatient,
+  countTemporaryPatientsForDay,
   searchPatients,
   searchPatientsAdvanced,
   findPotentialDuplicatePatients,
   findPatientById,
 } from "./patients";
+export { listActiveDiagnosisCodes, findDiagnosisCodeByCode } from "./diagnosis-codes";
 export {
   type CreateEncounterData,
   createEncounter,
@@ -93,6 +96,7 @@ export {
   listServiceUnits,
   listServiceUnitsOrdered,
   listActiveServiceUnits,
+  findActiveServiceUnitByLabel,
   reorderServiceUnits,
   listSettings,
   getSetting,

@@ -17,10 +17,47 @@ export type CreatePatientData = {
   phone: string | null;
   residence: string | null;
   createdById: string;
+  // Phase 2B — identity enhancements (additive).
+  guardianPhone?: string | null;
+  estimatedAge?: number | null;
+  isEstimatedAge?: boolean;
+  isTemporaryIdentity?: boolean;
+  temporaryIdentifier?: string | null;
 };
 
 export function createPatient(data: CreatePatientData) {
   return prisma.patient.create({ data });
+}
+
+/** Update a patient's editable identity fields (Phase 2B identity correction). Hospital
+ *  scoping is enforced at the DB layer (`where: { id, hospitalId }`) — a defense-in-depth
+ *  guard beyond the service's prior `findPatientById` check. Returns the updated patient. */
+export async function updatePatient(
+  hospitalId: string,
+  id: string,
+  data: {
+    familyName?: string;
+    givenName?: string;
+    sex?: Sex;
+    dateOfBirth?: Date;
+    phone?: string | null;
+    guardianPhone?: string | null;
+    residence?: string | null;
+    estimatedAge?: number | null;
+    isEstimatedAge?: boolean;
+    isTemporaryIdentity?: boolean;
+    updatedById?: string;
+  },
+) {
+  await prisma.patient.updateMany({ where: { id, hospitalId }, data });
+  return prisma.patient.findFirst({ where: { id, hospitalId } });
+}
+
+/** Count temporary patients already created for a hospital + day (by `Inconnu_YYMMDD_` prefix). */
+export function countTemporaryPatientsForDay(hospitalId: string, dayPrefix: string) {
+  return prisma.patient.count({
+    where: { hospitalId, temporaryIdentifier: { startsWith: dayPrefix } },
+  });
 }
 
 /** Structured patient search filters (Phase 1A Batch 1A). All optional; all hospital-scoped. */

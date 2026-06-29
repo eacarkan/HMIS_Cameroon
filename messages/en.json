@@ -11,6 +11,19 @@
     "EMERGENCY": "Emergency",
     "ADMINISTRATION": "Administration"
   },
+  "patient": {
+    "estimatedAge": "Estimated age",
+    "ageHint": "Provide the date of birth OR the estimated age (when the date is unknown).",
+    "guardianPhone": "Guardian/parent phone",
+    "sexApparent": "Sex (apparent)",
+    "temporaryTitle": "Unidentified patient (temporary)",
+    "temporarySubtitle": "Create a temporary record — identity will be confirmed later.",
+    "temporaryHint": "A temporary identifier \"Inconnu_YYMMDD_NN\" is generated; identity can be corrected later.",
+    "registerTemporary": "Unidentified patient",
+    "temporaryBadge": "Temporary identity",
+    "correctIdentityTitle": "Confirm / correct identity",
+    "estimatedMarker": "estimated"
+  },
   "admin": {
     "title": "Administration",
     "serviceCatalogue": {

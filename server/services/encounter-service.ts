@@ -6,6 +6,7 @@ import {
 import { composeTimeline, type TimelineEvent } from "@/lib/patient-timeline";
 import {
   createEncounter,
+  findActiveServiceUnitByLabel,
   findEncounterById,
   findEntityAuditTrail,
   findPatientById,
@@ -55,11 +56,16 @@ export async function openEncounter(
   const year = new Date().getFullYear();
   const encounterNumber = await generateNumber(ctx, "encounter", year);
 
+  // Phase 2B — link the visit to the configured service catalogue when the chosen label
+  // matches an active service; the free-text label is kept either way (back-compat).
+  const service = await findActiveServiceUnitByLabel(ctx.hospitalId, input.serviceLabel);
+
   const encounter = await createEncounter({
     hospitalId: ctx.hospitalId,
     patientId,
     encounterNumber,
     serviceLabel: input.serviceLabel,
+    serviceUnitId: service?.id ?? null,
     reason: input.reason,
     assignedToId: null,
     createdById: actor.id,
@@ -135,7 +141,9 @@ export async function assignEncounterService(
   const encounter = await findEncounterById(ctx.hospitalId, id);
   if (!encounter) throw new Error("Visite introuvable dans cet hôpital.");
 
-  const updated = await updateEncounterService(id, serviceLabel);
+  // Phase 2B — re-resolve the configured-service link on re-assignment (parity with openEncounter).
+  const service = await findActiveServiceUnitByLabel(ctx.hospitalId, serviceLabel);
+  const updated = await updateEncounterService(id, serviceLabel, service?.id ?? null);
   await recordAudit({
     hospitalId: ctx.hospitalId,
     actorId: actor.id,

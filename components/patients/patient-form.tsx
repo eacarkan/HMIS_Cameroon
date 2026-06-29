@@ -69,9 +69,20 @@ export function PatientForm() {
             </select>
           </Field>
           <Field label={t("dateOfBirth")} error={err.dateOfBirth}>
-            <Input name="dateOfBirth" type="date" defaultValue={v?.dateOfBirth ?? ""} required />
+            <Input name="dateOfBirth" type="date" defaultValue={v?.dateOfBirth ?? ""} />
+          </Field>
+          <Field label={t("estimatedAge")} error={err.estimatedAge}>
+            <Input
+              name="estimatedAge"
+              type="number"
+              min={0}
+              max={130}
+              autoComplete="off"
+              defaultValue={v?.estimatedAge ?? ""}
+            />
           </Field>
         </div>
+        <p className="text-muted-foreground text-xs">{t("ageHint")}</p>
       </section>
 
       <section className="space-y-4">
@@ -81,6 +92,9 @@ export function PatientForm() {
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t("phone")} error={err.phone}>
             <Input name="phone" type="tel" autoComplete="off" defaultValue={v?.phone ?? ""} />
+          </Field>
+          <Field label={t("guardianPhone")} error={err.guardianPhone}>
+            <Input name="guardianPhone" type="tel" autoComplete="off" defaultValue={v?.guardianPhone ?? ""} />
           </Field>
           <Field label={t("residence")} error={err.residence}>
             <Input name="residence" autoComplete="off" defaultValue={v?.residence ?? ""} />

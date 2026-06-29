@@ -147,6 +147,9 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "service.reactivated": "Réactivation service",
   "service.reordered": "Réordonnancement des services",
   "service.eligibility_changed": "Changement d'éligibilité du service",
+  // Phase 2B — patient identity.
+  "patient.temporary_created": "Création d'un patient temporaire",
+  "patient.identity_updated": "Mise à jour de l'identité patient",
 };
 
 /**

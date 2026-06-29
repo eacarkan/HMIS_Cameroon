@@ -237,6 +237,36 @@ export async function seedBaseData(prisma: PrismaClient): Promise<void> {
   }
 
   await seedConfigAndTariffs(prisma);
+  await seedDiagnosisCodes(prisma);
+}
+
+/**
+ * Phase 2B — seed the ICD-10 diagnosis-code reference SUBSET (GLOBAL; synthetic UAT only).
+ * Importing the full ICD-10 catalogue is a documented extension path — NOT done here.
+ */
+async function seedDiagnosisCodes(prisma: PrismaClient): Promise<void> {
+  const codes = [
+    { code: "A09", fr: "Diarrhée et gastro-entérite présumées infectieuses", en: "Diarrhoea and gastroenteritis of presumed infectious origin", cat: "Infectieux" },
+    { code: "B50", fr: "Paludisme à Plasmodium falciparum", en: "Plasmodium falciparum malaria", cat: "Infectieux" },
+    { code: "J06", fr: "Infections aiguës des voies respiratoires supérieures", en: "Acute upper respiratory infections", cat: "Respiratoire" },
+    { code: "J18", fr: "Pneumonie, micro-organisme non précisé", en: "Pneumonia, unspecified organism", cat: "Respiratoire" },
+    { code: "K29", fr: "Gastrite et duodénite", en: "Gastritis and duodenitis", cat: "Digestif" },
+    { code: "I10", fr: "Hypertension essentielle (primitive)", en: "Essential (primary) hypertension", cat: "Cardiovasculaire" },
+    { code: "E11", fr: "Diabète sucré de type 2", en: "Type 2 diabetes mellitus", cat: "Endocrinien" },
+    { code: "N39", fr: "Autres affections de l'appareil urinaire", en: "Other disorders of urinary system", cat: "Génito-urinaire" },
+    { code: "O80", fr: "Accouchement unique et spontané", en: "Single spontaneous delivery", cat: "Obstétrique" },
+    { code: "Z00", fr: "Examen général, sans plainte", en: "General examination without complaint", cat: "Général" },
+    { code: "T14", fr: "Traumatisme d'une région non précisée du corps", en: "Injury of unspecified body region", cat: "Traumatologie" },
+    { code: "R50", fr: "Fièvre d'origine inconnue", en: "Fever of unknown origin", cat: "Symptômes" },
+  ];
+  for (let i = 0; i < codes.length; i++) {
+    const c = codes[i];
+    await prisma.diagnosisCode.upsert({
+      where: { code: c.code },
+      create: { code: c.code, labelFr: c.fr, labelEn: c.en, category: c.cat, displayOrder: i + 1 },
+      update: { labelFr: c.fr, labelEn: c.en, category: c.cat, displayOrder: i + 1 },
+    });
+  }
 }
 
 /**

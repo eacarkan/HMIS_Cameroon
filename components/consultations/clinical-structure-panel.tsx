@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,15 +39,19 @@ export function ClinicalStructurePanel({
   consultationId,
   observations,
   diagnoses,
+  diagnosisCodes = [],
   canManage,
 }: {
   encounterId: string;
   consultationId: string;
   observations: Observation[];
   diagnoses: Diagnosis[];
+  /** Phase 2B — configurable ICD-10 subset offered as a picker on the diagnosis code field. */
+  diagnosisCodes?: { code: string; labelFr: string; labelEn: string }[];
   canManage: boolean;
 }) {
   const t = useTranslations("clinical");
+  const locale = useLocale();
   const [obsState, obsAction, obsPending] = useActionState(
     addObservationAction.bind(null, encounterId, consultationId),
     initial,
@@ -135,7 +139,16 @@ export function ClinicalStructurePanel({
               <Label htmlFor="dx-code" className="text-xs">
                 {t("diagCode")}
               </Label>
-              <Input id="dx-code" name="code" className="h-8 w-24" />
+              <Input id="dx-code" name="code" className="h-8 w-24" list="icd10-codes" />
+              {diagnosisCodes.length > 0 ? (
+                <datalist id="icd10-codes">
+                  {diagnosisCodes.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {locale === "en" ? c.labelEn : c.labelFr}
+                    </option>
+                  ))}
+                </datalist>
+              ) : null}
             </div>
             <Button type="submit" size="sm" disabled={dxPending}>
               {t("addDiagnosis")}

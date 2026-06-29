@@ -39,12 +39,20 @@ export default async function PatientsPage({
   const canCreate = can(actor.roles, "patient.create");
 
   const createButton = canCreate ? (
-    <Button asChild>
-      <Link href="/patients/nouveau">
-        <Plus className="size-4" aria-hidden />
-        {t("create")}
-      </Link>
-    </Button>
+    <div className="flex flex-wrap gap-2">
+      <Button asChild variant="outline">
+        <Link href="/patients/temporaire">
+          <UserPlus className="size-4" aria-hidden />
+          {t("registerTemporary")}
+        </Link>
+      </Button>
+      <Button asChild>
+        <Link href="/patients/nouveau">
+          <Plus className="size-4" aria-hidden />
+          {t("create")}
+        </Link>
+      </Button>
+    </div>
   ) : undefined;
 
   return (

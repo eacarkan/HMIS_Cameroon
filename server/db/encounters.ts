@@ -9,6 +9,8 @@ export type CreateEncounterData = {
   patientId: string;
   encounterNumber: string;
   serviceLabel: string;
+  /** Phase 2B — optional link to the configured service catalogue (ServiceUnit). */
+  serviceUnitId?: string | null;
   reason: string;
   assignedToId: string | null;
   createdById: string;
@@ -50,9 +52,13 @@ export function updateEncounterStatus(
   return prisma.encounter.update({ where: { id }, data: { status, closedAt } });
 }
 
-/** Update the encounter's service/department label (existing column — no schema change). */
-export function updateEncounterService(id: string, serviceLabel: string) {
-  return prisma.encounter.update({ where: { id }, data: { serviceLabel } });
+/** Update the encounter's service/department label + the configured-service link (Phase 2B). */
+export function updateEncounterService(
+  id: string,
+  serviceLabel: string,
+  serviceUnitId: string | null,
+) {
+  return prisma.encounter.update({ where: { id }, data: { serviceLabel, serviceUnitId } });
 }
 
 /**

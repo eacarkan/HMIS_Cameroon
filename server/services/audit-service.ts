@@ -87,6 +87,10 @@ export const AUDIT_ACTIONS = {
   serviceReactivated: "service.reactivated",
   serviceReordered: "service.reordered",
   serviceEligibilityChanged: "service.eligibility_changed",
+  // Phase 2B — patient identity (temporary patient + identity correction; a recorded
+  // diagnosis reuses `diagnosis.create`). The original temporary ID is retained in the audit.
+  patientTemporaryCreated: "patient.temporary_created",
+  patientIdentityUpdated: "patient.identity_updated",
 } as const;
 
 /**

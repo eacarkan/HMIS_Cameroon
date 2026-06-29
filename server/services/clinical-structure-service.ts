@@ -1,6 +1,7 @@
 import {
   type HospitalContext,
   findConsultationById,
+  listActiveDiagnosisCodes as dbListActiveDiagnosisCodes,
   listObservations as dbListObservations,
   createObservation as dbCreateObservation,
   findObservationById,
@@ -84,6 +85,16 @@ export async function updateObservation(
     summary: "Mise à jour d'une constante",
   });
   return observation;
+}
+
+// ---- Diagnosis-code reference (Phase 2B — ICD-10 subset for the picker) ----
+/** List the active ICD-10 diagnosis-code subset (global reference). Clinical read. */
+export async function listDiagnosisCodes(
+  actor: AuthenticatedActor,
+  ctx: HospitalContext,
+) {
+  await requireCapability(actor, ctx, "clinical.structure.read");
+  return dbListActiveDiagnosisCodes();
 }
 
 // ---- Diagnoses ----

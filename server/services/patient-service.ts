@@ -5,10 +5,17 @@ import {
   type DuplicateMatchBasis,
 } from "@/lib/patient-matching";
 import {
+  estimatedBirthDate,
+  temporaryIdDayPrefix,
+  temporaryIdentifierFor,
+} from "@/lib/patient-identity";
+import {
+  countTemporaryPatientsForDay,
   createPatient,
   findPatientById,
   findPotentialDuplicatePatients,
   searchPatientsAdvanced,
+  updatePatient,
   type HospitalContext,
   type PatientSearchFilters,
 } from "@/server/db";
@@ -30,9 +37,15 @@ export type CreatePatientInput = {
   familyName: string;
   givenName: string;
   sex: Sex;
+  /** When the DOB is unknown, the action derives this from an estimated age (Jan 1 of the
+   *  approximate birth year) and sets `isEstimatedAge`. */
   dateOfBirth: Date;
   phone: string | null;
   residence: string | null;
+  // Phase 2B — additive identity fields.
+  guardianPhone?: string | null;
+  estimatedAge?: number | null;
+  isEstimatedAge?: boolean;
 };
 
 /** A surfaced duplicate hint: the existing patient plus why it was flagged. */
@@ -128,6 +141,9 @@ export async function createPatientForActor(
     dateOfBirth: input.dateOfBirth,
     phone: input.phone,
     residence: input.residence,
+    guardianPhone: input.guardianPhone ?? null,
+    estimatedAge: input.estimatedAge ?? null,
+    isEstimatedAge: input.isEstimatedAge ?? false,
     createdById: actor.id,
   });
 
@@ -153,4 +169,119 @@ export async function createPatientForActor(
   }
 
   return patient;
+}
+
+/**
+ * Create a TEMPORARY / unidentified patient (Phase 2B) via the explicit workflow. Generates
+ * `Inconnu_YYMMDD_NN` (per hospital + day), flags `isTemporaryIdentity`, and retains the
+ * original temporary identifier (also recorded in the audit). A normal patient number is
+ * still allocated; identity is confirmed later via `correctPatientIdentity`.
+ */
+export async function createTemporaryPatient(
+  actor: AuthenticatedActor,
+  ctx: HospitalContext,
+  input: {
+    sex: Sex;
+    estimatedAge?: number | null;
+    phone?: string | null;
+    guardianPhone?: string | null;
+  },
+) {
+  await requireCapability(actor, ctx, "patient.create");
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const dayPrefix = temporaryIdDayPrefix(now);
+  const seq = (await countTemporaryPatientsForDay(ctx.hospitalId, dayPrefix)) + 1;
+  const temporaryId = temporaryIdentifierFor(now, seq);
+  const patientNumber = await generateNumber(ctx, "patient", year);
+
+  const hasEstimate = input.estimatedAge != null;
+  const dateOfBirth = hasEstimate
+    ? estimatedBirthDate(input.estimatedAge as number, year)
+    : new Date(Date.UTC(1900, 0, 1)); // unknown-DOB sentinel for a temporary record
+
+  const patient = await createPatient({
+    hospitalId: ctx.hospitalId,
+    patientNumber,
+    familyName: "Inconnu",
+    givenName: temporaryId,
+    sex: input.sex,
+    dateOfBirth,
+    phone: input.phone ?? null,
+    residence: null,
+    guardianPhone: input.guardianPhone ?? null,
+    estimatedAge: input.estimatedAge ?? null,
+    isEstimatedAge: hasEstimate,
+    isTemporaryIdentity: true,
+    temporaryIdentifier: temporaryId,
+    createdById: actor.id,
+  });
+
+  await recordAudit({
+    hospitalId: ctx.hospitalId,
+    actorId: actor.id,
+    action: AUDIT_ACTIONS.patientTemporaryCreated,
+    entityType: "Patient",
+    entityId: patient.id,
+    summary: `Création d'un patient temporaire ${temporaryId} (${patient.patientNumber})`,
+  });
+
+  return patient;
+}
+
+export type CorrectPatientIdentityInput = {
+  familyName: string;
+  givenName: string;
+  sex: Sex;
+  dateOfBirth: Date;
+  phone: string | null;
+  guardianPhone?: string | null;
+  residence?: string | null;
+  estimatedAge?: number | null;
+  isEstimatedAge?: boolean;
+};
+
+/**
+ * Confirm/correct a patient's identity (Phase 2B). Updates the profile and clears the
+ * temporary flag, but NEVER changes the original `temporaryIdentifier` — and the audit event
+ * retains that original temporary ID forever, linked to the patient.
+ */
+export async function correctPatientIdentity(
+  actor: AuthenticatedActor,
+  ctx: HospitalContext,
+  id: string,
+  input: CorrectPatientIdentityInput,
+) {
+  await requireCapability(actor, ctx, "patient.identity.manage", { type: "Patient", id });
+  const existing = await findPatientById(ctx.hospitalId, id);
+  if (!existing) throw new Error("Patient introuvable dans cet hôpital.");
+
+  const updated = await updatePatient(ctx.hospitalId, id, {
+    familyName: input.familyName,
+    givenName: input.givenName,
+    sex: input.sex,
+    dateOfBirth: input.dateOfBirth,
+    phone: input.phone,
+    guardianPhone: input.guardianPhone ?? null,
+    residence: input.residence ?? null,
+    estimatedAge: input.estimatedAge ?? null,
+    isEstimatedAge: input.isEstimatedAge ?? false,
+    isTemporaryIdentity: false,
+    updatedById: actor.id,
+  });
+
+  const originalTempId = existing.temporaryIdentifier;
+  await recordAudit({
+    hospitalId: ctx.hospitalId,
+    actorId: actor.id,
+    action: AUDIT_ACTIONS.patientIdentityUpdated,
+    entityType: "Patient",
+    entityId: id,
+    summary: originalTempId
+      ? `Identité confirmée pour ${input.givenName} ${input.familyName} — ID temporaire d'origine conservé : ${originalTempId}`
+      : `Mise à jour de l'identité du patient ${input.givenName} ${input.familyName}`,
+  });
+
+  return updated;
 }
