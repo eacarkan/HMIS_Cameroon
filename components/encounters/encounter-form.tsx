@@ -12,12 +12,17 @@ import {
 
 const initialState: EncounterFormState = {};
 
+// Defensive fallback only. The new-visit page now BLOCKS visit creation when no outpatient
+// consultation service is configured, so this list is normally unused. It therefore contains
+// ONLY outpatient consultation services (never support/inpatient — "Médecine interne" is an
+// inpatient ward and was removed). The server still rejects any label that is not an eligible
+// active OUTPATIENT consultation service, so this fallback cannot be used to bypass the rule.
 const SERVICES = [
   "Médecine générale",
   "Pédiatrie",
   "Gynéco-obstétrique",
-  "Médecine interne",
   "Chirurgie",
+  "Dentaire",
 ];
 
 /**

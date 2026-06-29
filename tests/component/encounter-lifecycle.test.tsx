@@ -28,10 +28,22 @@ describe("Phase 1A Batch 1B — EncounterStatusControls", () => {
   });
 });
 
-describe("Phase 1A Batch 1B — EncounterServiceForm", () => {
-  it("renders the assignment field prefilled with the current service", () => {
-    renderWithIntl(<EncounterServiceForm encounterId="e1" current="Médecine générale" />);
-    expect(screen.getByLabelText(/Affecter au service/)).toHaveValue("Médecine générale");
+describe("Phase 1A Batch 1B / Phase 2 QA — EncounterServiceForm", () => {
+  it("offers a RESTRICTED outpatient dropdown defaulting to the current service", () => {
+    renderWithIntl(
+      <EncounterServiceForm
+        encounterId="e1"
+        current="Médecine générale"
+        services={["Médecine générale", "Pédiatrie", "Chirurgie"]}
+      />,
+    );
+    const select = screen.getByLabelText(/Affecter au service/);
+    expect(select).toHaveValue("Médecine générale");
+    // Only the provided outpatient consultation services are offered — no free-text input, and
+    // no support/inpatient services (the server enforces the same rule).
+    const options = screen.getAllByRole("option").map((o) => o.textContent);
+    expect(options).toEqual(["Médecine générale", "Pédiatrie", "Chirurgie"]);
+    expect(options).not.toContain("Caisse");
     expect(screen.getByRole("button", { name: "Affecter" })).toBeInTheDocument();
   });
 });

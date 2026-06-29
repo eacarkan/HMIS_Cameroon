@@ -6,7 +6,7 @@ import {
 import { composeTimeline, type TimelineEvent } from "@/lib/patient-timeline";
 import {
   createEncounter,
-  findActiveServiceUnitByLabel,
+  findActiveOutpatientConsultationServiceByLabel,
   findEncounterById,
   findEntityAuditTrail,
   findPatientById,
@@ -56,16 +56,23 @@ export async function openEncounter(
   const year = new Date().getFullYear();
   const encounterNumber = await generateNumber(ctx, "encounter", year);
 
-  // Phase 2B — link the visit to the configured service catalogue when the chosen label
-  // matches an active service; the free-text label is kept either way (back-compat).
-  const service = await findActiveServiceUnitByLabel(ctx.hospitalId, input.serviceLabel);
+  // Phase 2 QA (follow-up) — server-side ENFORCEMENT: an outpatient visit may only be opened on
+  // an active OUTPATIENT service that accepts consultation. UI hiding is not security, so reject
+  // any other label/code here (e.g. a tampered submit of "Caisse" / "SRV-PHARMACIE"), rather
+  // than silently linking the cashier/pharmacy service or nulling serviceUnitId. The canonical
+  // service name is stored as the label so the record is consistent regardless of how it was sent.
+  const service = await findActiveOutpatientConsultationServiceByLabel(
+    ctx.hospitalId,
+    input.serviceLabel,
+  );
+  if (!service) throw new Error("Service de consultation externe invalide.");
 
   const encounter = await createEncounter({
     hospitalId: ctx.hospitalId,
     patientId,
     encounterNumber,
-    serviceLabel: input.serviceLabel,
-    serviceUnitId: service?.id ?? null,
+    serviceLabel: service.nameFr ?? service.name,
+    serviceUnitId: service.id,
     reason: input.reason,
     assignedToId: null,
     createdById: actor.id,
@@ -141,16 +148,25 @@ export async function assignEncounterService(
   const encounter = await findEncounterById(ctx.hospitalId, id);
   if (!encounter) throw new Error("Visite introuvable dans cet hôpital.");
 
-  // Phase 2B — re-resolve the configured-service link on re-assignment (parity with openEncounter).
-  const service = await findActiveServiceUnitByLabel(ctx.hospitalId, serviceLabel);
-  const updated = await updateEncounterService(id, serviceLabel, service?.id ?? null);
+  // Phase 2 QA (follow-up) — same ENFORCEMENT on re-assignment as on creation: only an active
+  // OUTPATIENT consultation service is a valid target. Reject (BEFORE any write or audit) when the
+  // label/code does not resolve to one, so a rejected re-assignment leaves serviceUnitId untouched
+  // and records no audit. The canonical service name is stored as the label.
+  const service = await findActiveOutpatientConsultationServiceByLabel(
+    ctx.hospitalId,
+    serviceLabel,
+  );
+  if (!service) throw new Error("Service de consultation externe invalide.");
+
+  const label = service.nameFr ?? service.name;
+  const updated = await updateEncounterService(id, label, service.id);
   await recordAudit({
     hospitalId: ctx.hospitalId,
     actorId: actor.id,
     action: AUDIT_ACTIONS.encounterAssign,
     entityType: "Encounter",
     entityId: id,
-    summary: `Affectation de la visite ${encounter.encounterNumber} au service « ${serviceLabel} »`,
+    summary: `Affectation de la visite ${encounter.encounterNumber} au service « ${label} »`,
   });
   return updated;
 }

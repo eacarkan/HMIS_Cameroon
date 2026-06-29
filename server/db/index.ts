@@ -97,7 +97,7 @@ export {
   listServiceUnitsOrdered,
   listActiveServiceUnits,
   listActiveOutpatientConsultationServices,
-  findActiveServiceUnitByLabel,
+  findActiveOutpatientConsultationServiceByLabel,
   reorderServiceUnits,
   listSettings,
   getSetting,

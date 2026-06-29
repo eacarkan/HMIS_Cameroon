@@ -167,6 +167,7 @@
     "newTitle": "Ouvrir une visite",
     "newSubtitle": "Démarrer une nouvelle visite pour ce patient.",
     "service": "Service / département",
+    "noOutpatientService": "Aucun service de consultation externe n'est configuré pour cet hôpital. Configurez un service de type « Consultation externe » qui accepte les consultations avant d'ouvrir une visite.",
     "reason": "Motif de visite",
     "reasonPlaceholder": "Motif de la consultation…",
     "number": "N° de visite",

@@ -139,15 +139,24 @@ export function listActiveOutpatientConsultationServices(hospitalId: string) {
   });
 }
 
-/** Resolve an active service in a hospital by label (nameFr / name) or code — Phase 2B link
- *  from the visit-form selection to the configured ServiceUnit. */
-export function findActiveServiceUnitByLabel(hospitalId: string, label: string) {
+/** Phase 2 QA (follow-up) — server-side ENFORCEMENT resolver: resolve a service by label
+ *  (nameFr / name) or code ONLY when it is an active OUTPATIENT service that accepts consultation.
+ *  Used by openEncounter / assignEncounterService so a tampered or manual submit cannot link a
+ *  visit to a cashier/pharmacy/lab/imaging/inpatient/inactive service or another hospital's
+ *  service. Returns null when no eligible outpatient consultation service matches. This replaces
+ *  the earlier broad by-label resolver — UI hiding is not security, the rule is enforced here. */
+export function findActiveOutpatientConsultationServiceByLabel(
+  hospitalId: string,
+  label: string,
+) {
   const value = label.trim();
   return prisma.serviceUnit.findFirst({
     where: {
       hospitalId,
       deletedAt: null,
       isActive: true,
+      type: "OUTPATIENT",
+      acceptsConsultation: true,
       OR: [{ nameFr: value }, { name: value }, { code: value }],
     },
   });

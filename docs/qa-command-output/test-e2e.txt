@@ -14,15 +14,15 @@
 
 Running 22 tests using 1 worker
 
-  ✓   1 [chromium] › tests/e2e/golden-path.spec.ts:11:7 › golden path › E2E-01 login + hospital selection → dashboard (2.0s)
-  ✓   2 [chromium] › tests/e2e/golden-path.spec.ts:27:7 › golden path › E2E-02 patient search-before-create (2.5s)
-  ✓   3 [chromium] › tests/e2e/golden-path.spec.ts:56:7 › golden path › E2E-03 open a visit (2.4s)
-  ✓   4 [chromium] › tests/e2e/golden-path.spec.ts:73:7 › golden path › E2E-03b record the consultation (doctor) (2.2s)
-  ✓   5 [chromium] › tests/e2e/golden-path.spec.ts:94:7 › golden path › E2E-04 invoice + payment + receipt (cashier) (3.1s)
-  ✓   6 [chromium] › tests/e2e/golden-path.spec.ts:130:7 › golden path › E2E-05 dashboard + audit (director) (1.3s)
+  ✓   1 [chromium] › tests/e2e/golden-path.spec.ts:11:7 › golden path › E2E-01 login + hospital selection → dashboard (2.3s)
+  ✓   2 [chromium] › tests/e2e/golden-path.spec.ts:27:7 › golden path › E2E-02 patient search-before-create (3.5s)
+  ✓   3 [chromium] › tests/e2e/golden-path.spec.ts:56:7 › golden path › E2E-03 open a visit (3.1s)
+  ✓   4 [chromium] › tests/e2e/golden-path.spec.ts:73:7 › golden path › E2E-03b record the consultation (doctor) (2.4s)
+  ✓   5 [chromium] › tests/e2e/golden-path.spec.ts:94:7 › golden path › E2E-04 invoice + payment + receipt (cashier) (4.1s)
+  ✓   6 [chromium] › tests/e2e/golden-path.spec.ts:130:7 › golden path › E2E-05 dashboard + audit (director) (1.4s)
   ✓   7 [chromium] › tests/e2e/lifecycle-encounter.spec.ts:14:7 › encounter lifecycle › open a visit, view timeline, assign service, then close it (2.2s)
   ✓   8 [chromium] › tests/e2e/logout.spec.ts:9:5 › logout returns the user to the login screen (1.2s)
-  ✓   9 [chromium] › tests/e2e/note-clinical.spec.ts:14:7 › clinical note › draft → finalize → print → amend (6.0s)
+  ✓   9 [chromium] › tests/e2e/note-clinical.spec.ts:14:7 › clinical note › draft → finalize → print → amend (4.1s)
 [WebServer] [browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
 [WebServer] 
 [WebServer] - A server/client branch `if (typeof window !== 'undefined')`.
@@ -104,25 +104,25 @@ Running 22 tests using 1 worker
 [WebServer]                               ...
 [WebServer]             ...
 [WebServer]  
-[WebServer]     at <unknown> (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:3439:25)
-[WebServer]     at runWithFiberInDEV (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:965:74)
-[WebServer]     at emitPendingHydrationWarnings (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:3438:13)
-[WebServer]     at completeWork (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:6885:102)
-[WebServer]     at runWithFiberInDEV (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:965:131)
-[WebServer]     at completeUnitOfWork (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9622:23)
-[WebServer]     at performUnitOfWork (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9557:28)
-[WebServer]     at workLoopConcurrentByScheduler (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9551:58)
-[WebServer]     at renderRootConcurrent (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9534:71)
-[WebServer]     at performWorkOnRoot (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9061:150)
-[WebServer]     at performWorkOnRootViaSchedulerTask (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:10255:9)
-[WebServer]     at MessagePort.performWorkUntilDeadline (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_1amofcm._.js:2647:64) (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:3439:25)
-  ✓  10 [chromium] › tests/e2e/patient-duplicate.spec.ts:18:7 › patient duplicate warning › reception searches (no match) then registers without a warning (2.7s)
+[WebServer]     at <unknown> (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:3439:25)
+[WebServer]     at runWithFiberInDEV (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:965:74)
+[WebServer]     at emitPendingHydrationWarnings (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:3438:13)
+[WebServer]     at completeWork (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:6885:102)
+[WebServer]     at runWithFiberInDEV (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:965:131)
+[WebServer]     at completeUnitOfWork (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9622:23)
+[WebServer]     at performUnitOfWork (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9557:28)
+[WebServer]     at workLoopConcurrentByScheduler (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9551:58)
+[WebServer]     at renderRootConcurrent (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9534:71)
+[WebServer]     at performWorkOnRoot (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9061:150)
+[WebServer]     at performWorkOnRootViaSchedulerTask (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:10255:9)
+[WebServer]     at MessagePort.performWorkUntilDeadline (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_1amofcm._.js:2647:64) (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:3439:25)
+  ✓  10 [chromium] › tests/e2e/patient-duplicate.spec.ts:18:7 › patient duplicate warning › reception searches (no match) then registers without a warning (1.9s)
   ✓  11 [chromium] › tests/e2e/patient-duplicate.spec.ts:48:7 › patient duplicate warning › registering the same identity shows a warning, then 'Créer quand même' creates it (1.5s)
   ✓  12 [chromium] › tests/e2e/patient-duplicate.spec.ts:73:7 › patient duplicate warning › the duplicate-warning override is recorded in the audit log (1.3s)
-  ✓  13 [chromium] › tests/e2e/patients-identity-2b.spec.ts:7:7 › Phase 2B — patient identity › reception registers a patient by estimated age + guardian phone (1.5s)
-  ✓  14 [chromium] › tests/e2e/patients-identity-2b.spec.ts:20:7 › Phase 2B — patient identity › reception creates a temporary (unidentified) patient with an Inconnu_ id (1.9s)
-  ✓  15 [chromium] › tests/e2e/rbac.spec.ts:11:5 › E2E-06 receptionist nav is filtered and guarded routes redirect (1.3s)
-  ✓  16 [chromium] › tests/e2e/security-admin.spec.ts:15:7 › account security › change-password form enforces the policy; admin reviews an audit detail (2.1s)
+  ✓  13 [chromium] › tests/e2e/patients-identity-2b.spec.ts:7:7 › Phase 2B — patient identity › reception registers a patient by estimated age + guardian phone (1.4s)
+  ✓  14 [chromium] › tests/e2e/patients-identity-2b.spec.ts:20:7 › Phase 2B — patient identity › reception creates a temporary (unidentified) patient with an Inconnu_ id (1.7s)
+  ✓  15 [chromium] › tests/e2e/rbac.spec.ts:11:5 › E2E-06 receptionist nav is filtered and guarded routes redirect (1.2s)
+  ✓  16 [chromium] › tests/e2e/security-admin.spec.ts:15:7 › account security › change-password form enforces the policy; admin reviews an audit detail (2.6s)
 [WebServer] [browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
 [WebServer] 
 [WebServer] - A server/client branch `if (typeof window !== 'undefined')`.
@@ -158,14 +158,15 @@ Running 22 tests using 1 worker
 [WebServer]                           <li>
 [WebServer]                           <li>
 [WebServer]                           <li>
+[WebServer]                           <li>
 [WebServer]                           ...
-[WebServer]                             <FlagCheckboxes values={{id:"cmqzp6...", ...}}>
+[WebServer]                             <FlagCheckboxes values={{id:"cmqzqm...", ...}}>
 [WebServer]                               <div className="flex flex-...">
 [WebServer]                                 <label className="flex items...">
 [WebServer]                                   <input
 [WebServer]                                     type="checkbox"
 [WebServer]                                     name="acceptsQueue"
-[WebServer]                                     defaultChecked={false}
+[WebServer]                                     defaultChecked={true}
 [WebServer] -                                   style={{caret-color:"transparent"}}
 [WebServer]                                   >
 [WebServer]                                   ...
@@ -173,7 +174,7 @@ Running 22 tests using 1 worker
 [WebServer]                                   <input
 [WebServer]                                     type="checkbox"
 [WebServer]                                     name="acceptsConsultation"
-[WebServer]                                     defaultChecked={true}
+[WebServer]                                     defaultChecked={false}
 [WebServer] -                                   style={{caret-color:"transparent"}}
 [WebServer]                                   >
 [WebServer]                                   ...
@@ -181,7 +182,7 @@ Running 22 tests using 1 worker
 [WebServer]                                   <input
 [WebServer]                                     type="checkbox"
 [WebServer]                                     name="supportsBilling"
-[WebServer]                                     defaultChecked={true}
+[WebServer]                                     defaultChecked={false}
 [WebServer] -                                   style={{caret-color:"transparent"}}
 [WebServer]                                   >
 [WebServer]                                   ...
@@ -213,7 +214,7 @@ Running 22 tests using 1 worker
 [WebServer]                                   <input
 [WebServer]                                     type="checkbox"
 [WebServer]                                     name="isInpatientWard"
-[WebServer]                                     defaultChecked={true}
+[WebServer]                                     defaultChecked={false}
 [WebServer] -                                   style={{caret-color:"transparent"}}
 [WebServer]                                   >
 [WebServer]                                   ...
@@ -227,118 +228,7 @@ Running 22 tests using 1 worker
 [WebServer]                                   ...
 [WebServer]                           ...
 [WebServer]                             <div className="mt-3 space...">
-[WebServer]                               <ServiceEditForm service={{id:"cmqzp6...", ...}} departments={[...]}>
-[WebServer]                                 <form action={function bound dispatchActionState} className="grid gap-3...">
-[WebServer]                                   <Field label="Nom (franç...">
-[WebServer]                                     <div className="grid gap-1">
-[WebServer]                                       <Label>
-[WebServer]                                       <Input name="nameFr" defaultValue="Accueil" required={true}>
-[WebServer]                                         <input
-[WebServer]                                           type={undefined}
-[WebServer]                                           data-slot="input"
-[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
-[WebServer]                                           name="nameFr"
-[WebServer]                                           defaultValue="Accueil"
-[WebServer]                                           required={true}
-[WebServer] -                                         style={{caret-color:"transparent"}}
-[WebServer]                                         >
-[WebServer]                                   <Field label="Nom (anglais)">
-[WebServer]                                     <div className="grid gap-1">
-[WebServer]                                       <Label>
-[WebServer]                                       <Input name="nameEn" defaultValue="Reception">
-[WebServer]                                         <input
-[WebServer]                                           type={undefined}
-[WebServer]                                           data-slot="input"
-[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
-[WebServer]                                           name="nameEn"
-[WebServer]                                           defaultValue="Reception"
-[WebServer] -                                         style={{caret-color:"transparent"}}
-[WebServer]                                         >
-[WebServer]                                   <Field>
-[WebServer]                                   <Field label="Ordre">
-[WebServer]                                     <div className="grid gap-1">
-[WebServer]                                       <Label>
-[WebServer]                                       <Input name="displayOrder" type="number" min={0} defaultValue={10}>
-[WebServer]                                         <input
-[WebServer]                                           type="number"
-[WebServer]                                           data-slot="input"
-[WebServer]                                           className="border-input file:text-foreground placeholder:text-muted-foregrou..."
-[WebServer]                                           name="displayOrder"
-[WebServer]                                           min={0}
-[WebServer]                                           defaultValue={10}
-[WebServer] -                                         style={{caret-color:"transparent"}}
-[WebServer]                                         >
-[WebServer]                                   ...
-[WebServer]                               ...
-[WebServer]                                 <FlagCheckboxes values={{id:"cmqzp6...", ...}}>
-[WebServer]                                   <div className="flex flex-...">
-[WebServer]                                     <label className="flex items...">
-[WebServer]                                       <input
-[WebServer]                                         type="checkbox"
-[WebServer]                                         name="acceptsQueue"
-[WebServer]                                         defaultChecked={true}
-[WebServer] -                                       style={{caret-color:"transparent"}}
-[WebServer]                                       >
-[WebServer]                                       ...
-[WebServer]                                     <label className="flex items...">
-[WebServer]                                       <input
-[WebServer]                                         type="checkbox"
-[WebServer]                                         name="acceptsConsultation"
-[WebServer]                                         defaultChecked={false}
-[WebServer] -                                       style={{caret-color:"transparent"}}
-[WebServer]                                       >
-[WebServer]                                       ...
-[WebServer]                                     <label className="flex items...">
-[WebServer]                                       <input
-[WebServer]                                         type="checkbox"
-[WebServer]                                         name="supportsBilling"
-[WebServer]                                         defaultChecked={false}
-[WebServer] -                                       style={{caret-color:"transparent"}}
-[WebServer]                                       >
-[WebServer]                                       ...
-[WebServer]                                     <label className="flex items...">
-[WebServer]                                       <input
-[WebServer]                                         type="checkbox"
-[WebServer]                                         name="supportsPharmacy"
-[WebServer]                                         defaultChecked={false}
-[WebServer] -                                       style={{caret-color:"transparent"}}
-[WebServer]                                       >
-[WebServer]                                       ...
-[WebServer]                                     <label className="flex items...">
-[WebServer]                                       <input
-[WebServer]                                         type="checkbox"
-[WebServer]                                         name="supportsLab"
-[WebServer]                                         defaultChecked={false}
-[WebServer] -                                       style={{caret-color:"transparent"}}
-[WebServer]                                       >
-[WebServer]                                       ...
-[WebServer]                                     <label className="flex items...">
-[WebServer]                                       <input
-[WebServer]                                         type="checkbox"
-[WebServer]                                         name="supportsImaging"
-[WebServer]                                         defaultChecked={false}
-[WebServer] -                                       style={{caret-color:"transparent"}}
-[WebServer]                                       >
-[WebServer]                                       ...
-[WebServer]                                     <label className="flex items...">
-[WebServer]                                       <input
-[WebServer]                                         type="checkbox"
-[WebServer]                                         name="isInpatientWard"
-[WebServer]                                         defaultChecked={false}
-[WebServer] -                                       style={{caret-color:"transparent"}}
-[WebServer]                                       >
-[WebServer]                                       ...
-[WebServer]                                     <label className="flex items...">
-[WebServer]                                       <input
-[WebServer]                                         type="checkbox"
-[WebServer]                                         name="isEmergency"
-[WebServer]                                         defaultChecked={false}
-[WebServer] -                                       style={{caret-color:"transparent"}}
-[WebServer]                                       >
-[WebServer]                                       ...
-[WebServer]                           ...
-[WebServer]                             <div className="mt-3 space...">
-[WebServer]                               <ServiceEditForm service={{id:"cmqzp6...", ...}} departments={[...]}>
+[WebServer]                               <ServiceEditForm service={{id:"cmqzqm...", ...}} departments={[...]}>
 [WebServer]                                 <form action={function bound dispatchActionState} className="grid gap-3...">
 [WebServer]                                   <Field label="Nom (franç...">
 [WebServer]                                     <div className="grid gap-1">
@@ -381,7 +271,7 @@ Running 22 tests using 1 worker
 [WebServer]                                         >
 [WebServer]                                   ...
 [WebServer]                               ...
-[WebServer]                                 <FlagCheckboxes values={{id:"cmqzp6...", ...}}>
+[WebServer]                                 <FlagCheckboxes values={{id:"cmqzqm...", ...}}>
 [WebServer]                                   <div className="flex flex-...">
 [WebServer]                                     <label className="flex items...">
 [WebServer]                                       <input
@@ -449,7 +339,7 @@ Running 22 tests using 1 worker
 [WebServer]                                       ...
 [WebServer]                           ...
 [WebServer]                             <div className="mt-3 space...">
-[WebServer]                               <ServiceEditForm service={{id:"cmqzp6...", ...}} departments={[...]}>
+[WebServer]                               <ServiceEditForm service={{id:"cmqzqm...", ...}} departments={[...]}>
 [WebServer]                                 <form action={function bound dispatchActionState} className="grid gap-3...">
 [WebServer]                                   <Field label="Nom (franç...">
 [WebServer]                                     <div className="grid gap-1">
@@ -492,7 +382,7 @@ Running 22 tests using 1 worker
 [WebServer]                                         >
 [WebServer]                                   ...
 [WebServer]                               ...
-[WebServer]                                 <FlagCheckboxes values={{id:"cmqzp6...", ...}}>
+[WebServer]                                 <FlagCheckboxes values={{id:"cmqzqm...", ...}}>
 [WebServer]                                   <div className="flex flex-...">
 [WebServer]                                     <label className="flex items...">
 [WebServer]                                       <input
@@ -560,7 +450,7 @@ Running 22 tests using 1 worker
 [WebServer]                                       ...
 [WebServer]                           ...
 [WebServer]                             <div className="mt-3 space...">
-[WebServer]                               <ServiceEditForm service={{id:"cmqzp6...", ...}} departments={[...]}>
+[WebServer]                               <ServiceEditForm service={{id:"cmqzqm...", ...}} departments={[...]}>
 [WebServer]                                 <form action={function bound dispatchActionState} className="grid gap-3...">
 [WebServer]                                   <Field label="Nom (franç...">
 [WebServer]                                     <div className="grid gap-1">
@@ -603,7 +493,7 @@ Running 22 tests using 1 worker
 [WebServer]                                         >
 [WebServer]                                   ...
 [WebServer]                               ...
-[WebServer]                                 <FlagCheckboxes values={{id:"cmqzp6...", ...}}>
+[WebServer]                                 <FlagCheckboxes values={{id:"cmqzqm...", ...}}>
 [WebServer]                                   <div className="flex flex-...">
 [WebServer]                                     <label className="flex items...">
 [WebServer]                                       <input
@@ -671,7 +561,7 @@ Running 22 tests using 1 worker
 [WebServer]                                       ...
 [WebServer]                           ...
 [WebServer]                             <div className="mt-3 space...">
-[WebServer]                               <ServiceEditForm service={{id:"cmqzp6...", ...}} departments={[...]}>
+[WebServer]                               <ServiceEditForm service={{id:"cmqzqm...", ...}} departments={[...]}>
 [WebServer]                                 <form action={function bound dispatchActionState} className="grid gap-3...">
 [WebServer]                                   <Field label="Nom (franç...">
 [WebServer]                                     <div className="grid gap-1">
@@ -714,7 +604,7 @@ Running 22 tests using 1 worker
 [WebServer]                                         >
 [WebServer]                                   ...
 [WebServer]                               ...
-[WebServer]                                 <FlagCheckboxes values={{id:"cmqzp6...", ...}}>
+[WebServer]                                 <FlagCheckboxes values={{id:"cmqzqm...", ...}}>
 [WebServer]                                   <div className="flex flex-...">
 [WebServer]                                     <label className="flex items...">
 [WebServer]                                       <input
@@ -782,7 +672,7 @@ Running 22 tests using 1 worker
 [WebServer]                                       ...
 [WebServer]                           ...
 [WebServer]                             <div className="mt-3 space...">
-[WebServer]                               <ServiceEditForm service={{id:"cmqzp6...", ...}} departments={[...]}>
+[WebServer]                               <ServiceEditForm service={{id:"cmqzqm...", ...}} departments={[...]}>
 [WebServer]                                 <form action={function bound dispatchActionState} className="grid gap-3...">
 [WebServer]                                   <Field label="Nom (franç...">
 [WebServer]                                     <div className="grid gap-1">
@@ -825,7 +715,7 @@ Running 22 tests using 1 worker
 [WebServer]                                         >
 [WebServer]                                   ...
 [WebServer]                               ...
-[WebServer]                                 <FlagCheckboxes values={{id:"cmqzp6...", ...}}>
+[WebServer]                                 <FlagCheckboxes values={{id:"cmqzqm...", ...}}>
 [WebServer]                                   <div className="flex flex-...">
 [WebServer]                                     <label className="flex items...">
 [WebServer]                                       <input
@@ -893,7 +783,7 @@ Running 22 tests using 1 worker
 [WebServer]                                       ...
 [WebServer]                           ...
 [WebServer]                             <div className="mt-3 space...">
-[WebServer]                               <ServiceEditForm service={{id:"cmqzp6...", ...}} departments={[...]}>
+[WebServer]                               <ServiceEditForm service={{id:"cmqzqm...", ...}} departments={[...]}>
 [WebServer]                                 <form action={function bound dispatchActionState} className="grid gap-3...">
 [WebServer]                                   <Field label="Nom (franç...">
 [WebServer]                                     <div className="grid gap-1">
@@ -936,7 +826,7 @@ Running 22 tests using 1 worker
 [WebServer]                                         >
 [WebServer]                                   ...
 [WebServer]                               ...
-[WebServer]                                 <FlagCheckboxes values={{id:"cmqzp6...", ...}}>
+[WebServer]                                 <FlagCheckboxes values={{id:"cmqzqm...", ...}}>
 [WebServer]                                   <div className="flex flex-...">
 [WebServer]                                     <label className="flex items...">
 [WebServer]                                       <input
@@ -1205,24 +1095,24 @@ Running 22 tests using 1 worker
 [WebServer]             ...
 [WebServer]           ...
 [WebServer]  
-[WebServer]     at <unknown> (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:3439:25)
-[WebServer]     at runWithFiberInDEV (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:965:74)
-[WebServer]     at emitPendingHydrationWarnings (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:3438:13)
-[WebServer]     at completeWork (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:6885:102)
-[WebServer]     at runWithFiberInDEV (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:965:131)
-[WebServer]     at completeUnitOfWork (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9622:23)
-[WebServer]     at performUnitOfWork (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9557:28)
-[WebServer]     at workLoopConcurrentByScheduler (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9551:58)
-[WebServer]     at renderRootConcurrent (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9534:71)
-[WebServer]     at performWorkOnRoot (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_[WebServer] react-dom_096_9a-._.js:9061:150)
-[WebServer]     at performWorkOnRootViaSchedulerTask (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:10255:9)
-[WebServer]     at MessagePort.performWorkUntilDeadline (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_1amofcm._.js:2647:64) (file:///Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:3439:25)
-  ✓  17 [chromium] › tests/e2e/service-catalogue.spec.ts:7:7 › Phase 2A — service catalogue › admin manages the Bertoua catalogue; the language toggle switches Fr/En (2.8s)
+[WebServer]     at <unknown> (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:3439:25)
+[WebServer]     at runWithFiberInDEV (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:965:74)
+[WebServer]     at emitPendingHydrationWarnings (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:3438:13)
+[WebServer]     at completeWork (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:6885:102)
+[WebServer]     at runWithFiberInDEV (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:965:131)
+[WebServer]     at completeUnitOfWork (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9622:23)
+[WebServer]     at performUnitOfWork (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9557:28)
+[WebServer]     at workLoopConcurrentByScheduler (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9551:58)
+[WebServer]     at renderRootConcurrent (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9534:71)
+[WebServer]     at performWorkOnRoot (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9061:150)
+[WebServer]     at performWorkOnRootViaSchedulerTask (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:10255:9)
+[WebServer]     at MessagePort.performWorkUntilDeadline (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_1amofcm._.js:2647:64) (file://<repo>/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:3439:25)
+  ✓  17 [chromium] › tests/e2e/service-catalogue.spec.ts:7:7 › Phase 2A — service catalogue › admin manages the Bertoua catalogue; the language toggle switches Fr/En (2.6s)
   ✓  18 [chromium] › tests/e2e/service-catalogue.spec.ts:36:7 › Phase 2A — service catalogue › reception cannot reach administration (capability-based RBAC) (1.2s)
-  ✓  19 [chromium] › tests/e2e/shift-cashier.spec.ts:13:7 › cashier controls › issue → pay → report → close shift → void → voided receipt (4.1s)
-  ✓  20 [chromium] › tests/e2e/views-dashboard.spec.ts:13:7 › role dashboards › cashier sees billing section; reception does not (1.7s)
-  ✓  21 [chromium] › tests/e2e/views-system.spec.ts:13:7 › system status › status page shows health, data-mode marker and disabled real-data path (1.8s)
-  ✓  22 [chromium] › tests/e2e/visit-services-2qa.spec.ts:7:7 › Phase 2 QA — outpatient visit service picker › new-visit form lists outpatient services and EXCLUDES support/inpatient (2.1s)
+  ✓  19 [chromium] › tests/e2e/shift-cashier.spec.ts:13:7 › cashier controls › issue → pay → report → close shift → void → voided receipt (4.3s)
+  ✓  20 [chromium] › tests/e2e/views-dashboard.spec.ts:13:7 › role dashboards › cashier sees billing section; reception does not (1.5s)
+  ✓  21 [chromium] › tests/e2e/views-system.spec.ts:13:7 › system status › status page shows health, data-mode marker and disabled real-data path (1.5s)
+  ✓  22 [chromium] › tests/e2e/visit-services-2qa.spec.ts:7:7 › Phase 2 QA — outpatient visit service picker › new-visit form lists outpatient services and EXCLUDES support/inpatient (1.6s)
 
   22 passed (53.6s)
 

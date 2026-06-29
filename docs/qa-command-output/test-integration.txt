@@ -6,12 +6,12 @@
 > vitest run --project integration
 
 
- RUN  v4.1.9 /Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon
+ RUN  v4.1.9 <repo>
 
 
- Test Files  18 passed (18)
-      Tests  104 passed (104)
-   Start at  23:58:35
-   Duration  42.56s (transform 281ms, setup 144ms, import 1.87s, tests 38.83s, environment 1ms)
+ Test Files  19 passed (19)
+      Tests  121 passed (121)
+   Start at  00:35:39
+   Duration  47.88s (transform 294ms, setup 154ms, import 2.02s, tests 43.92s, environment 1ms)
 
 # exit code: 0

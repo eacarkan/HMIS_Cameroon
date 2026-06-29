@@ -35,11 +35,13 @@ test.describe.serial("encounter lifecycle", () => {
     await page.getByRole("button", { name: "Ouvrir une visite" }).click();
     await page.waitForURL(/\/encounters\/[^/]+$/);
 
-    // Lifecycle card: assign a service/department (recorded + audited).
+    // Lifecycle card: re-assign to another active outpatient consultation service (recorded +
+    // audited). Phase 2 QA — the control is a restricted dropdown, not free text; only outpatient
+    // consultation services are offered (and the server enforces the same rule).
     await expect(page.getByText("Cycle de vie")).toBeVisible();
-    await page.getByLabel(/Affecter au service/).fill("Cardiologie");
+    await page.getByLabel(/Affecter au service/).selectOption("Pédiatrie");
     await page.getByRole("button", { name: "Affecter" }).click();
-    await expect(page.getByText(/Affectation de visite|Cardiologie/).first()).toBeVisible();
+    await expect(page.getByText(/Pédiatrie/).first()).toBeVisible();
     await page.screenshot({ path: `${SHOTS}/02-lifecycle-controls.png`, fullPage: true });
 
     // Close the visit → terminal state, controls disappear.

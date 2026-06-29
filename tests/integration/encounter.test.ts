@@ -118,7 +118,8 @@ describe("integration: Phase 1A Batch 1B — encounter lifecycle", () => {
 
   it("status history reconstructs from append-only audit (create → assign → close)", async () => {
     const { actor, ctx, enc } = await anEncounter();
-    await assignEncounterService(actor, ctx, enc.id, "Cardiologie");
+    // Phase 2 QA — re-assignment is restricted to active outpatient consultation services.
+    await assignEncounterService(actor, ctx, enc.id, "Pédiatrie");
     await changeEncounterStatus(actor, ctx, enc.id, "closed");
     const history = await getEncounterStatusHistory(actor, ctx, enc.id);
     expect(history.map((h) => h.action)).toEqual([
@@ -126,9 +127,9 @@ describe("integration: Phase 1A Batch 1B — encounter lifecycle", () => {
       "encounter.assign",
       "encounter.status_change",
     ]);
-    // Assignment is recorded on the encounter itself.
+    // Assignment is recorded on the encounter itself (canonical service name stored).
     const fresh = await getEncounter(actor, ctx, enc.id);
-    expect(fresh?.serviceLabel).toBe("Cardiologie");
+    expect(fresh?.serviceLabel).toBe("Pédiatrie");
   });
 
   it("read-only timeline is composed and hospital-scoped", async () => {

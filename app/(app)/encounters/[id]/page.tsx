@@ -26,6 +26,7 @@ import { requireActorAndHospital } from "@/server/auth";
 import {
   getEncounter,
   getEncounterStatusHistory,
+  listActiveOutpatientConsultationServices,
   listDiagnosisCodes,
   listObservations,
   listDiagnoses,
@@ -56,6 +57,13 @@ export default async function EncounterPage({
   // (composed from append-only audit) is readable with encounter.read.
   const canManageEncounter = can(actor.roles, "encounter.create");
   const statusHistory = await getEncounterStatusHistory(actor, hospital, id);
+  // Phase 2 QA (follow-up) — the re-assignment control offers only active outpatient consultation
+  // services (same restriction as the new-visit form); the server enforces the same rule.
+  const serviceOptions = canManageEncounter
+    ? (await listActiveOutpatientConsultationServices(actor, hospital)).map(
+        (s) => s.nameFr ?? s.name,
+      )
+    : [];
 
   // Structured clinical data (Gate 4): clinician reads/manages; others don't see it.
   const canReadClinical = can(actor.roles, "clinical.structure.read");
@@ -135,6 +143,7 @@ export default async function EncounterPage({
                 <EncounterServiceForm
                   encounterId={encounter.id}
                   current={encounter.serviceLabel}
+                  services={serviceOptions}
                 />
               </>
             ) : (

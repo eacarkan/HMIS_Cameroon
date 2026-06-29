@@ -4,7 +4,6 @@ import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   assignEncounterServiceAction,
@@ -64,24 +63,50 @@ export function EncounterStatusControls({
   );
 }
 
-/** Assign / re-route the encounter's service or department (recorded + audited). */
+/**
+ * Assign / re-route the encounter's service or department (recorded + audited). Phase 2 QA
+ * (follow-up) — the options are RESTRICTED to active outpatient consultation services (same rule
+ * the server enforces in `assignEncounterService`); the former free-text input is gone, so the UI
+ * can no longer offer cashier/pharmacy/lab/imaging/inpatient services.
+ */
 export function EncounterServiceForm({
   encounterId,
   current,
+  services,
 }: {
   encounterId: string;
   current: string;
+  services: string[];
 }) {
   const t = useTranslations("encounter");
   const [state, action, pending] = useActionState(
     assignEncounterServiceAction.bind(null, encounterId),
     initial,
   );
+  // Keep the current label selectable even if it is no longer offered (e.g. later deactivated),
+  // so the control always has a valid default; the server still validates on submit.
+  const options =
+    services.length > 0
+      ? services.includes(current)
+        ? services
+        : [current, ...services]
+      : [current];
   return (
     <form action={action} className="space-y-2">
       <div className="grid gap-1.5">
         <Label htmlFor="enc-service">{t("assignService")}</Label>
-        <Input id="enc-service" name="serviceLabel" defaultValue={current} required />
+        <select
+          id="enc-service"
+          name="serviceLabel"
+          defaultValue={current}
+          className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm shadow-xs"
+        >
+          {options.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
       </div>
       <Button type="submit" size="sm" variant="secondary" disabled={pending}>
         {t("assign")}

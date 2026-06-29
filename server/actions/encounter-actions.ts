@@ -51,6 +51,10 @@ export async function openEncounterAction(
     if (error instanceof AuthorizationError) {
       return { error: "Vous n'êtes pas autorisé à ouvrir une visite." };
     }
+    // Phase 2 QA (follow-up) — surface server-side validation rejections (e.g. a tampered
+    // serviceLabel that is not an eligible outpatient consultation service) as a controlled form
+    // error instead of an unhandled 500. No encounter is created in that case.
+    if (error instanceof Error) return { error: error.message };
     throw error;
   }
 
