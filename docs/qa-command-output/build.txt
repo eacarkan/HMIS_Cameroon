@@ -1,6 +1,4 @@
-# $ npm run build
-# refreshed: 2026-06-30 (final Phase 2 tip)
-
+$ npm run build
 
 > hmis-cameroon@0.1.0 build
 > next build
@@ -9,29 +7,32 @@
 - Environments: .env
 
   Creating an optimized production build ...
-✓ Compiled successfully in 3.6s
+✓ Compiled successfully in 3.5s
   Running TypeScript ...
-  Finished TypeScript in 7.0s ...
+  Finished TypeScript in 7.6s ...
   Collecting page data using 9 workers ...
-  Generating static pages using 9 workers (0/33) ...
-  Generating static pages using 9 workers (8/33) 
-  Generating static pages using 9 workers (16/33) 
-  Generating static pages using 9 workers (24/33) 
-✓ Generating static pages using 9 workers (33/33) in 158ms
+  Generating static pages using 9 workers (0/37) ...
+  Generating static pages using 9 workers (9/37) 
+  Generating static pages using 9 workers (18/37) 
+  Generating static pages using 9 workers (27/37) 
+✓ Generating static pages using 9 workers (37/37) in 229ms
   Finalizing page optimization ...
 
 Route (app)
 ┌ ƒ /
 ├ ƒ /_not-found
 ├ ƒ /administration
+├ ƒ /administration/configuration
 ├ ƒ /administration/examens
 ├ ƒ /administration/medicaments
+├ ƒ /administration/preparation-site
 ├ ƒ /administration/tarifs
 ├ ƒ /administration/utilisateurs
 ├ ƒ /annulations
 ├ ƒ /api/auth/[...nextauth]
 ├ ƒ /caisse/brouillard
 ├ ƒ /caisse/brouillard/[id]
+├ ƒ /central
 ├ ƒ /connexion
 ├ ƒ /consultations
 ├ ƒ /consultations/[id]
@@ -67,7 +68,8 @@ Route (app)
 ├ ƒ /recus/[id]
 ├ ƒ /remboursements
 ├ ƒ /remboursements/[id]
-└ ƒ /selection-hopital
+├ ƒ /selection-hopital
+└ ƒ /uat
 
 
 ƒ  (Dynamic)  server-rendered on demand

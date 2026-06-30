@@ -1,6 +1,4 @@
-# $ npm run test:e2e
-# refreshed: 2026-06-30 (final Phase 2 tip)
-
+$ npm run test:e2e
 
 > hmis-cameroon@0.1.0 test:e2e
 > playwright test
@@ -12,59 +10,74 @@
 ✓ Reset complete — known starting state restored:
   operational records cleared (patients=0, encounters=0, invoices=0, payments=0); counters at 0; base demo data re-seeded.
 
-Running 40 tests using 1 worker
+Running 50 tests using 1 worker
 
-  ✓   1 [chromium] › tests/e2e/golden-path.spec.ts:11:7 › golden path › E2E-01 login + hospital selection → dashboard (830ms)
-  ✓   2 [chromium] › tests/e2e/golden-path.spec.ts:27:7 › golden path › E2E-02 patient search-before-create (835ms)
-  ✓   3 [chromium] › tests/e2e/golden-path.spec.ts:56:7 › golden path › E2E-03 open a visit (747ms)
-  ✓   4 [chromium] › tests/e2e/golden-path.spec.ts:73:7 › golden path › E2E-03b record the consultation (doctor) (812ms)
-  ✓   5 [chromium] › tests/e2e/golden-path.spec.ts:94:7 › golden path › E2E-04 invoice + payment + receipt (cashier) (909ms)
-  ✓   6 [chromium] › tests/e2e/golden-path.spec.ts:130:7 › golden path › E2E-05 dashboard + audit (director) (588ms)
-  ✓   7 [chromium] › tests/e2e/hospitalisation-2g.spec.ts:13:7 › Phase 2G — ward-level hospitalization › request → assign ward → daily fee → discharge blocked → pay → discharge (3.2s)
+  ✓   1 [chromium] › tests/e2e/golden-path.spec.ts:11:7 › golden path › E2E-01 login + hospital selection → dashboard (832ms)
+  ✓   2 [chromium] › tests/e2e/golden-path.spec.ts:27:7 › golden path › E2E-02 patient search-before-create (882ms)
+  ✓   3 [chromium] › tests/e2e/golden-path.spec.ts:56:7 › golden path › E2E-03 open a visit (780ms)
+  ✓   4 [chromium] › tests/e2e/golden-path.spec.ts:73:7 › golden path › E2E-03b record the consultation (doctor) (836ms)
+  ✓   5 [chromium] › tests/e2e/golden-path.spec.ts:94:7 › golden path › E2E-04 invoice + payment + receipt (cashier) (977ms)
+  ✓   6 [chromium] › tests/e2e/golden-path.spec.ts:130:7 › golden path › E2E-05 dashboard + audit (director) (612ms)
+  ✓   7 [chromium] › tests/e2e/hospitalisation-2g.spec.ts:13:7 › Phase 2G — ward-level hospitalization › request → assign ward → daily fee → discharge blocked → pay → discharge (3.3s)
 [WebServer] Error: MISSING_MESSAGE: roles.technicien_diagnostic (fr)
-[WebServer]     at <unknown> (.next/server/chunks/ssr/_0olel6n._.js:4:120810) {
+[WebServer]     at <unknown> (.next/server/chunks/ssr/_0olel6n._.js:4:121823) {
 [WebServer]   code: 'MISSING_MESSAGE',
 [WebServer]   originalMessage: 'roles.technicien_diagnostic (fr)'
 [WebServer] }
 [WebServer] Error: MISSING_MESSAGE: roles.validateur_diagnostic (fr)
-[WebServer]     at <unknown> (.next/server/chunks/ssr/_0olel6n._.js:4:120810) {
+[WebServer]     at <unknown> (.next/server/chunks/ssr/_0olel6n._.js:4:121823) {
 [WebServer]   code: 'MISSING_MESSAGE',
 [WebServer]   originalMessage: 'roles.validateur_diagnostic (fr)'
 [WebServer] }
-  ✓   8 [chromium] › tests/e2e/laboratoire-2i.spec.ts:14:7 › Phase 2I — manual lab & radiology › request → pay → enter → (hidden) → validate → doctor sees result → report (3.4s)
-  ✓   9 [chromium] › tests/e2e/lifecycle-encounter.spec.ts:14:7 › encounter lifecycle › open a visit, view timeline, assign service, then close it (997ms)
-  ✓  10 [chromium] › tests/e2e/logout.spec.ts:9:5 › logout returns the user to the login screen (746ms)
-  ✓  11 [chromium] › tests/e2e/medication-catalogue-2d1.spec.ts:12:7 › Phase 2D-1 — medication catalogue › admin adds a medication; the seeded catalogue is visible (715ms)
-  ✓  12 [chromium] › tests/e2e/medication-catalogue-2d1.spec.ts:30:7 › Phase 2D-1 — medication catalogue › reception cannot reach the medication catalogue (RBAC) (543ms)
-  ✓  13 [chromium] › tests/e2e/note-clinical.spec.ts:14:7 › clinical note › draft → finalize → print → amend (1.5s)
-  ✓  14 [chromium] › tests/e2e/patient-duplicate.spec.ts:18:7 › patient duplicate warning › reception searches (no match) then registers without a warning (912ms)
-  ✓  15 [chromium] › tests/e2e/patient-duplicate.spec.ts:48:7 › patient duplicate warning › registering the same identity shows a warning, then 'Créer quand même' creates it (754ms)
-  ✓  16 [chromium] › tests/e2e/patient-duplicate.spec.ts:73:7 › patient duplicate warning › the duplicate-warning override is recorded in the audit log (658ms)
-  ✓  17 [chromium] › tests/e2e/patients-identity-2b.spec.ts:7:7 › Phase 2B — patient identity › reception registers a patient by estimated age + guardian phone (723ms)
-  ✓  18 [chromium] › tests/e2e/patients-identity-2b.spec.ts:20:7 › Phase 2B — patient identity › reception creates a temporary (unidentified) patient with an Inconnu_ id (660ms)
-[WebServer] (node:19184) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+  ✓   8 [chromium] › tests/e2e/laboratoire-2i.spec.ts:14:7 › Phase 2I — manual lab & radiology › request → pay → enter → (hidden) → validate → doctor sees result → report (3.5s)
+  ✓   9 [chromium] › tests/e2e/lifecycle-encounter.spec.ts:14:7 › encounter lifecycle › open a visit, view timeline, assign service, then close it (1.0s)
+  ✓  10 [chromium] › tests/e2e/logout.spec.ts:9:5 › logout returns the user to the login screen (774ms)
+  ✓  11 [chromium] › tests/e2e/medication-catalogue-2d1.spec.ts:12:7 › Phase 2D-1 — medication catalogue › admin adds a medication; the seeded catalogue is visible (740ms)
+  ✓  12 [chromium] › tests/e2e/medication-catalogue-2d1.spec.ts:30:7 › Phase 2D-1 — medication catalogue › reception cannot reach the medication catalogue (RBAC) (578ms)
+  ✓  13 [chromium] › tests/e2e/multi-hospital-config-3a.spec.ts:25:7 › Phase 3A — multi-hospital configuration › admin configures Ebolowa from the Bertoua reference template (903ms)
+  ✓  14 [chromium] › tests/e2e/multi-hospital-config-3a.spec.ts:57:7 › Phase 3A — multi-hospital configuration › the completeness dashboard compares Bertoua and Ebolowa for a multi-site admin (671ms)
+  ✓  15 [chromium] › tests/e2e/multi-hospital-config-3a.spec.ts:74:7 › Phase 3A — multi-hospital configuration › a non-config role cannot reach the configuration dashboard (RBAC) (580ms)
+  ✓  16 [chromium] › tests/e2e/note-clinical.spec.ts:14:7 › clinical note › draft → finalize → print → amend (1.6s)
+  ✓  17 [chromium] › tests/e2e/patient-duplicate.spec.ts:18:7 › patient duplicate warning › reception searches (no match) then registers without a warning (927ms)
+  ✓  18 [chromium] › tests/e2e/patient-duplicate.spec.ts:48:7 › patient duplicate warning › registering the same identity shows a warning, then 'Créer quand même' creates it (750ms)
+  ✓  19 [chromium] › tests/e2e/patient-duplicate.spec.ts:73:7 › patient duplicate warning › the duplicate-warning override is recorded in the audit log (658ms)
+  ✓  20 [chromium] › tests/e2e/patients-identity-2b.spec.ts:7:7 › Phase 2B — patient identity › reception registers a patient by estimated age + guardian phone (722ms)
+  ✓  21 [chromium] › tests/e2e/patients-identity-2b.spec.ts:20:7 › Phase 2B — patient identity › reception creates a temporary (unidentified) patient with an Inconnu_ id (704ms)
+[WebServer] (node:42376) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 [WebServer] (Use `node --trace-deprecation ...` to show where the warning was created)
-  ✓  19 [chromium] › tests/e2e/pharmacy-adjustment-2d7.spec.ts:13:7 › Phase 2D-7 — stock adjustment dual validation › pharmacist requests an adjustment; the Pharmacist-in-Charge approves it (1.2s)
-  ✓  20 [chromium] › tests/e2e/pharmacy-adjustment-2d7.spec.ts:40:7 › Phase 2D-7 — stock adjustment dual validation › reception cannot reach the stock-adjustment worklist (RBAC) (555ms)
-  ✓  21 [chromium] › tests/e2e/pharmacy-dispense-2d5.spec.ts:13:7 › Phase 2D-5 — dispensing journey › prescribe → confirm payment → dispense → printable record (2.2s)
-  ✓  22 [chromium] › tests/e2e/pharmacy-fefo-2d6.spec.ts:13:7 › Phase 2D-6 — FEFO override › Pharmacist-in-Charge overrides the FEFO lot with a reason (1.7s)
-  ✓  23 [chromium] › tests/e2e/pharmacy-report-2d8.spec.ts:13:7 › Phase 2D-8 — pharmacy report › pharmacist sees the read-only pharmacy report (594ms)
-  ✓  24 [chromium] › tests/e2e/pharmacy-report-2d8.spec.ts:24:7 › Phase 2D-8 — pharmacy report › reception cannot reach the pharmacy report (RBAC) (549ms)
-  ✓  25 [chromium] › tests/e2e/prescription-2d2.spec.ts:13:7 › Phase 2D-2 — prescription › doctor prescribes → finalize → send to pharmacy → printable ordonnance (1.4s)
-  ✓  26 [chromium] › tests/e2e/queue-2f.spec.ts:13:7 › Phase 2F — digital queue › reception queues a patient and advances the ticket (740ms)
-  ✓  27 [chromium] › tests/e2e/queue-2f.spec.ts:30:7 › Phase 2F — digital queue › a read-only role sees the board but cannot add to the queue (RBAC) (554ms)
-  ✓  28 [chromium] › tests/e2e/rapports-operationnel-2e.spec.ts:13:7 › Phase 2E — operational reporting + DHIS2 export › admin views the aggregate report and exports an aggregate-only DHIS2 CSV (667ms)
-  ✓  29 [chromium] › tests/e2e/rapports-operationnel-2e.spec.ts:41:7 › Phase 2E — operational reporting + DHIS2 export › reception cannot view the report or run the export (RBAC) (554ms)
-  ✓  30 [chromium] › tests/e2e/rbac.spec.ts:11:5 › E2E-06 receptionist nav is filtered and guarded routes redirect (569ms)
-  ✓  31 [chromium] › tests/e2e/security-admin.spec.ts:15:7 › account security › change-password form enforces the policy; admin reviews an audit detail (881ms)
-  ✓  32 [chromium] › tests/e2e/service-catalogue.spec.ts:7:7 › Phase 2A — service catalogue › admin manages the Bertoua catalogue; the language toggle switches Fr/En (1.1s)
-  ✓  33 [chromium] › tests/e2e/service-catalogue.spec.ts:36:7 › Phase 2A — service catalogue › reception cannot reach administration (capability-based RBAC) (554ms)
-  ✓  34 [chromium] › tests/e2e/shift-cashier.spec.ts:14:7 › cashier controls (Phase 2C) › open shift → pay → close Brouillard → request cancel → admin approve → refund (2.3s)
-  ✓  35 [chromium] › tests/e2e/stock-2d3.spec.ts:12:7 › Phase 2D-3 — pharmacy stock › pharmacist receives a batch; the seeded ledger is visible (705ms)
-  ✓  36 [chromium] › tests/e2e/stock-2d3.spec.ts:32:7 › Phase 2D-3 — pharmacy stock › reception cannot reach the pharmacy stock page (RBAC) (548ms)
-  ✓  37 [chromium] › tests/e2e/urgence-2h.spec.ts:12:7 › Phase 2H — emergency exception › flag emergency → cashier accrues debt → Director waives (1.7s)
-  ✓  38 [chromium] › tests/e2e/views-dashboard.spec.ts:13:7 › role dashboards › cashier sees billing section; reception does not (860ms)
-  ✓  39 [chromium] › tests/e2e/views-system.spec.ts:13:7 › system status › status page shows health, data-mode marker and disabled real-data path (613ms)
-  ✓  40 [chromium] › tests/e2e/visit-services-2qa.spec.ts:7:7 › Phase 2 QA — outpatient visit service picker › new-visit form lists outpatient services and EXCLUDES support/inpatient (695ms)
+  ✓  22 [chromium] › tests/e2e/pharmacy-adjustment-2d7.spec.ts:13:7 › Phase 2D-7 — stock adjustment dual validation › pharmacist requests an adjustment; the Pharmacist-in-Charge approves it (1.2s)
+  ✓  23 [chromium] › tests/e2e/pharmacy-adjustment-2d7.spec.ts:40:7 › Phase 2D-7 — stock adjustment dual validation › reception cannot reach the stock-adjustment worklist (RBAC) (560ms)
+  ✓  24 [chromium] › tests/e2e/pharmacy-dispense-2d5.spec.ts:13:7 › Phase 2D-5 — dispensing journey › prescribe → confirm payment → dispense → printable record (2.3s)
+  ✓  25 [chromium] › tests/e2e/pharmacy-fefo-2d6.spec.ts:13:7 › Phase 2D-6 — FEFO override › Pharmacist-in-Charge overrides the FEFO lot with a reason (1.9s)
+  ✓  26 [chromium] › tests/e2e/pharmacy-report-2d8.spec.ts:13:7 › Phase 2D-8 — pharmacy report › pharmacist sees the read-only pharmacy report (618ms)
+  ✓  27 [chromium] › tests/e2e/pharmacy-report-2d8.spec.ts:24:7 › Phase 2D-8 — pharmacy report › reception cannot reach the pharmacy report (RBAC) (558ms)
+  ✓  28 [chromium] › tests/e2e/prescription-2d2.spec.ts:13:7 › Phase 2D-2 — prescription › doctor prescribes → finalize → send to pharmacy → printable ordonnance (1.4s)
+  ✓  29 [chromium] › tests/e2e/queue-2f.spec.ts:13:7 › Phase 2F — digital queue › reception queues a patient and advances the ticket (750ms)
+  ✓  30 [chromium] › tests/e2e/queue-2f.spec.ts:30:7 › Phase 2F — digital queue › a read-only role sees the board but cannot add to the queue (RBAC) (570ms)
+  ✓  31 [chromium] › tests/e2e/rapports-operationnel-2e.spec.ts:13:7 › Phase 2E — operational reporting + DHIS2 export › admin views the aggregate report and exports an aggregate-only DHIS2 CSV (705ms)
+  ✓  32 [chromium] › tests/e2e/rapports-operationnel-2e.spec.ts:41:7 › Phase 2E — operational reporting + DHIS2 export › reception cannot view the report or run the export (RBAC) (565ms)
+  ✓  33 [chromium] › tests/e2e/rbac.spec.ts:11:5 › E2E-06 receptionist nav is filtered and guarded routes redirect (569ms)
+  ✓  34 [chromium] › tests/e2e/security-admin.spec.ts:15:7 › account security › change-password form enforces the policy; admin reviews an audit detail (899ms)
+  ✓  35 [chromium] › tests/e2e/service-catalogue.spec.ts:7:7 › Phase 2A — service catalogue › admin manages the Bertoua catalogue; the language toggle switches Fr/En (1.2s)
+  ✓  36 [chromium] › tests/e2e/service-catalogue.spec.ts:36:7 › Phase 2A — service catalogue › reception cannot reach administration (capability-based RBAC) (570ms)
+  ✓  37 [chromium] › tests/e2e/shift-cashier.spec.ts:14:7 › cashier controls (Phase 2C) › open shift → pay → close Brouillard → request cancel → admin approve → refund (2.4s)
+  ✓  38 [chromium] › tests/e2e/site-readiness-3c.spec.ts:7:7 › Phase 3C — site readiness checklist › admin views the checklist and updates a readiness item (750ms)
+  ✓  39 [chromium] › tests/e2e/site-readiness-3c.spec.ts:24:7 › Phase 3C — site readiness checklist › a non-oversight role cannot reach the readiness checklist (RBAC) (612ms)
+  ✓  40 [chromium] › tests/e2e/stock-2d3.spec.ts:12:7 › Phase 2D-3 — pharmacy stock › pharmacist receives a batch; the seeded ledger is visible (708ms)
+  ✓  41 [chromium] › tests/e2e/stock-2d3.spec.ts:32:7 › Phase 2D-3 — pharmacy stock › reception cannot reach the pharmacy stock page (RBAC) (605ms)
+  ✓  42 [chromium] › tests/e2e/supervision-centrale-3d.spec.ts:9:7 › Phase 3D — central aggregate oversight › an admin generates the hospital aggregate snapshot (610ms)
+[WebServer] Error: MISSING_MESSAGE: roles.superviseur_central (fr)
+[WebServer]     at <unknown> (.next/server/chunks/ssr/_0olel6n._.js:4:121823) {
+[WebServer]   code: 'MISSING_MESSAGE',
+[WebServer]   originalMessage: 'roles.superviseur_central (fr)'
+[WebServer] }
+  ✓  43 [chromium] › tests/e2e/supervision-centrale-3d.spec.ts:18:7 › Phase 3D — central aggregate oversight › the central supervisor sees per-hospital AGGREGATES only (no patient data) (590ms)
+  ✓  44 [chromium] › tests/e2e/supervision-centrale-3d.spec.ts:28:7 › Phase 3D — central aggregate oversight › a non-central role cannot reach the central oversight (RBAC) (568ms)
+  ✓  45 [chromium] › tests/e2e/uat-gate7-3e.spec.ts:7:7 › Phase 3E — UAT + Gate 7 readiness › admin sees the non-authorization disclaimer and records a UAT execution (821ms)
+  ✓  46 [chromium] › tests/e2e/uat-gate7-3e.spec.ts:24:7 › Phase 3E — UAT + Gate 7 readiness › a non-UAT role cannot reach the UAT/Gate 7 page (RBAC) (570ms)
+  ✓  47 [chromium] › tests/e2e/urgence-2h.spec.ts:12:7 › Phase 2H — emergency exception › flag emergency → cashier accrues debt → Director waives (1.8s)
+  ✓  48 [chromium] › tests/e2e/views-dashboard.spec.ts:13:7 › role dashboards › cashier sees billing section; reception does not (852ms)
+  ✓  49 [chromium] › tests/e2e/views-system.spec.ts:13:7 › system status › status page shows health, data-mode marker and disabled real-data path (621ms)
+  ✓  50 [chromium] › tests/e2e/visit-services-2qa.spec.ts:7:7 › Phase 2 QA — outpatient visit service picker › new-visit form lists outpatient services and EXCLUDES support/inpatient (744ms)
 
-  40 passed (55.7s)
+  50 passed (1.1m)

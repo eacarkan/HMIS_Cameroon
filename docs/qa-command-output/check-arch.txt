@@ -1,6 +1,4 @@
-# $ npm run check:arch
-# refreshed: 2026-06-30 (final Phase 2 tip)
-
+$ npm run check:arch
 
 > hmis-cameroon@0.1.0 check:arch
 > tsx scripts/check-architecture.ts

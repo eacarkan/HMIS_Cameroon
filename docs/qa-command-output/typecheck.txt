@@ -1,6 +1,4 @@
-# $ npm run typecheck
-# refreshed: 2026-06-30 (final Phase 2 tip)
-
+$ npm run typecheck
 
 > hmis-cameroon@0.1.0 typecheck
 > tsc --noEmit
