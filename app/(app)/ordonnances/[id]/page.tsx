@@ -5,14 +5,19 @@ import Link from "next/link";
 
 import { PageHeader } from "@/components/layout/page-header";
 import { ConfirmPaymentButton } from "@/components/pharmacy/dispense-controls";
+import { ReservationOverridePanel } from "@/components/pharmacy/reservation-override";
 import { PrescriptionLifecycle } from "@/components/prescriptions/prescription-lifecycle";
 import { PrescriptionView } from "@/components/print/prescription-view";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatDateTimeFr } from "@/lib/dates";
+import { formatDateFr, formatDateTimeFr } from "@/lib/dates";
 import { can } from "@/lib/rbac";
 import { requireActorAndHospital } from "@/server/auth";
-import { getPrescription, listDispensesForPrescription } from "@/server/services";
+import {
+  getPrescription,
+  getReservationOverrideOptions,
+  listDispensesForPrescription,
+} from "@/server/services";
 
 /** Phase 2D-2 — printable prescription + lifecycle (doctor). */
 export default async function PrescriptionPage({
@@ -29,12 +34,34 @@ export default async function PrescriptionPage({
   const t = await getTranslations("prescription");
   const tStatus = await getTranslations("prescriptionStatus");
   const td = await getTranslations("dispense");
+  const tf = await getTranslations("fefo");
   const statusLabel = tStatus(presc.status);
-  // Dispense records are a pharmacy/oversight view (`dispense.read`); the doctor/cashier viewing this
-  // prescription do not see the batch-level records (they see the prescription status itself).
-  const dispenses = can(actor.roles, "dispense.read")
-    ? await listDispensesForPrescription(actor, hospital, id)
+  // Dispense records + active reservations are a pharmacy/oversight view (`dispense.read`); the
+  // doctor/cashier viewing this prescription do not see the batch-level records or holds.
+  const canSeeDispense = can(actor.roles, "dispense.read");
+  const dispenses = canSeeDispense ? await listDispensesForPrescription(actor, hospital, id) : [];
+  const reservationRows = canSeeDispense
+    ? (await getReservationOverrideOptions(actor, hospital, id)).map((r) => ({
+        id: r.id,
+        quantity: r.quantity,
+        unit: r.unit,
+        medicationLabel: r.medicationLabel,
+        isFefoOverride: r.isFefoOverride,
+        overrideReason: r.overrideReason,
+        isCurrentFefo: r.isCurrentFefo,
+        batch: {
+          batchNumber: r.batch.batchNumber,
+          expiryLabel: formatDateFr(new Date(r.batch.expiryDate)),
+        },
+        candidates: r.candidates.map((c) => ({
+          id: c.id,
+          batchNumber: c.batchNumber,
+          available: c.available,
+          expiryLabel: formatDateFr(new Date(c.expiryDate)),
+        })),
+      }))
     : [];
+  const canOverrideFefo = can(actor.roles, "fefo.override");
   const canConfirmPayment =
     can(actor.roles, "prescription.payment.confirm") &&
     !presc.isPaid &&
@@ -93,6 +120,18 @@ export default async function PrescriptionPage({
               </Badge>
             </p>
             {canConfirmPayment ? <ConfirmPaymentButton prescriptionId={presc.id} /> : null}
+            {canSeeDispense && reservationRows.length > 0 ? (
+              <div className="border-t pt-2">
+                <p className="text-muted-foreground text-xs">{tf("title")}</p>
+                <div className="mt-1">
+                  <ReservationOverridePanel
+                    prescriptionId={presc.id}
+                    reservations={reservationRows}
+                    canOverride={canOverrideFefo}
+                  />
+                </div>
+              </div>
+            ) : null}
             {dispenses.length > 0 ? (
               <div className="border-t pt-2">
                 <p className="text-muted-foreground text-xs">{td("records")}</p>

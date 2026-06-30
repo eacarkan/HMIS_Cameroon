@@ -239,6 +239,8 @@ export {
   createReservation,
   listReservationsForPrescription,
   listActiveReservationsForItem,
+  findReservationById,
   findActiveReservationsOlderThan,
   setReservationStatus,
+  overrideReservationBatch,
 } from "./reservations";

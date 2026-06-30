@@ -709,6 +709,20 @@
     "signature": "Signature / cachet",
     "print": "Imprimer"
   },
+  "fefo": {
+    "title": "Réservations & FEFO",
+    "noReservations": "Aucune réservation active.",
+    "batch": "Lot",
+    "expiry": "exp.",
+    "available": "dispo.",
+    "fefo": "FEFO",
+    "nonFefo": "Hors FEFO",
+    "overridden": "Dérogation FEFO",
+    "reason": "Motif",
+    "chooseBatch": "Choisir un autre lot",
+    "reasonPlaceholder": "Motif de la dérogation FEFO",
+    "override": "Déroger (FEFO)"
+  },
   "userAdmin": {
     "title": "Utilisateurs & comptes",
     "subtitle": "Gestion des comptes et des rôles pour l'hôpital actif",

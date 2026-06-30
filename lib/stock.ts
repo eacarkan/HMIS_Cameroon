@@ -90,3 +90,61 @@ export function allocateFefo<
   }
   return { allocations, allocated: Math.max(0, Math.trunc(requested)) - remaining, shortfall: remaining };
 }
+
+/**
+ * The id of the batch FEFO would pick for a NEW hold of `quantity` (Phase 2D-6): the earliest-expiry,
+ * not-expired batch that can still cover the quantity from its available-to-reserve. Returns null when
+ * none qualifies. Used to know whether a chosen batch DEVIATES from FEFO (and thus needs an override).
+ */
+export function fefoBatchId<
+  T extends {
+    id: string;
+    expiryDate: Date | string;
+    createdAt?: Date | string;
+    quantityOnHand: number;
+    quantityReserved: number;
+  },
+>(batches: readonly T[], quantity: number, now: Date): string | null {
+  const need = Math.max(1, Math.trunc(quantity));
+  for (const b of sortFefo(batches)) {
+    if (!isExpired(b.expiryDate, now) && availableToReserve(b) >= need) return b.id;
+  }
+  return null;
+}
+
+/**
+ * Validate a Pharmacist-in-Charge FEFO override (Phase 2D-6): re-pointing a reservation of `quantity`
+ * onto a deliberately chosen `target` batch. Pure. The target must be the SAME medication, NOT expired,
+ * have enough available-to-reserve, and actually differ from the current batch; the reason is mandatory.
+ * Expired-stock handling is a separate dual-validated flow (2D-7) — an override may never pick an
+ * expired batch.
+ */
+export function validateFefoOverride(input: {
+  currentBatchId: string;
+  reason: string;
+  quantity: number;
+  target: {
+    id: string;
+    medicationId: string;
+    expiryDate: Date | string;
+    quantityOnHand: number;
+    quantityReserved: number;
+  };
+  medicationId: string;
+  now: Date;
+}): { ok: boolean; error?: string } {
+  if (!input.reason?.trim()) return { ok: false, error: "Le motif de la dérogation FEFO est obligatoire." };
+  if (input.target.id === input.currentBatchId) {
+    return { ok: false, error: "Le lot choisi est déjà le lot réservé." };
+  }
+  if (input.target.medicationId !== input.medicationId) {
+    return { ok: false, error: "Le lot choisi ne correspond pas au médicament réservé." };
+  }
+  if (isExpired(input.target.expiryDate, input.now)) {
+    return { ok: false, error: "Le lot choisi est périmé — délivrance interdite." };
+  }
+  if (availableToReserve(input.target) < Math.max(1, Math.trunc(input.quantity))) {
+    return { ok: false, error: "Le lot choisi n'a pas assez de stock disponible pour cette quantité." };
+  }
+  return { ok: true };
+}

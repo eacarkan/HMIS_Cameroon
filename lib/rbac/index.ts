@@ -76,6 +76,9 @@ export type Capability =
   | "stock.read"
   // Phase 2D-4 — manual release of stale (48h non-collection) stock reservations (pharmacy + admin).
   | "reservation.release"
+  // Phase 2D-6 — authorise a FEFO override (dispense from a deliberately chosen non-earliest-expiry
+  // batch with a mandatory reason). Restricted to the Pharmacist-in-Charge (pharmacien_chef) only.
+  | "fefo.override"
   // Phase 2D-5 — the cashier confirms the prescription was paid at the cashier; the pharmacy
   // dispenses (consuming reservations + deducting on-hand). `dispense.read` views the pharmacy
   // dispense records (batch-level decisions) — pharmacy + oversight, NOT the cashier/doctor.
@@ -224,6 +227,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "reservation.release",
     "dispense.perform",
     "dispense.read",
+    // Phase 2D-6 — the Pharmacist-in-Charge is the ONLY role that may authorise a FEFO override.
+    "fefo.override",
   ],
 };
 

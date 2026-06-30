@@ -3,10 +3,12 @@ import { describe, expect, it } from "vitest";
 import {
   allocateFefo,
   availableToReserve,
+  fefoBatchId,
   isExpired,
   sortFefo,
   totalOnHand,
   totalReserved,
+  validateFefoOverride,
   validateStockBatchInput,
 } from "@/lib/stock";
 
@@ -82,5 +84,60 @@ describe("FEFO allocation (Phase 2D-4/2D-5)", () => {
     ];
     const r = allocateFefo(reserved, 30, availableToReserve);
     expect(r.allocations).toEqual([{ batchId: "late", quantity: 30 }]);
+  });
+});
+
+describe("FEFO override helpers (Phase 2D-6)", () => {
+  const now = new Date("2026-06-30");
+  const batches = [
+    { id: "early", expiryDate: "2026-12-31", createdAt: "2026-01-01", quantityOnHand: 200, quantityReserved: 0 },
+    { id: "late", expiryDate: "2027-06-30", createdAt: "2026-01-01", quantityOnHand: 500, quantityReserved: 0 },
+    { id: "expired", expiryDate: "2026-01-01", createdAt: "2026-01-01", quantityOnHand: 100, quantityReserved: 0 },
+  ];
+
+  it("fefoBatchId picks the earliest-expiry NON-expired batch that can cover the quantity", () => {
+    expect(fefoBatchId(batches, 50, now)).toBe("early");
+  });
+
+  it("fefoBatchId skips a batch without enough available-to-reserve", () => {
+    const tight = [
+      { id: "early", expiryDate: "2026-12-31", quantityOnHand: 10, quantityReserved: 8 }, // avail 2
+      { id: "late", expiryDate: "2027-06-30", quantityOnHand: 500, quantityReserved: 0 },
+    ];
+    expect(fefoBatchId(tight, 50, now)).toBe("late");
+  });
+
+  it("fefoBatchId returns null when nothing qualifies", () => {
+    const none = [{ id: "expired", expiryDate: "2026-01-01", quantityOnHand: 100, quantityReserved: 0 }];
+    expect(fefoBatchId(none, 5, now)).toBeNull();
+  });
+
+  const target = { id: "late", medicationId: "med-1", expiryDate: "2027-06-30", quantityOnHand: 500, quantityReserved: 0 };
+  const ok = { currentBatchId: "early", reason: "Lot prioritaire endommagé", quantity: 30, target, medicationId: "med-1", now };
+
+  it("accepts a valid override to a later, stocked, same-medication batch", () => {
+    expect(validateFefoOverride(ok)).toEqual({ ok: true });
+  });
+
+  it("requires a reason", () => {
+    expect(validateFefoOverride({ ...ok, reason: "   " }).ok).toBe(false);
+  });
+
+  it("rejects choosing the already-reserved batch", () => {
+    expect(validateFefoOverride({ ...ok, target: { ...target, id: "early" } }).ok).toBe(false);
+  });
+
+  it("rejects a different medication", () => {
+    expect(validateFefoOverride({ ...ok, target: { ...target, medicationId: "med-2" } }).ok).toBe(false);
+  });
+
+  it("rejects an EXPIRED target (expired stock is the 2D-7 flow, never a FEFO override)", () => {
+    expect(validateFefoOverride({ ...ok, target: { ...target, expiryDate: "2026-01-01" } }).ok).toBe(false);
+  });
+
+  it("rejects a target without enough available-to-reserve", () => {
+    expect(
+      validateFefoOverride({ ...ok, target: { ...target, quantityOnHand: 30, quantityReserved: 10 } }).ok,
+    ).toBe(false);
   });
 });

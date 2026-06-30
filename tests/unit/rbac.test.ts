@@ -192,6 +192,16 @@ describe("lib/rbac — role capabilities (09 §6, 07 §4)", () => {
     expect(can(["agent_accueil"], "dispense.read")).toBe(false);
   });
 
+  it("Phase 2D-6 — FEFO override is the Pharmacist-in-Charge ONLY", () => {
+    expect(can(["pharmacien_chef"], "fefo.override")).toBe(true);
+    // A regular pharmacist follows FEFO and cannot override.
+    expect(can(["pharmacien"], "fefo.override")).toBe(false);
+    expect(can(["administrateur"], "fefo.override")).toBe(false);
+    expect(can(["directeur"], "fefo.override")).toBe(false);
+    expect(can(["medecin"], "fefo.override")).toBe(false);
+    expect(can(["caissier"], "fefo.override")).toBe(false);
+  });
+
   it("Phase 2D-4 — the 48h reservation-release sweep is pharmacy + admin only", () => {
     expect(can(["pharmacien"], "reservation.release")).toBe(true);
     expect(can(["pharmacien_chef"], "reservation.release")).toBe(true);

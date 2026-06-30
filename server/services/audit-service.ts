@@ -121,6 +121,8 @@ export const AUDIT_ACTIONS = {
   // Phase 2D-5 — collection payment confirmation + dispensing (deducts on-hand).
   prescriptionPaymentConfirmed: "prescription.payment_confirmed",
   dispenseCompleted: "dispense.completed",
+  // Phase 2D-6 — Pharmacist-in-Charge authorised a deviation from FEFO (chosen non-earliest batch).
+  fefoOverride: "fefo.override",
 } as const;
 
 /**

@@ -934,6 +934,13 @@ model StockReservation {
   releasedAt         DateTime?
   consumedAt         DateTime?
   createdById        String?
+  // Phase 2D-6 — FEFO override: set when the Pharmacist-in-Charge re-points this reservation off its
+  // earliest-expiry (FEFO) batch onto a deliberately chosen batch, with a mandatory reason. Audited as
+  // `fefo.override`. Default (FEFO) reservations leave these false/null.
+  isFefoOverride     Boolean           @default(false)
+  overrideReason     String?
+  overrideById       String?
+  overrideAt         DateTime?
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
 

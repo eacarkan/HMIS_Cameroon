@@ -219,6 +219,12 @@ export {
   confirmPrescriptionPayment,
   dispensePrescription,
 } from "./dispensing-service";
+
+// Phase 2D-6 — FEFO override (Pharmacist-in-Charge re-points a reservation to a chosen non-FEFO batch).
+export {
+  getReservationOverrideOptions,
+  overrideReservationBatch,
+} from "./fefo-service";
 export {
   listUsers,
   createUserForActor,
