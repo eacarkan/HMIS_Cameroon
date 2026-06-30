@@ -173,6 +173,9 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "prescription.cancelled": "Annulation d'une ordonnance",
   // Phase 2D-3 — stock batches.
   "stock.batch_received": "Réception d'un lot de stock",
+  // Phase 2D-4 — stock reservations.
+  "reservation.created": "Réservation de stock",
+  "reservation.released": "Libération de réservation",
 };
 
 /**

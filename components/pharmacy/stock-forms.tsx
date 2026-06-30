@@ -8,11 +8,35 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   receiveStockBatchAction,
+  releaseStaleReservationsAction,
   type StockFormState,
 } from "@/server/actions/stock-actions";
 
 type Med = { id: string; label: string };
 const initial: StockFormState = {};
+
+/** Phase 2D-4 — manual 48h reservation-release sweep (pharmacy). */
+export function ReleaseStaleReservationsButton() {
+  const t = useTranslations("stock");
+  const [state, action, pending] = useActionState(releaseStaleReservationsAction, initial);
+  return (
+    <form action={action} className="flex flex-col items-start gap-1">
+      <Button type="submit" size="sm" variant="outline" disabled={pending}>
+        {t("releaseStale")}
+      </Button>
+      {state.ok ? (
+        <p className="text-muted-foreground text-xs">
+          {t("released", { count: Number(state.message ?? 0) })}
+        </p>
+      ) : null}
+      {state.error ? (
+        <p role="alert" className="text-destructive text-xs">
+          {state.error}
+        </p>
+      ) : null}
+    </form>
+  );
+}
 
 /** Phase 2D-3 — receive a medication stock batch (pharmacy): medication, batch number, expiry, qty. */
 export function ReceiveStockForm({ medications }: { medications: Med[] }) {

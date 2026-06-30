@@ -506,7 +506,8 @@ export async function clearOperationalData(
   // FK-safe order (children before parents). Phase 1 (Gate 2) patient/consultation
   // child tables are cleared before patients/consultations. Config/tariff base data is
   // NOT cleared here — it is re-upserted idempotently by seedBaseData.
-  // Phase 2D-2/2D-3 — clear prescriptions + stock before encounters/patients/medications (FK).
+  // Phase 2D — clear reservations, then prescriptions + stock, before encounters/patients/medications (FK).
+  await prisma.stockReservation.deleteMany();
   await prisma.prescriptionItem.deleteMany();
   await prisma.prescription.deleteMany();
   await prisma.medicationStockBatch.deleteMany();

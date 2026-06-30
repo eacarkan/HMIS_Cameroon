@@ -61,3 +61,32 @@ export function totalReserved(batches: readonly { quantityReserved: number }[]):
 export function isExpired(expiryDate: Date | string, now: Date): boolean {
   return new Date(expiryDate).getTime() <= now.getTime();
 }
+
+export type FefoAllocation = { batchId: string; quantity: number };
+
+/**
+ * FEFO allocation (Phase 2D-4/2D-5): consume earliest-expiry batches first, taking up to
+ * `available(batch)` from each, until `requested` is met or stock runs out. Pure. `available` is the
+ * caller's notion of capacity (available-to-reserve for reservations; on-hand for dispensing).
+ * Returns the per-batch allocations, the total allocated, and any shortfall (when stock is short).
+ */
+export function allocateFefo<
+  T extends { id: string; expiryDate: Date | string; createdAt?: Date | string },
+>(
+  batches: readonly T[],
+  requested: number,
+  available: (b: T) => number,
+): { allocations: FefoAllocation[]; allocated: number; shortfall: number } {
+  const sorted = sortFefo(batches);
+  let remaining = Math.max(0, Math.trunc(requested));
+  const allocations: FefoAllocation[] = [];
+  for (const b of sorted) {
+    if (remaining <= 0) break;
+    const avail = Math.max(0, Math.trunc(available(b)));
+    if (avail <= 0) continue;
+    const take = Math.min(avail, remaining);
+    allocations.push({ batchId: b.id, quantity: take });
+    remaining -= take;
+  }
+  return { allocations, allocated: Math.max(0, Math.trunc(requested)) - remaining, shortfall: remaining };
+}

@@ -216,4 +216,15 @@ export {
   listStockForMedication,
   findStockBatchById,
   adjustStockBatch,
+  incrementStockBatch,
 } from "./stock";
+
+// Phase 2D-4 — stock reservations.
+export {
+  type CreateReservationData,
+  createReservation,
+  listReservationsForPrescription,
+  listActiveReservationsForItem,
+  findActiveReservationsOlderThan,
+  setReservationStatus,
+} from "./reservations";

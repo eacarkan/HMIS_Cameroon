@@ -94,6 +94,15 @@ enum PrescriptionStatus {
   cancelled
 }
 
+/// Phase 2D-4 — stock reservation lifecycle: `active` holds `quantityReserved` on a batch; `released`
+/// (48h non-collection or prescription cancellation) returns it; `consumed` (dispensing, 2D-5)
+/// fulfils it (the on-hand was deducted).
+enum ReservationStatus {
+  active
+  released
+  consumed
+}
+
 // ===================== Phase 2C — cashier/billing strengthening =====================
 
 /// Invoice cancellation request lifecycle: a cashier requests, a Hospital Administrator decides.
@@ -167,6 +176,7 @@ model Hospital {
   prescriptions          Prescription[]
   prescriptionItems      PrescriptionItem[]
   medicationStockBatches MedicationStockBatch[]
+  stockReservations      StockReservation[]
 
   // Phase 1 (Gate 2) additive relations.
   departments                Department[]
@@ -893,10 +903,40 @@ model MedicationStockBatch {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  hospital   Hospital   @relation(fields: [hospitalId], references: [id])
-  medication Medication @relation(fields: [medicationId], references: [id])
+  hospital     Hospital           @relation(fields: [hospitalId], references: [id])
+  medication   Medication         @relation(fields: [medicationId], references: [id])
+  reservations StockReservation[]
 
   @@index([hospitalId, medicationId, expiryDate])
+}
+
+/// Phase 2D-4 — a FEFO reservation of stock held by a finalized/sent prescription line against a
+/// specific batch. While `active` it adds to the batch's `quantityReserved` (no on-hand deduction).
+/// Releasing (48h non-collection / cancellation) returns the reserved units; dispensing (2D-5)
+/// consumes the reservation and deducts on-hand.
+model StockReservation {
+  id                 String            @id @default(cuid())
+  hospitalId         String
+  prescriptionId     String
+  prescriptionItemId String
+  medicationId       String
+  batchId            String
+  quantity           Int
+  status             ReservationStatus @default(active)
+  releasedAt         DateTime?
+  consumedAt         DateTime?
+  createdById        String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  hospital         Hospital             @relation(fields: [hospitalId], references: [id])
+  prescription     Prescription         @relation(fields: [prescriptionId], references: [id])
+  prescriptionItem PrescriptionItem     @relation(fields: [prescriptionItemId], references: [id])
+  batch            MedicationStockBatch @relation(fields: [batchId], references: [id])
+
+  @@index([hospitalId, status, createdAt])
+  @@index([prescriptionId])
+  @@index([batchId])
 }
 
 /// Phase 2D-2 — a structured prescription ("ordonnance") raised by a doctor during an encounter.
@@ -926,6 +966,7 @@ model Prescription {
   encounter    Encounter          @relation(fields: [encounterId], references: [id])
   prescribedBy User               @relation("PrescriptionPrescribedBy", fields: [prescribedById], references: [id])
   items        PrescriptionItem[]
+  reservations StockReservation[]
 
   @@unique([hospitalId, prescriptionNumber])
   @@index([hospitalId, status])
@@ -949,9 +990,10 @@ model PrescriptionItem {
   instructions    String?
   createdAt       DateTime @default(now())
 
-  hospital     Hospital     @relation(fields: [hospitalId], references: [id])
-  prescription Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
-  medication   Medication   @relation(fields: [medicationId], references: [id])
+  hospital     Hospital           @relation(fields: [hospitalId], references: [id])
+  prescription Prescription       @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  medication   Medication         @relation(fields: [medicationId], references: [id])
+  reservations StockReservation[]
 
   @@index([prescriptionId])
   @@index([medicationId])

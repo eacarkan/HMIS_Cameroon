@@ -679,7 +679,9 @@
     "reserved": "Réservé",
     "available": "Disponible",
     "noStock": "Aucun stock enregistré.",
-    "noMedications": "Aucun médicament actif au catalogue."
+    "noMedications": "Aucun médicament actif au catalogue.",
+    "releaseStale": "Libérer les réservations échues (48h)",
+    "released": "{count} réservation(s) libérée(s)."
   },
   "userAdmin": {
     "title": "Utilisateurs & comptes",

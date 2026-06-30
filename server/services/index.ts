@@ -202,6 +202,14 @@ export {
   getStockSummary,
   receiveStockBatch,
 } from "./stock-service";
+
+// Phase 2D-4 — stock reservations (reserve on send; release on cancel / 48h sweep).
+export {
+  reserveForPrescription,
+  releaseReservationsForPrescription,
+  listPrescriptionReservations,
+  releaseStaleReservations,
+} from "./reservation-service";
 export {
   listUsers,
   createUserForActor,

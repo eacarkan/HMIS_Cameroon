@@ -161,6 +161,15 @@ describe("lib/rbac — role capabilities (09 §6, 07 §4)", () => {
     expect(can(["caissier"], "stock.read")).toBe(false);
   });
 
+  it("Phase 2D-4 — the 48h reservation-release sweep is pharmacy + admin only", () => {
+    expect(can(["pharmacien"], "reservation.release")).toBe(true);
+    expect(can(["pharmacien_chef"], "reservation.release")).toBe(true);
+    expect(can(["administrateur"], "reservation.release")).toBe(true);
+    expect(can(["medecin"], "reservation.release")).toBe(false);
+    expect(can(["directeur"], "reservation.release")).toBe(false);
+    expect(can(["caissier"], "reservation.release")).toBe(false);
+  });
+
   it("no roles grants nothing; multiple roles union their capabilities", () => {
     expect(can([], "patient.read")).toBe(false);
     expect(can(["agent_accueil", "caissier"], "payment.record")).toBe(true);

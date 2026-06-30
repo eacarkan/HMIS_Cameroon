@@ -2,7 +2,10 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { PageHeader } from "@/components/layout/page-header";
-import { ReceiveStockForm } from "@/components/pharmacy/stock-forms";
+import {
+  ReceiveStockForm,
+  ReleaseStaleReservationsButton,
+} from "@/components/pharmacy/stock-forms";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDateFr } from "@/lib/dates";
 import { can } from "@/lib/rbac";
@@ -29,7 +32,13 @@ export default async function StockPage() {
 
   return (
     <>
-      <PageHeader title={t("title")} description={t("subtitle")} />
+      <PageHeader
+        title={t("title")}
+        description={t("subtitle")}
+        actions={
+          can(actor.roles, "reservation.release") ? <ReleaseStaleReservationsButton /> : null
+        }
+      />
 
       {canReceive ? (
         <Card className="mb-6">

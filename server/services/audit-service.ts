@@ -115,6 +115,9 @@ export const AUDIT_ACTIONS = {
   prescriptionCancelled: "prescription.cancelled",
   // Phase 2D-3 — stock batches.
   stockBatchReceived: "stock.batch_received",
+  // Phase 2D-4 — stock reservations (reserve on send-to-pharmacy; release on cancel / 48h sweep).
+  reservationCreated: "reservation.created",
+  reservationReleased: "reservation.released",
 } as const;
 
 /**

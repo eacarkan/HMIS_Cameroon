@@ -18,6 +18,10 @@ import type { AuthenticatedActor } from "./auth-service";
 import { requireCapability } from "./authz-service";
 import { AUDIT_ACTIONS, recordAudit } from "./audit-service";
 import { generateNumber } from "./numbering-service";
+import {
+  releaseReservationsForPrescription,
+  reserveForPrescription,
+} from "./reservation-service";
 
 /**
  * Prescription service (Phase 2D-2). A doctor creates a structured prescription during an encounter,
@@ -150,12 +154,13 @@ export function finalizePrescription(actor: AuthenticatedActor, ctx: HospitalCon
   );
 }
 
-export function sendPrescriptionToPharmacy(
+/** Send to pharmacy + RESERVE stock (FEFO, no deduction) as a side-effect (Phase 2D-4). */
+export async function sendPrescriptionToPharmacy(
   actor: AuthenticatedActor,
   ctx: HospitalContext,
   id: string,
 ) {
-  return transition(
+  await transition(
     actor,
     ctx,
     id,
@@ -164,10 +169,17 @@ export function sendPrescriptionToPharmacy(
     "Envoi à la pharmacie de l'ordonnance",
     { sentAt: new Date() },
   );
+  await reserveForPrescription(actor, ctx, id);
+  return findPrescriptionById(ctx.hospitalId, id);
 }
 
-export function cancelPrescription(actor: AuthenticatedActor, ctx: HospitalContext, id: string) {
-  return transition(
+/** Cancel + RELEASE any active stock reservations back to the shelf (Phase 2D-4). */
+export async function cancelPrescription(
+  actor: AuthenticatedActor,
+  ctx: HospitalContext,
+  id: string,
+) {
+  const result = await transition(
     actor,
     ctx,
     id,
@@ -176,4 +188,6 @@ export function cancelPrescription(actor: AuthenticatedActor, ctx: HospitalConte
     "Annulation de l'ordonnance",
     { cancelledAt: new Date() },
   );
+  await releaseReservationsForPrescription(actor, ctx, id);
+  return result;
 }

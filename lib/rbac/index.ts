@@ -73,7 +73,9 @@ export type Capability =
   // Phase 2D-3 — medication stock. `receive` = pharmacy (enter batches); `read` = pharmacy +
   // oversight. Adjustments (2D-7) get their own dual-validation capabilities.
   | "stock.receive"
-  | "stock.read";
+  | "stock.read"
+  // Phase 2D-4 — manual release of stale (48h non-collection) stock reservations (pharmacy + admin).
+  | "reservation.release";
 
 export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
   // Hospital administrator — configuration, tariffs, users, service catalogue, and oversight
@@ -109,6 +111,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "prescription.read",
     // Phase 2D-3 — oversight read of stock.
     "stock.read",
+    // Phase 2D-4 — may run the 48h reservation-release sweep.
+    "reservation.release",
   ],
   agent_accueil: [
     "dashboard.read",
@@ -188,6 +192,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     // Phase 2D-3 — receive + read medication stock.
     "stock.receive",
     "stock.read",
+    // Phase 2D-4 — release stale (48h) reservations.
+    "reservation.release",
   ],
   pharmacien_chef: [
     "dashboard.read",
@@ -198,6 +204,7 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "prescription.read",
     "stock.receive",
     "stock.read",
+    "reservation.release",
   ],
 };
 

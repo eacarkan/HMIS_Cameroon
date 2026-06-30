@@ -39,11 +39,28 @@ export function findStockBatchById(hospitalId: string, id: string) {
   });
 }
 
-/** Apply integer deltas to a batch's on-hand / reserved (used by reservation + dispensing). */
+/** Set absolute on-hand / reserved on a batch (used by dual-validated adjustments, 2D-7). */
 export function adjustStockBatch(
   hospitalId: string,
   id: string,
   data: Partial<{ quantityOnHand: number; quantityReserved: number }>,
 ) {
+  return prisma.medicationStockBatch.updateMany({ where: { id, hospitalId }, data });
+}
+
+/** Atomically apply integer DELTAS to a batch's on-hand / reserved (reservation + dispensing). */
+export function incrementStockBatch(
+  hospitalId: string,
+  id: string,
+  deltas: { quantityOnHand?: number; quantityReserved?: number },
+) {
+  const data: {
+    quantityOnHand?: { increment: number };
+    quantityReserved?: { increment: number };
+  } = {};
+  if (deltas.quantityOnHand !== undefined) data.quantityOnHand = { increment: deltas.quantityOnHand };
+  if (deltas.quantityReserved !== undefined) {
+    data.quantityReserved = { increment: deltas.quantityReserved };
+  }
   return prisma.medicationStockBatch.updateMany({ where: { id, hospitalId }, data });
 }

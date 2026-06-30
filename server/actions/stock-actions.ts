@@ -4,11 +4,11 @@ import { revalidatePath } from "next/cache";
 
 import { AuthorizationError } from "@/server/authz";
 import { requireActorAndHospital } from "@/server/auth";
-import { receiveStockBatch } from "@/server/services";
+import { receiveStockBatch, releaseStaleReservations } from "@/server/services";
 
-/** Phase 2D-3 — receive a medication stock batch (pharmacy). */
+/** Phase 2D-3/2D-4 — receive a stock batch + the 48h reservation-release sweep (pharmacy). */
 
-export type StockFormState = { error?: string; ok?: boolean };
+export type StockFormState = { error?: string; ok?: boolean; message?: string };
 
 const PATH = "/pharmacie/stock";
 const NOT_ALLOWED = "Vous n'êtes pas autorisé à gérer le stock.";
@@ -33,4 +33,23 @@ export async function receiveStockBatchAction(
   }
   revalidatePath(PATH);
   return { ok: true };
+}
+
+/** Phase 2D-4 — release stale (48h non-collection) reservations back to the shelf. */
+export async function releaseStaleReservationsAction(
+  _prev: StockFormState,
+  formData: FormData,
+): Promise<StockFormState> {
+  void formData;
+  const { actor, hospital } = await requireActorAndHospital();
+  let result: { count: number; released: number };
+  try {
+    result = await releaseStaleReservations(actor, hospital);
+  } catch (error) {
+    if (error instanceof AuthorizationError) return { error: NOT_ALLOWED };
+    if (error instanceof Error) return { error: error.message };
+    throw error;
+  }
+  revalidatePath(PATH);
+  return { ok: true, message: `${result.count}` };
 }
