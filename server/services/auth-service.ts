@@ -20,8 +20,18 @@ export type AuthenticatedActor = {
   id: string;
   displayName: string;
   email: string;
-  /** Role codes (e.g. "caissier"). */
+  /**
+   * Role codes the actor holds across ALL hospitals (de-duplicated union). Use ONLY for
+   * coarse, non-authoritative UI/nav hints. NEVER for an authorization decision — that must
+   * use the roles held AT the active hospital (`rolesByHospital`), enforced by requireCapability.
+   */
   roles: string[];
+  /**
+   * Role codes the actor holds PER hospital (keyed by hospitalId). The AUTHORITATIVE source for
+   * capability decisions: an actor may act in a hospital only with the roles granted THERE — never
+   * borrowing a role's privilege from another hospital (cross-hospital privilege escalation).
+   */
+  rolesByHospital: Record<string, string[]>;
   /** All hospital ids the actor has access to (via UserRole). */
   hospitalIds: string[];
   /** Default/primary hospital (the user's first assignment). */
@@ -46,6 +56,12 @@ export async function authenticateCredentials(
 
   const roles = [...new Set(user.userRoles.map((ur) => ur.role.code))];
   const hospitalIds = [...new Set(user.userRoles.map((ur) => ur.hospitalId))];
+  // Bind each role to the hospital that granted it — the authoritative per-hospital role set.
+  const rolesByHospital: Record<string, string[]> = {};
+  for (const ur of user.userRoles) {
+    const list = rolesByHospital[ur.hospitalId] ?? (rolesByHospital[ur.hospitalId] = []);
+    if (!list.includes(ur.role.code)) list.push(ur.role.code);
+  }
   const primary = user.userRoles[0];
   const hospitalId = primary?.hospitalId ?? null;
   const hospitalCode = primary?.hospital.code ?? null;
@@ -65,6 +81,7 @@ export async function authenticateCredentials(
     displayName: user.displayName,
     email: user.email,
     roles,
+    rolesByHospital,
     hospitalIds,
     hospitalId,
     hospitalCode,

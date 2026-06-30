@@ -240,6 +240,10 @@ model Hospital {
   patientDuplicateCandidates PatientDuplicateCandidate[]
   observations               Observation[]
   diagnoses                  Diagnosis[]
+
+  // Phase 3A (multi-hospital configuration foundation) — guarded template-apply records
+  // belonging to this hospital instance (additive; config only, never patient/transaction).
+  configurationTemplateApplications ConfigurationTemplateApplication[]
 }
 
 // ===================== Users / RBAC =====================
@@ -640,6 +644,57 @@ model DocumentTemplate {
 
   @@unique([hospitalId, type, name])
   @@index([hospitalId])
+}
+
+// ============ Phase 3A — Multi-hospital configuration foundation (additive) ============
+// Templates separate REUSABLE, hospital-agnostic configuration (a blueprint) from a
+// hospital INSTANCE's own config rows (Department/ServiceUnit/Setting/DocumentTemplate,
+// already hospital-scoped). A template is a shared artifact — NOT hospital-scoped, and
+// NEVER a hard-coded global default (Bertoua is snapshotted into one, like any other).
+// Templates carry NO patient/transaction data and NO hospital identity (name/city stays
+// per-instance, so two hospitals built from the same template still differ by data alone).
+
+/// A reusable, hospital-agnostic configuration blueprint. `content` is a structured JSON
+/// payload (departments, services + eligibility flags, settings, document templates).
+/// `sourceHospitalId` is provenance only (e.g. Bertoua) — NOT a scoping key.
+model ConfigurationTemplate {
+  id               String   @id @default(cuid())
+  code             String   @unique
+  name             String
+  description      String?
+  version          Int      @default(1)
+  sourceHospitalId String?
+  content          Json
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  applications ConfigurationTemplateApplication[]
+
+  @@index([sourceHospitalId])
+}
+
+/// Audit-grade record of a guarded, hospital-scoped template apply. Records which template
+/// (+version) was applied to which hospital instance, by whom, and how many config rows were
+/// created / updated / skipped. Hospital-scoped; carries no patient data.
+model ConfigurationTemplateApplication {
+  id              String   @id @default(cuid())
+  hospitalId      String
+  templateId      String
+  templateCode    String
+  templateVersion Int
+  appliedById     String
+  createdCount    Int      @default(0)
+  updatedCount    Int      @default(0)
+  skippedCount    Int      @default(0)
+  summary         String
+  createdAt       DateTime @default(now())
+
+  hospital Hospital              @relation(fields: [hospitalId], references: [id])
+  template ConfigurationTemplate @relation(fields: [templateId], references: [id])
+
+  @@index([hospitalId])
+  @@index([templateId])
 }
 
 // ============ Phase 1 (Gate 2) — Patient identity / contact (additive) ============

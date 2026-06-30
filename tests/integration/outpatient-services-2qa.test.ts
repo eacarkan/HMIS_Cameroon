@@ -75,7 +75,8 @@ describe("integration: Phase 2 QA — outpatient visit service picker", () => {
   it("requires the service.config.view capability (denies an actor without it)", async () => {
     const { actor: rec, ctx } = await loginAndSelect(ACCOUNTS.reception);
     // A real seeded user id (so the authz-denied audit FK is satisfied) but stripped of roles.
-    const noRoleActor: AuthenticatedActor = { ...rec, roles: [] };
+    // rolesByHospital must also be cleared (requireCapability resolves per-hospital roles, not the union).
+    const noRoleActor: AuthenticatedActor = { ...rec, roles: [], rolesByHospital: {} };
     await expect(
       listActiveOutpatientConsultationServices(noRoleActor, ctx),
     ).rejects.toBeInstanceOf(AuthorizationError);

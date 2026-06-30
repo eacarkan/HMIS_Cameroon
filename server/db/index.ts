@@ -117,6 +117,21 @@ export {
   findDocumentTemplateById,
   updateDocumentTemplate,
 } from "./config";
+
+// Phase 3A — multi-hospital configuration foundation (templates, guarded apply, completeness summary).
+export {
+  type CreateConfigurationTemplateData,
+  type UpdateConfigurationTemplateData,
+  type ApplyTemplateResult,
+  listConfigurationTemplates,
+  findConfigurationTemplateById,
+  findConfigurationTemplateByCode,
+  createConfigurationTemplate,
+  updateConfigurationTemplate,
+  listConfigurationTemplateApplications,
+  applyTemplateToHospital,
+  gatherHospitalConfigSummary,
+} from "./configuration-templates";
 export {
   type CreatePriceListData,
   type CreateTariffData,

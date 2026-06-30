@@ -142,19 +142,21 @@ describe("integration: Phase 1A Batch 2 — finalize / amend", () => {
     ).rejects.toThrow(/finalisée/);
   });
 
-  it("finalize is hospital-scoped (a consultation from another hospital is not found)", async () => {
+  it("finalize is hospital-scoped (another hospital's context is denied before DB lookup)", async () => {
     const { encounter } = await anEncounter();
     const doctor = await loginAndSelect(ACCOUNTS.doctor);
     const draft = await recordConsultation(doctor.actor, doctor.ctx, encounter.id, {
       ...CONSULT,
       finalize: false,
     });
+    // The doctor is not a member of hosp-hrn-nga, so the per-hospital capability check denies the
+    // cross-hospital finalize attempt outright (defence in depth, ahead of DB hospital-scoping).
     await expect(
       finalizeConsultation(
         doctor.actor,
         { ...doctor.ctx, hospitalId: "hosp-hrn-nga", code: "HRN-NGA", name: "Autre" },
         draft.id,
       ),
-    ).rejects.toThrow(/introuvable/);
+    ).rejects.toBeInstanceOf(AuthorizationError);
   });
 });

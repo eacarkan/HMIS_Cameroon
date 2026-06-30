@@ -7,6 +7,7 @@ import type { DefaultSession } from "next-auth";
 declare module "next-auth" {
   interface User {
     roles: string[];
+    rolesByHospital: Record<string, string[]>;
     hospitalIds: string[];
     hospitalId: string | null;
     hospitalCode: string | null;
@@ -17,6 +18,7 @@ declare module "next-auth" {
     user: {
       id: string;
       roles: string[];
+      rolesByHospital: Record<string, string[]>;
       hospitalIds: string[];
       hospitalId: string | null;
       hospitalCode: string | null;
@@ -30,6 +32,7 @@ declare module "next-auth" {
 declare module "@auth/core/jwt" {
   interface JWT {
     roles: string[];
+    rolesByHospital: Record<string, string[]>;
     hospitalIds: string[];
     hospitalId: string | null;
     hospitalCode: string | null;

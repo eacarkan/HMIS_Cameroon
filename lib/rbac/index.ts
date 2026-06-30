@@ -97,6 +97,15 @@ export type Capability =
   // Local IT Lead when assigned); `view` = operational roles, scoped to ACTIVE services.
   | "service.config.manage"
   | "service.config.view"
+  // Phase 3A capabilities — multi-hospital configuration foundation. `config.template.manage` =
+  // create/update hospital-agnostic configuration templates (Hospital Admin). `config.instance.manage`
+  // = apply a template to + override this hospital's instance configuration (Hospital Admin).
+  // `config.view` = read the per-hospital completeness dashboard + Bertoua/Ebolowa comparison
+  // (Hospital Admin + Director; the "Local IT Lead" role maps onto these for the prototype).
+  // All three are server-enforced and hospital-scoped; cross-hospital config is denied.
+  | "config.template.manage"
+  | "config.instance.manage"
+  | "config.view"
   // Phase 2C capabilities — cashier/billing strengthening. The cashier REQUESTS a cancellation
   // and EXECUTES an approved refund and manages their own shift; only the Hospital Administrator
   // APPROVES cancellations/refunds (cashier ≠ approver). Refund vouchers are widely readable.
@@ -151,6 +160,11 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "config.manage",
     "service.config.manage",
     "service.config.view",
+    // Phase 3A — the Hospital Admin manages configuration templates, applies them to a hospital
+    // instance (scoped), overrides instance config, and reads the completeness dashboard.
+    "config.template.manage",
+    "config.instance.manage",
+    "config.view",
     "tariff.read",
     "tariff.manage",
     "cashier.report.read",
@@ -281,6 +295,9 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "config.read",
     "cashier.report.read",
     "service.config.view",
+    // Phase 3A — the Director reads the per-hospital configuration completeness dashboard
+    // (oversight; cannot manage templates or instance config).
+    "config.view",
     // Phase 2E — the director views aggregate operational reports (no export).
     "report.operational.read",
     // Phase 2F — oversight view of the queue board.

@@ -108,6 +108,22 @@ export {
   createDocumentTemplate,
   deactivateDocumentTemplate,
 } from "./config-service";
+// Phase 3A — multi-hospital configuration foundation (templates, instances, completeness).
+export {
+  type CreateTemplateInput,
+  type UpdateTemplateInput,
+  type HospitalCompleteness,
+  getConfigurationCompleteness,
+  recomputeConfigurationCompleteness,
+  listAccessibleHospitalCompleteness,
+  compareTwoHospitals,
+  listTemplates,
+  createTemplate,
+  updateTemplate,
+  applyTemplate,
+  listTemplateApplications,
+  overrideInstanceSetting,
+} from "./hospital-configuration-service";
 export {
   listPatientContacts,
   addPatientContact,

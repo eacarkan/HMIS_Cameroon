@@ -20,6 +20,12 @@ export const DEMO_PASSWORD = "demo1234";
 /** The active demo hospital code (mirrors lib/constants DEMO_HOSPITAL). */
 export const DEMO_HOSPITAL_ID = "hosp-hrb-demo";
 
+/** Phase 3A — the second-site hospital (Ebolowa) prepared from the Bertoua reference template. */
+export const SECOND_SITE_HOSPITAL_ID = "hosp-hre-ebo";
+
+/** Phase 3A — the Bertoua reference configuration template code (a snapshot, not a global default). */
+export const REFERENCE_TEMPLATE_CODE = "TPL-BERTOUA-REF";
+
 type HospitalSeed = {
   id: string;
   code: string;
@@ -273,6 +279,119 @@ export async function seedBaseData(prisma: PrismaClient): Promise<void> {
   await seedMedications(prisma);
   await seedStock(prisma);
   await seedDiagnosticCatalogue(prisma);
+  await seedSecondSiteAndReferenceTemplate(prisma);
+}
+
+/**
+ * Phase 3A — multi-hospital configuration foundation seed (synthetic). Prepares Ebolowa as a
+ * SECOND SITE (admin membership + numbering + minimal identity setting, but NO departments/services/
+ * tariffs yet — so its completeness starts low), and snapshots Bertoua's live configuration into the
+ * shared reference TEMPLATE `TPL-BERTOUA-REF`. Applying that template to Ebolowa later (a guarded,
+ * scoped operation) raises Ebolowa's completeness without any code change. Idempotent.
+ *
+ * The reference template carries STRUCTURE only (departments, services + flags, hospital-agnostic
+ * settings, document headers) — never hospital identity (name/city stays per-instance) and never any
+ * patient/transaction data.
+ */
+async function seedSecondSiteAndReferenceTemplate(prisma: PrismaClient): Promise<void> {
+  // 1) The existing Hospital Admin (Awa NJOYA) also administers the Ebolowa second site, so she can
+  //    configure it. Other demo users remain single-site (Bertoua), preserving cross-hospital denial.
+  const adminRole = ROLES.find((r) => r.code === "administrateur");
+  if (adminRole) {
+    await prisma.userRole.upsert({
+      where: {
+        userId_roleId_hospitalId: {
+          userId: "user-awa-njoya",
+          roleId: adminRole.id,
+          hospitalId: SECOND_SITE_HOSPITAL_ID,
+        },
+      },
+      create: { userId: "user-awa-njoya", roleId: adminRole.id, hospitalId: SECOND_SITE_HOSPITAL_ID },
+      update: {},
+    });
+  }
+
+  // 2) Ebolowa baseline infrastructure: numbering sequences + a default language. Departments/services/
+  //    tariffs/medications are intentionally absent until the template is applied.
+  for (const type of SEQUENCE_TYPES) {
+    await prisma.sequence.upsert({
+      where: { hospitalId_type_year: { hospitalId: SECOND_SITE_HOSPITAL_ID, type, year: SEQUENCE_YEAR } },
+      create: { hospitalId: SECOND_SITE_HOSPITAL_ID, type, year: SEQUENCE_YEAR, current: 0 },
+      update: {},
+    });
+  }
+  await prisma.setting.upsert({
+    where: { hospitalId_key: { hospitalId: SECOND_SITE_HOSPITAL_ID, key: "locale.default" } },
+    create: { hospitalId: SECOND_SITE_HOSPITAL_ID, key: "locale.default", value: "fr" },
+    update: {},
+  });
+
+  // 3) Snapshot Bertoua's live config into the shared reference template (structure only).
+  const [departments, services, settingsRows, documentTemplates] = await Promise.all([
+    prisma.department.findMany({ where: { hospitalId: DEMO_HOSPITAL_ID, deletedAt: null }, orderBy: { code: "asc" } }),
+    prisma.serviceUnit.findMany({ where: { hospitalId: DEMO_HOSPITAL_ID, deletedAt: null }, orderBy: { displayOrder: "asc" } }),
+    prisma.setting.findMany({ where: { hospitalId: DEMO_HOSPITAL_ID, deletedAt: null }, orderBy: { key: "asc" } }),
+    prisma.documentTemplate.findMany({ where: { hospitalId: DEMO_HOSPITAL_ID, deletedAt: null }, orderBy: { type: "asc" } }),
+  ]);
+  const deptCodeById = new Map(departments.map((d) => [d.id, d.code]));
+  const content = {
+    departments: departments.map((d) => ({ code: d.code, name: d.name })),
+    services: services.map((s) => ({
+      code: s.code,
+      nameFr: s.nameFr ?? s.name,
+      nameEn: s.nameEn ?? null,
+      type: s.type,
+      displayOrder: s.displayOrder,
+      departmentCode: s.departmentId ? (deptCodeById.get(s.departmentId) ?? null) : null,
+      kind: s.kind ?? null,
+      acceptsQueue: s.acceptsQueue,
+      acceptsConsultation: s.acceptsConsultation,
+      supportsBilling: s.supportsBilling,
+      supportsPharmacy: s.supportsPharmacy,
+      supportsLab: s.supportsLab,
+      supportsImaging: s.supportsImaging,
+      isInpatientWard: s.isInpatientWard,
+      isEmergency: s.isEmergency,
+    })),
+    // Identity settings never travel in a shared template; none exist here, but filter defensively.
+    settings: settingsRows
+      .filter((s) => !s.key.startsWith("hospital.") && !s.key.startsWith("identity."))
+      .map((s) => ({ key: s.key, value: s.value })),
+    // Carry only the GENERIC document structure (type, name, national header) — NOT the body,
+    // which holds hospital identity (e.g. "Hôpital Régional de Bertoua — Démo"). Templating the
+    // body would leak Bertoua's identity into every hospital the template is applied to; the body
+    // stays per-instance (each hospital sets its own).
+    documentTemplates: documentTemplates.map((d) => ({
+      type: d.type,
+      name: d.name,
+      header: d.header ?? null,
+      body: null,
+    })),
+  };
+
+  const existing = await prisma.configurationTemplate.findUnique({ where: { code: REFERENCE_TEMPLATE_CODE } });
+  if (existing) {
+    await prisma.configurationTemplate.update({
+      where: { code: REFERENCE_TEMPLATE_CODE },
+      data: {
+        name: "Modèle de référence — Bertoua",
+        description: "Configuration de référence (structure) capturée depuis l'Hôpital Régional de Bertoua. Identité par hôpital ; aucune donnée patient.",
+        sourceHospitalId: DEMO_HOSPITAL_ID,
+        content,
+      },
+    });
+  } else {
+    await prisma.configurationTemplate.create({
+      data: {
+        code: REFERENCE_TEMPLATE_CODE,
+        name: "Modèle de référence — Bertoua",
+        description: "Configuration de référence (structure) capturée depuis l'Hôpital Régional de Bertoua. Identité par hôpital ; aucune donnée patient.",
+        version: 1,
+        sourceHospitalId: DEMO_HOSPITAL_ID,
+        content,
+      },
+    });
+  }
 }
 
 /** Phase 2I — seed a small SYNTHETIC lab/radiology catalogue for HRB-DEMO (idempotent upsert). */
@@ -482,6 +601,14 @@ async function seedConfigAndTariffs(prisma: PrismaClient): Promise<void> {
       key: "receipt.footer_note",
       value: "Document généré par le système — veuillez conserver ce reçu.",
     },
+    // Phase 3A — operational-policy settings that back the configuration-completeness categories
+    // (synthetic; hospital-agnostic structure, so they also travel in the reference template).
+    { key: "payment.modes", value: "especes,mobile_money" },
+    { key: "cashier.shift.rules", value: "one_open_per_cashier;close_required_daily" },
+    { key: "reporting.calendar", value: "monthly" },
+    { key: "dhis2.export", value: "manual_csv" },
+    { key: "backup.schedule", value: "daily_local" },
+    { key: "local_server.status", value: "configured" },
   ];
   for (const st of settings) {
     await prisma.setting.upsert({
@@ -602,6 +729,9 @@ export async function clearOperationalData(
   await prisma.department.deleteMany();
   await prisma.setting.deleteMany();
   await prisma.documentTemplate.deleteMany();
+  // Phase 3A — clear guarded template-apply records (the reference templates themselves persist and
+  // are re-upserted idempotently by seedBaseData). Config-only; no patient/transaction data.
+  await prisma.configurationTemplateApplication.deleteMany();
   await prisma.reportExport.deleteMany();
   await prisma.auditLog.deleteMany();
   await prisma.sequence.updateMany({ data: { current: 0 } });

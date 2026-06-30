@@ -1,5 +1,9 @@
 {
-  "language": { "label": "Language", "fr": "FR", "en": "EN" },
+  "language": {
+    "label": "Language",
+    "fr": "FR",
+    "en": "EN"
+  },
   "nav": {
     "sectionMain": "Menu",
     "dashboard": "Dashboard",
@@ -230,6 +234,38 @@
         "isInpatientWard": "Inpatient ward",
         "isEmergency": "Emergency"
       }
-    }
+    },
+    "manageConfiguration": "Multi-hospital configuration"
+  },
+  "configAdmin": {
+    "title": "Multi-hospital configuration",
+    "subtitle": "Per-hospital configuration completeness, comparison and template application",
+    "boundaryNote": "Synthetic data only · not Gate 7 · configuration only (no patient data) · scoped to your hospitals.",
+    "completenessFor": "Completeness — {hospital}",
+    "ready": "Ready",
+    "percentConfigured": "Percent configured",
+    "configured": "Configured",
+    "notConfigured": "To configure",
+    "comparisonTitle": "Comparison across hospitals",
+    "comparisonNone": "No other hospital in your scope to compare.",
+    "comparisonHint": "Completeness of the hospitals you can access (configuration only).",
+    "divergenceNote": "Two hospitals built from the same template differ only by their data (identity and instance overrides) — with no code change.",
+    "templatesTitle": "Configuration templates",
+    "templatesNone": "No configuration template available.",
+    "reference": "Reference",
+    "applyTitle": "Apply a template",
+    "applyHint": "The template will be applied to {hospital} (creates/updates configuration; no patient data).",
+    "overrideTitle": "Instance override",
+    "overrideHint": "Set a hospital-specific parameter (e.g. language, header) — divergence from the template.",
+    "historyTitle": "Application history",
+    "readOnlyNotice": "Read-only: you can view completeness but not change configuration.",
+    "actionDone": "Action completed.",
+    "template": "Template",
+    "chooseTemplate": "Choose a template…",
+    "applyTemplate": "Apply",
+    "recompute": "Recompute",
+    "settingKey": "Setting key",
+    "settingValue": "Value",
+    "saveOverride": "Save"
   }
 }

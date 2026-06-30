@@ -456,7 +456,8 @@
     "departmentNone": "— Aucun —",
     "integerFcfaHint": "Montant entier en FCFA (sans décimales).",
     "effectiveFrom": "Effectif du (optionnel)",
-    "effectiveTo": "Effectif au (optionnel)"
+    "effectiveTo": "Effectif au (optionnel)",
+    "manageConfiguration": "Configuration multi-hôpitaux"
   },
   "patientIdentity": {
     "title": "Identité & contacts",
@@ -990,5 +991,36 @@
     "tempPasswordPlaceholder": "Saisir un mot de passe",
     "tempPasswordHint": "Mot de passe temporaire de démonstration — non destiné à la production ; à changer hors de ce prototype.",
     "noUsers": "Aucun utilisateur pour cet hôpital."
+  },
+  "configAdmin": {
+    "title": "Configuration multi-hôpitaux",
+    "subtitle": "Complétude de configuration par hôpital, comparaison et application de modèles",
+    "boundaryNote": "Données synthétiques uniquement · pas de Gate 7 · configuration uniquement (aucune donnée patient) · périmètre limité à vos hôpitaux.",
+    "completenessFor": "Complétude — {hospital}",
+    "ready": "Prêt",
+    "percentConfigured": "Pourcentage configuré",
+    "configured": "Configuré",
+    "notConfigured": "À configurer",
+    "comparisonTitle": "Comparaison entre hôpitaux",
+    "comparisonNone": "Aucun autre hôpital dans votre périmètre à comparer.",
+    "comparisonHint": "Complétude des hôpitaux auxquels vous avez accès (configuration uniquement).",
+    "divergenceNote": "Deux hôpitaux issus du même modèle diffèrent uniquement par leurs données (identité et remplacements d'instance) — sans modification du code.",
+    "templatesTitle": "Modèles de configuration",
+    "templatesNone": "Aucun modèle de configuration disponible.",
+    "reference": "Référence",
+    "applyTitle": "Appliquer un modèle",
+    "applyHint": "Le modèle sera appliqué à {hospital} (création/mise à jour de la configuration ; aucune donnée patient).",
+    "overrideTitle": "Remplacement d'instance",
+    "overrideHint": "Définir un paramètre propre à cet hôpital (ex. langue, en-tête) — divergence par rapport au modèle.",
+    "historyTitle": "Historique des applications",
+    "readOnlyNotice": "Lecture seule : vous pouvez consulter la complétude mais pas modifier la configuration.",
+    "actionDone": "Action effectuée.",
+    "template": "Modèle",
+    "chooseTemplate": "Choisir un modèle…",
+    "applyTemplate": "Appliquer",
+    "recompute": "Recalculer",
+    "settingKey": "Clé du paramètre",
+    "settingValue": "Valeur",
+    "saveOverride": "Enregistrer"
   }
 }

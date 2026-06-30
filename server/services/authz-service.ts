@@ -8,6 +8,13 @@ import { AUDIT_ACTIONS, recordAudit } from "./audit-service";
  * acting. On denial it writes an `authz.denied` audit entry (actor, hospital,
  * attempted action + entity) and throws — even if the action was attempted directly,
  * not via a disabled control.
+ *
+ * The decision uses ONLY the roles the actor holds AT the active hospital
+ * (`rolesByHospital[hospital.hospitalId]`), never the cross-hospital union (`actor.roles`).
+ * This closes cross-hospital privilege escalation: a user who is, say, administrateur at
+ * hospital A and only directeur at hospital B cannot exercise an administrateur capability
+ * while hospital B is active. Membership alone (a row in another hospital) never grants
+ * another hospital's privileges.
  */
 export async function requireCapability(
   actor: AuthenticatedActor,
@@ -15,7 +22,8 @@ export async function requireCapability(
   capability: Capability,
   entity?: { type: string; id?: string },
 ): Promise<void> {
-  if (can(actor.roles, capability)) return;
+  const rolesAtHospital = actor.rolesByHospital[hospital.hospitalId] ?? [];
+  if (can(rolesAtHospital, capability)) return;
 
   await recordAudit({
     hospitalId: hospital.hospitalId,

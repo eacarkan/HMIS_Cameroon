@@ -1,4 +1,4 @@
-import { FlaskConical, Pill, ReceiptText, Users } from "lucide-react";
+import { Building2, FlaskConical, Pill, ReceiptText, Users } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -74,6 +74,14 @@ export default async function AdministrationPage() {
         description={t("subtitle")}
         actions={
           <div className="flex flex-wrap gap-2">
+            {can(actor.roles, "config.view") ? (
+              <Button asChild variant="secondary" size="sm">
+                <Link href="/administration/configuration">
+                  <Building2 className="size-4" aria-hidden />
+                  {t("manageConfiguration")}
+                </Link>
+              </Button>
+            ) : null}
             {can(actor.roles, "user.manage") ? (
               <Button asChild variant="secondary" size="sm">
                 <Link href="/administration/utilisateurs">

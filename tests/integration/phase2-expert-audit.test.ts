@@ -148,7 +148,12 @@ describe("PHASE 2 AUDIT — 2I lab/radiology result-visibility gate", () => {
   it("4-eyes (hardened): a SINGLE actor holding BOTH caps CANNOT validate their own entry", async () => {
     const { orderId, tech } = await orderToResultEntered();
     // One person granted both technician + validator capabilities — the same-user guard refuses self-validation.
-    const dualRole = { ...tech.actor, roles: ["technicien_diagnostic", "validateur_diagnostic"] };
+    // rolesByHospital must mirror the override (requireCapability resolves per-hospital roles, not the union).
+    const dualRole = {
+      ...tech.actor,
+      roles: ["technicien_diagnostic", "validateur_diagnostic"],
+      rolesByHospital: { [tech.ctx.hospitalId]: ["technicien_diagnostic", "validateur_diagnostic"] },
+    };
     await expect(validateDiagnosticResult(dualRole, tech.ctx, orderId)).rejects.toThrow(/différente/i);
     // The order is untouched (still result_entered), and a DIFFERENT validator can still validate it.
     expect((await prisma.diagnosticOrder.findUnique({ where: { id: orderId } }))!.status).toBe("result_entered");

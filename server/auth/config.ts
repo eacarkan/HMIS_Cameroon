@@ -41,6 +41,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: actor.displayName,
           email: actor.email,
           roles: actor.roles,
+          rolesByHospital: actor.rolesByHospital,
           hospitalIds: actor.hospitalIds,
           hospitalId: actor.hospitalId,
           hospitalCode: actor.hospitalCode,
@@ -53,6 +54,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     jwt({ token, user }) {
       if (user) {
         token.roles = user.roles;
+        token.rolesByHospital = user.rolesByHospital;
         token.hospitalIds = user.hospitalIds;
         token.hospitalId = user.hospitalId;
         token.hospitalCode = user.hospitalCode;
@@ -63,6 +65,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     session({ session, token }) {
       session.user.id = token.sub ?? "";
       session.user.roles = token.roles ?? [];
+      session.user.rolesByHospital = token.rolesByHospital ?? {};
       session.user.hospitalIds = token.hospitalIds ?? [];
       session.user.hospitalId = token.hospitalId ?? null;
       session.user.hospitalCode = token.hospitalCode ?? null;

@@ -80,6 +80,15 @@ export const AUDIT_ACTIONS = {
   authPasswordChange: "auth.password_change",
   authPasswordReset: "auth.password_reset",
   sensitiveRead: "sensitive.read",
+  // Phase 3A — multi-hospital configuration foundation (templates, instances, completeness).
+  // Every event carries the actor + the hospital instance affected; config changes only
+  // (no patient/transaction data). `applied`/`instance_updated`/`completeness_recomputed`
+  // are hospital-scoped; template create/update act on the shared blueprint.
+  configTemplateCreated: "config.template.created",
+  configTemplateUpdated: "config.template.updated",
+  configTemplateApplied: "config.template.applied",
+  configInstanceUpdated: "config.instance.updated",
+  configCompletenessRecomputed: "config.completeness.recomputed",
   // Phase 2A — service/department catalogue configuration (capability-based; admin only).
   serviceCreated: "service.created",
   serviceUpdated: "service.updated",

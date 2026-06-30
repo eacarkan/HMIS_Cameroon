@@ -14,6 +14,7 @@ const actor = {
   displayName: "Solange ABENA",
   email: "solange.abena@hrb-demo.cm",
   roles: ["caissier"],
+  rolesByHospital: { "hosp-hrb-demo": ["caissier"] },
   hospitalIds: ["hosp-hrb-demo"],
   hospitalId: "hosp-hrb-demo",
   hospitalCode: "HRB-DEMO",
