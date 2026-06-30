@@ -1,0 +1,10 @@
+$ npx vitest run tests/integration/phase3b-cross-hospital-denial.test.ts tests/integration/phase3d-central-oversight.test.ts
+
+ RUN  v4.1.9 /Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon
+
+
+ Test Files  2 passed (2)
+      Tests  11 passed (11)
+   Start at  21:25:19
+   Duration  5.84s (transform 336ms, setup 31ms, import 606ms, tests 4.99s, environment 0ms)
+

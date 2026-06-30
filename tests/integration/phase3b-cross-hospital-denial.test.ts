@@ -6,10 +6,10 @@ import {
   selectHospital,
   resolveHospitalContext,
   getConfigurationCompleteness,
-  getCentralAggregates,
+  getCentralOversight,
   searchPatientsForActor,
 } from "@/server/services";
-import { ACCOUNTS, actorFor, loginAndSelect } from "../helpers/actors";
+import { ACCOUNTS, actorFor } from "../helpers/actors";
 import { resetTestDb } from "../helpers/db";
 
 /**
@@ -17,8 +17,9 @@ import { resetTestDb } from "../helpers/db";
  * cross-hospital denial matrix: (1) the active context is membership-resolved, so a single-hospital
  * actor can reach NO other hospital's module (and the refusal is audited); (2) every module's
  * high-risk records are hospital-scoped at the DB layer (id-from-A invisible under B's scope);
- * (3) the central aggregate-only role sees per-hospital aggregates (never patient-level) and is
- * denied to hospital roles, while the central supervisor is denied all hospital operations.
+ * (3) the ONLY central-accessible read is the snapshot-fed `getCentralOversight` (never the
+ * operational tables) — denied to hospital roles, and the central supervisor is itself denied all
+ * hospital operations. The legacy live-aggregate path was removed (Phase 3 QA patch).
  * Synthetic data only.
  */
 const BERTOUA = "hosp-hrb-demo";
@@ -96,29 +97,36 @@ describe("integration: Phase 3B cross-hospital denial matrix", () => {
     expect(await prisma.medication.findFirst({ where: { id: medication.id, hospitalId: OTHER } })).not.toBeNull();
   });
 
-  // ---- (3) Central aggregate-only role ----
-  it("the central supervisor reads per-hospital AGGREGATES only (no patient-level), audited", async () => {
+  // ---- (3) Central aggregate-only role: snapshot-fed ONLY (no live operational read) ----
+  it("central oversight is SNAPSHOT-FED only — with no snapshots it reads nothing (never enumerates operational tables)", async () => {
+    // After reset the DB holds seeded hospitals + operational rows but ZERO aggregate snapshots.
+    // The REMOVED live path (getCentralAggregates) enumerated all 8 hospitals straight from the
+    // patient/encounter/invoice/payment tables; the snapshot-fed getCentralOversight reads ONLY
+    // HospitalAggregateSnapshot, so it returns an empty list until a hospital generates a snapshot.
+    // This is the structural proof that the central read path issues no direct operational-DB query.
     const central = await actorFor(CENTRAL);
     const before = await prisma.auditLog.count({ where: { action: "central.aggregate.accessed" } });
-    const result = await getCentralAggregates(central);
-    expect(result.hospitals.length).toBe(8); // all hospitals, aggregate rows
-    // The shape is strictly aggregate: numeric counts + a payment total, never a nominative field.
-    for (const h of result.hospitals) {
-      expect(typeof h.patientCount).toBe("number");
-      expect(typeof h.encounterCount).toBe("number");
-      expect(typeof h.paidTotalFcfa).toBe("number");
-      expect(Object.keys(h).sort()).toEqual(
-        ["code", "encounterCount", "hospitalId", "invoiceCount", "isActive", "name", "paidTotalFcfa", "patientCount", "region"].sort(),
-      );
-    }
+    const { hospitals } = await getCentralOversight(central);
+    expect(hospitals).toEqual([]); // no snapshots → nothing, despite 8 seeded hospitals with data
     const after = await prisma.auditLog.count({ where: { action: "central.aggregate.accessed" } });
-    expect(after).toBe(before + 1);
+    expect(after).toBe(before + 1); // the national read is still audited (hospitalId null)
   });
 
-  it("a hospital role (admin) is DENIED central aggregates; the denial is audited", async () => {
+  it("the legacy LIVE central aggregate path is removed from the service + DB surface", async () => {
+    // Phase 3 QA patch: getCentralAggregates / gatherCentralAggregates (live over operational tables)
+    // were deleted. The ONLY central-accessible service is the snapshot-fed getCentralOversight.
+    // Guard against accidental re-introduction of a live cross-hospital read.
+    const services = (await import("@/server/services")) as Record<string, unknown>;
+    const db = (await import("@/server/db")) as Record<string, unknown>;
+    expect(services.getCentralAggregates).toBeUndefined();
+    expect(db.gatherCentralAggregates).toBeUndefined();
+    expect(typeof services.getCentralOversight).toBe("function");
+  });
+
+  it("a hospital role (admin) is DENIED central oversight; the denial is audited", async () => {
     const admin = await actorFor(ACCOUNTS.admin); // administrateur lacks central.aggregate.view
     const before = await prisma.auditLog.count({ where: { action: "authz.denied" } });
-    await expect(getCentralAggregates(admin)).rejects.toBeInstanceOf(AuthorizationError);
+    await expect(getCentralOversight(admin)).rejects.toBeInstanceOf(AuthorizationError);
     const after = await prisma.auditLog.count({ where: { action: "authz.denied" } });
     expect(after).toBe(before + 1);
   });
