@@ -232,3 +232,63 @@ describe("PHASE 2 AUDIT — money reconciliation & the 2G discharge gate", () =>
     await expect(authorizeDischarge(doctor.actor, doctor.ctx, admission.id)).rejects.toThrow(/dette/i);
   });
 });
+
+describe("PHASE 2 AUDIT — newly-found defects (now FIXED by this audit)", () => {
+  beforeEach(resetTestDb);
+
+  async function prescribeAndSend(medCode: string, quantity: number) {
+    const med = await prisma.medication.findFirst({ where: { hospitalId: HRB, code: medCode } });
+    const reception = await loginAndSelect(ACCOUNTS.reception);
+    const { encounterId } = await newPatientEncounter(reception);
+    const doctor = await loginAndSelect(ACCOUNTS.doctor);
+    const presc = await createPrescription(doctor.actor, doctor.ctx, {
+      encounterId,
+      items: [{ medicationId: med!.id, dosage: "1 cp", duration: "5j", quantity }],
+    });
+    await finalizePrescription(doctor.actor, doctor.ctx, presc.id);
+    await sendPrescriptionToPharmacy(doctor.actor, doctor.ctx, presc.id);
+    return { medId: med!.id, prescriptionId: presc.id };
+  }
+
+  // BLOCKER (pharmaceutical safety): expired stock must NEVER be reserved/dispensed by the FEFO path.
+  it("FEFO never reserves an EXPIRED lot — only the valid lot is reserved", async () => {
+    const med = await prisma.medication.findFirst({ where: { hospitalId: HRB, code: "MED-IBU-400" } });
+    const expired = await prisma.medicationStockBatch.create({
+      data: { hospitalId: HRB, medicationId: med!.id, batchNumber: "EXP-OLD", expiryDate: new Date("2020-01-01"), quantityReceived: 100, quantityOnHand: 100, quantityReserved: 0 },
+    });
+    const valid = await prisma.medicationStockBatch.create({
+      data: { hospitalId: HRB, medicationId: med!.id, batchNumber: "VALID-NEW", expiryDate: new Date("2031-01-01"), quantityReceived: 100, quantityOnHand: 100, quantityReserved: 0 },
+    });
+    const { prescriptionId } = await prescribeAndSend("MED-IBU-400", 10);
+    expect((await prisma.medicationStockBatch.findUnique({ where: { id: expired.id } }))!.quantityReserved).toBe(0);
+    expect((await prisma.medicationStockBatch.findUnique({ where: { id: valid.id } }))!.quantityReserved).toBe(10);
+    const res = await prisma.stockReservation.findMany({ where: { hospitalId: HRB, prescriptionId } });
+    expect(res.length).toBeGreaterThan(0);
+    expect(res.every((r) => r.batchId === valid.id)).toBe(true);
+  });
+
+  it("an EXPIRED-only medication reserves nothing (shortfall) — never the expired lot", async () => {
+    const med = await prisma.medication.findFirst({ where: { hospitalId: HRB, code: "MED-METRO-250" } });
+    const expired = await prisma.medicationStockBatch.create({
+      data: { hospitalId: HRB, medicationId: med!.id, batchNumber: "EXP-ONLY", expiryDate: new Date("2019-06-30"), quantityReceived: 50, quantityOnHand: 50, quantityReserved: 0 },
+    });
+    const { prescriptionId } = await prescribeAndSend("MED-METRO-250", 10);
+    expect((await prisma.medicationStockBatch.findUnique({ where: { id: expired.id } }))!.quantityReserved).toBe(0);
+    expect(await prisma.stockReservation.count({ where: { hospitalId: HRB, prescriptionId } })).toBe(0);
+  });
+
+  // MAJOR (clinical lifecycle): a prescription cannot be created on a closed/cancelled encounter.
+  it("a prescription cannot be created on a CLOSED encounter", async () => {
+    const reception = await loginAndSelect(ACCOUNTS.reception);
+    const { encounterId } = await newPatientEncounter(reception);
+    await prisma.encounter.update({ where: { id: encounterId }, data: { status: "closed" } });
+    const med = await prisma.medication.findFirst({ where: { hospitalId: HRB, code: "MED-PARA-500" } });
+    const doctor = await loginAndSelect(ACCOUNTS.doctor);
+    await expect(
+      createPrescription(doctor.actor, doctor.ctx, {
+        encounterId,
+        items: [{ medicationId: med!.id, dosage: "1 cp", duration: "5j", quantity: 5 }],
+      }),
+    ).rejects.toThrow(/ouverte/i);
+  });
+});

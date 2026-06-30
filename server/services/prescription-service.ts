@@ -67,6 +67,11 @@ export async function createPrescription(
   await requireCapability(actor, ctx, "prescription.create");
   const encounter = await findEncounterById(ctx.hospitalId, input.encounterId);
   if (!encounter) throw new Error("Visite introuvable dans cet hôpital.");
+  // A prescription is a clinical act DURING an open visit — refuse it on a closed/cancelled encounter
+  // (mirrors the same guard in consultation, diagnostics and hospitalization).
+  if (encounter.status !== "open") {
+    throw new Error("La visite doit être ouverte pour créer une ordonnance.");
+  }
   if (!input.items || input.items.length === 0) {
     throw new Error("Ajoutez au moins un médicament à l'ordonnance.");
   }

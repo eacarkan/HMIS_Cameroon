@@ -4,6 +4,13 @@
 
 > Gate 7 also requires the organizational prerequisites that software cannot self-authorize — signed UAT, validated hardware deployment, a baseline cybersecurity assessment, and MINSANTE authorization (see `docs/gate7-readiness/GATE_7_READINESS_EVIDENCE.md`). This backlog is the **software** side only.
 
+## Resolved by the independent expert audit (NOT deferred — already fixed)
+The Phase 2 expert audit (`docs/PHASE_2_EXPERT_AUDIT.md`) found **two new defects beyond this backlog and fixed them** (with regression tests in `tests/integration/phase2-expert-audit.test.ts`):
+- **[FIXED] BLOCKER — expired stock reservable/dispensable.** `reserveForPrescription` now filters expired lots before FEFO allocation (`!isExpired`), so an expired batch is never reserved or dispensed.
+- **[FIXED] MAJOR — prescription on a closed encounter.** `createPrescription` now enforces `encounter.status === 'open'` (matching diagnostics/hospitalization).
+
+Low-priority test-quality follow-up (not a product defect): **16. Strengthen audit-log assertions** — several tests assert audit via `toContain(<number>)`; assert the full record (hospitalId + actorId + action enum + timestamp) so a malformed audit row can't pass.
+
 ## High priority (before real cash / emergency / clinical pilot)
 
 1. **Transactional financial workflows (2C).** Compose the multi-step money flows as a single all-or-nothing transaction:

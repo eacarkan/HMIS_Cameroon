@@ -1,4 +1,4 @@
-import { allocateFefo, availableToReserve } from "@/lib/stock";
+import { allocateFefo, availableToReserve, isExpired } from "@/lib/stock";
 import {
   createReservation,
   findActiveReservationsOlderThan,
@@ -37,9 +37,14 @@ export async function reserveForPrescription(
 
   let totalReserved = 0;
   let totalShortfall = 0;
+  const now = new Date();
   for (const item of presc.items) {
     const batches = await listStockForMedication(ctx.hospitalId, item.medicationId);
-    const { allocations, shortfall } = allocateFefo(batches, item.quantity, availableToReserve);
+    // Pharmaceutical safety: NEVER reserve from an expired lot. FEFO allocates earliest-expiry first,
+    // so without this filter an already-expired batch would be reserved (and later dispensed) ahead of
+    // valid stock. Expired lots are removed via a stock adjustment (2D-7), not dispensed.
+    const usable = batches.filter((b) => !isExpired(b.expiryDate, now));
+    const { allocations, shortfall } = allocateFefo(usable, item.quantity, availableToReserve);
     for (const a of allocations) {
       await createReservation({
         hospitalId: ctx.hospitalId,
