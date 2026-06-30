@@ -234,6 +234,14 @@ export {
   approveStockAdjustment,
   rejectStockAdjustment,
 } from "./stock-adjustment-service";
+
+// Phase 2D-8 — read-only pharmacy reporting (stock levels / low / expiring / dispensing volume).
+export {
+  type PharmacyReport,
+  type StockLevelRow,
+  type ExpiringLotRow,
+  getPharmacyReport,
+} from "./pharmacy-report-service";
 export {
   listUsers,
   createUserForActor,

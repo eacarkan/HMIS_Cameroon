@@ -254,3 +254,6 @@ export {
   rejectStockAdjustmentRow,
   approveStockAdjustmentTx,
 } from "./stock-adjustments";
+
+// Phase 2D-8 — read-only pharmacy reporting.
+export { listDispenseItemsSince, countDispenseRecordsSince } from "./pharmacy-reports";

@@ -104,6 +104,13 @@ export const NAV_ITEMS: NavItem[] = [
     capability: "stock.read",
   },
   {
+    // Phase 2D-8 — read-only pharmacy report (pharmacy + oversight).
+    href: "/pharmacie/rapports",
+    labelKey: "pharmacyReport",
+    icon: Boxes,
+    capability: "stock.read",
+  },
+  {
     href: "/administration",
     labelKey: "administration",
     icon: Settings2,
