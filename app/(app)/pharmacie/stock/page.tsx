@@ -2,17 +2,20 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { PageHeader } from "@/components/layout/page-header";
+import { RequestAdjustmentForm } from "@/components/pharmacy/adjustment-forms";
 import {
   ReceiveStockForm,
   ReleaseStaleReservationsButton,
 } from "@/components/pharmacy/stock-forms";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDateFr } from "@/lib/dates";
 import { can } from "@/lib/rbac";
+import { isExpired } from "@/lib/stock";
 import { requireActorAndHospital } from "@/server/auth";
 import { getStockSummary, listActiveMedications, listStock } from "@/server/services";
 
-/** Phase 2D-3 — pharmacy stock: per-medication summary + batch ledger + receive form. */
+/** Phase 2D-3/7 — pharmacy stock: per-medication summary + batch ledger + receive + adjustment request. */
 export default async function StockPage() {
   const { actor, hospital } = await requireActorAndHospital();
   if (!can(actor.roles, "stock.read")) redirect("/");
@@ -22,11 +25,24 @@ export default async function StockPage() {
     listStock(actor, hospital),
   ]);
   const t = await getTranslations("stock");
+  const ta = await getTranslations("stockAdjustment");
+  const now = new Date();
   const canReceive = can(actor.roles, "stock.receive");
+  const canRequestAdjustment = can(actor.roles, "stock.adjustment.request");
   const medications = canReceive
     ? (await listActiveMedications(actor, hospital)).map((m) => ({
         id: m.id,
         label: m.strength ? `${m.nameFr} ${m.strength}` : m.nameFr,
+      }))
+    : [];
+  // Adjustment-request batch options: every ledger batch, labelled with medication, lot, expiry, on-hand.
+  const adjustmentBatches = canRequestAdjustment
+    ? batches.map((b) => ({
+        id: b.id,
+        label:
+          `${b.medication.nameFr} — ${b.batchNumber} ` +
+          `(${t("expiry")} ${formatDateFr(new Date(b.expiryDate))}, ${b.quantityOnHand} ${b.medication.unit})` +
+          (isExpired(b.expiryDate, now) ? ` — ${ta("expired")}` : ""),
       }))
     : [];
 
@@ -50,6 +66,18 @@ export default async function StockPage() {
               <ReceiveStockForm medications={medications} />
             )}
           </CardHeader>
+        </Card>
+      ) : null}
+
+      {canRequestAdjustment ? (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-base">{ta("requestTitle")}</CardTitle>
+            <p className="text-muted-foreground text-sm">{ta("requestSubtitle")}</p>
+          </CardHeader>
+          <CardContent>
+            <RequestAdjustmentForm batches={adjustmentBatches} />
+          </CardContent>
         </Card>
       ) : null}
 
@@ -117,7 +145,12 @@ export default async function StockPage() {
                   <tr key={b.id} className="border-b last:border-0">
                     <td className="py-2 pr-4">{b.medication.nameFr}</td>
                     <td className="tnum py-2 pr-4">{b.batchNumber}</td>
-                    <td className="py-2 pr-4">{formatDateFr(new Date(b.expiryDate))}</td>
+                    <td className="py-2 pr-4">
+                      {formatDateFr(new Date(b.expiryDate))}{" "}
+                      {isExpired(b.expiryDate, now) ? (
+                        <Badge variant="destructive">{ta("expired")}</Badge>
+                      ) : null}
+                    </td>
                     <td className="tnum py-2 pr-4 text-right">
                       {b.quantityOnHand} {b.medication.unit}
                     </td>

@@ -97,6 +97,13 @@ export const NAV_ITEMS: NavItem[] = [
     capability: "stock.read",
   },
   {
+    // Phase 2D-7 — stock-adjustment worklist (pharmacy + oversight read; chief decides).
+    href: "/pharmacie/ajustements",
+    labelKey: "stockAdjustments",
+    icon: Boxes,
+    capability: "stock.read",
+  },
+  {
     href: "/administration",
     labelKey: "administration",
     icon: Settings2,

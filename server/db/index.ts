@@ -244,3 +244,13 @@ export {
   setReservationStatus,
   overrideReservationBatch,
 } from "./reservations";
+
+// Phase 2D-7 — dual-validated stock adjustments.
+export {
+  type CreateStockAdjustmentData,
+  createStockAdjustment,
+  findStockAdjustmentById,
+  listStockAdjustments,
+  rejectStockAdjustmentRow,
+  approveStockAdjustmentTx,
+} from "./stock-adjustments";

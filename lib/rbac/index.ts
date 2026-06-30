@@ -74,6 +74,10 @@ export type Capability =
   // oversight. Adjustments (2D-7) get their own dual-validation capabilities.
   | "stock.receive"
   | "stock.read"
+  // Phase 2D-7 — dual-validated stock adjustments: a `pharmacien` REQUESTS (correction / loss /
+  // expired-stock removal); the `pharmacien_chef` APPROVES or REJECTS (requester ≠ approver).
+  | "stock.adjustment.request"
+  | "stock.adjustment.approve"
   // Phase 2D-4 — manual release of stale (48h non-collection) stock reservations (pharmacy + admin).
   | "reservation.release"
   // Phase 2D-6 — authorise a FEFO override (dispense from a deliberately chosen non-earliest-expiry
@@ -214,6 +218,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     // Phase 2D-5 — dispense (consume reservations + deduct on-hand) + read dispense records.
     "dispense.perform",
     "dispense.read",
+    // Phase 2D-7 — the pharmacist REQUESTS stock adjustments (the Pharmacist-in-Charge approves).
+    "stock.adjustment.request",
   ],
   pharmacien_chef: [
     "dashboard.read",
@@ -229,6 +235,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "dispense.read",
     // Phase 2D-6 — the Pharmacist-in-Charge is the ONLY role that may authorise a FEFO override.
     "fefo.override",
+    // Phase 2D-7 — the Pharmacist-in-Charge APPROVES/REJECTS stock adjustments (cannot self-request).
+    "stock.adjustment.approve",
   ],
 };
 

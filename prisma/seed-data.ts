@@ -512,6 +512,7 @@ export async function clearOperationalData(
   await prisma.dispenseRecordItem.deleteMany();
   await prisma.dispenseRecord.deleteMany();
   await prisma.stockReservation.deleteMany();
+  await prisma.stockAdjustment.deleteMany();
   await prisma.prescriptionItem.deleteMany();
   await prisma.prescription.deleteMany();
   await prisma.medicationStockBatch.deleteMany();

@@ -105,6 +105,23 @@ enum ReservationStatus {
   consumed
 }
 
+/// Phase 2D-7 — a stock adjustment kind. `increase` corrects a count up; `decrease` corrects it down;
+/// `loss` writes off damaged/lost units; `expiry` removes expired stock. All but `increase` reduce
+/// on-hand. The magnitude is the (positive) `quantity` on the adjustment.
+enum StockAdjustmentType {
+  increase
+  decrease
+  loss
+  expiry
+}
+
+/// Phase 2D-7 — dual-validation lifecycle: a pharmacist REQUESTS, the Pharmacist-in-Charge decides.
+enum StockAdjustmentStatus {
+  requested
+  approved
+  rejected
+}
+
 // ===================== Phase 2C — cashier/billing strengthening =====================
 
 /// Invoice cancellation request lifecycle: a cashier requests, a Hospital Administrator decides.
@@ -181,6 +198,7 @@ model Hospital {
   stockReservations      StockReservation[]
   dispenseRecords        DispenseRecord[]
   dispenseRecordItems    DispenseRecordItem[]
+  stockAdjustments       StockAdjustment[]
 
   // Phase 1 (Gate 2) additive relations.
   departments                Department[]
@@ -238,6 +256,8 @@ model User {
   cashierShiftCorrections     CashierShiftCorrection[]     @relation("ShiftCorrectedBy")
 
   // Phase 2D-2 additive relation.
+  stockAdjustmentsRequested StockAdjustment[] @relation("StockAdjustmentRequestedBy")
+  stockAdjustmentsDecided   StockAdjustment[] @relation("StockAdjustmentDecidedBy")
   prescriptionsPrescribed Prescription[]   @relation("PrescriptionPrescribedBy")
   // Phase 2D-5 additive relations.
   prescriptionsPaid       Prescription[]   @relation("PrescriptionPaidBy")
@@ -888,6 +908,7 @@ model Medication {
   hospital          Hospital               @relation(fields: [hospitalId], references: [id])
   prescriptionItems PrescriptionItem[]
   stockBatches      MedicationStockBatch[]
+  stockAdjustments  StockAdjustment[]
 
   @@unique([hospitalId, code])
   @@index([hospitalId, isActive, displayOrder])
@@ -914,6 +935,7 @@ model MedicationStockBatch {
   medication          Medication           @relation(fields: [medicationId], references: [id])
   reservations        StockReservation[]
   dispenseRecordItems DispenseRecordItem[]
+  adjustments         StockAdjustment[]
 
   @@index([hospitalId, medicationId, expiryDate])
 }
@@ -951,6 +973,36 @@ model StockReservation {
 
   @@index([hospitalId, status, createdAt])
   @@index([prescriptionId])
+  @@index([batchId])
+}
+
+/// Phase 2D-7 — a dual-validated stock adjustment against a batch. A `pharmacien` REQUESTS (kind +
+/// positive magnitude + mandatory reason); the `pharmacien_chef` APPROVES (on-hand is changed) or
+/// REJECTS (mandatory decision reason). Requester ≠ approver. The on-hand mutation happens ONLY on
+/// approval; the InvoiceItem-style history is preserved (the request row is never rewritten).
+model StockAdjustment {
+  id             String                @id @default(cuid())
+  hospitalId     String
+  batchId        String
+  medicationId   String
+  type           StockAdjustmentType
+  quantity       Int // positive magnitude; the on-hand delta is signed by `type`
+  reason         String
+  status         StockAdjustmentStatus @default(requested)
+  requestedById  String
+  decidedById    String?
+  decisionReason String?
+  decidedAt      DateTime?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  hospital    Hospital             @relation(fields: [hospitalId], references: [id])
+  batch       MedicationStockBatch @relation(fields: [batchId], references: [id])
+  medication  Medication           @relation(fields: [medicationId], references: [id])
+  requestedBy User                 @relation("StockAdjustmentRequestedBy", fields: [requestedById], references: [id])
+  decidedBy   User?                @relation("StockAdjustmentDecidedBy", fields: [decidedById], references: [id])
+
+  @@index([hospitalId, status, createdAt])
   @@index([batchId])
 }
 

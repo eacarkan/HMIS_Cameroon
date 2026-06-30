@@ -123,6 +123,10 @@ export const AUDIT_ACTIONS = {
   dispenseCompleted: "dispense.completed",
   // Phase 2D-6 — Pharmacist-in-Charge authorised a deviation from FEFO (chosen non-earliest batch).
   fefoOverride: "fefo.override",
+  // Phase 2D-7 — dual-validated stock adjustments (pharmacist requests; Pharmacist-in-Charge decides).
+  stockAdjustmentRequested: "stock.adjustment_requested",
+  stockAdjustmentApproved: "stock.adjustment_approved",
+  stockAdjustmentRejected: "stock.adjustment_rejected",
 } as const;
 
 /**

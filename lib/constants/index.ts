@@ -181,6 +181,10 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "dispense.completed": "Délivrance de médicaments",
   // Phase 2D-6 — Pharmacist-in-Charge FEFO override.
   "fefo.override": "Dérogation FEFO (lot non prioritaire)",
+  // Phase 2D-7 — dual-validated stock adjustments.
+  "stock.adjustment_requested": "Ajustement de stock demandé",
+  "stock.adjustment_approved": "Ajustement de stock approuvé",
+  "stock.adjustment_rejected": "Ajustement de stock rejeté",
 };
 
 /**

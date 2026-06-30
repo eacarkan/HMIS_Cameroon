@@ -13,17 +13,19 @@ test.describe("Phase 2D-3 — pharmacy stock", () => {
     await login(page, ACCOUNTS.pharmacist);
     await page.goto("/pharmacie/stock");
     await expect(page.getByRole("heading", { name: "Stock pharmacie" }).first()).toBeVisible();
-    // Seeded stock is listed. Assert on a seeded batch number — it appears only in the visible
-    // ledger, never in the receive-form medication <select> (whose options Playwright treats as
-    // hidden, which would make a bare "Paracétamol" match fail toBeVisible()).
-    await expect(page.getByText("LOT-PARA-B")).toBeVisible();
+    // Seeded stock is listed — assert on the seeded batch number's VISIBLE ledger cell. (A bare
+    // getByText would also match the hidden <option> for this lot in the 2D-7 adjustment-request
+    // select, and "Paracétamol" matches the hidden receive-form option — so target the table cell.)
+    await expect(page.getByRole("cell", { name: "LOT-PARA-B" })).toBeVisible();
 
     // Receive a new batch.
     await page.locator('input[name="batchNumber"]').fill("LOT-E2E-1");
     await page.locator('input[name="expiryDate"]').fill("2028-06-30");
-    await page.locator('input[name="quantity"]').fill("123");
+    // The receive form's quantity (the 2D-7 adjustment form on this page also has name="quantity").
+    await page.locator("#st-qty").fill("123");
     await page.getByRole("button", { name: "Réceptionner" }).click();
-    await expect(page.getByText("LOT-E2E-1")).toBeVisible();
+    // Target the ledger cell — the received lot also appears as a hidden <option> in the 2D-7 select.
+    await expect(page.getByRole("cell", { name: "LOT-E2E-1" })).toBeVisible();
     await page.screenshot({ path: `${SHOTS}/03-stock.png`, fullPage: true });
   });
 

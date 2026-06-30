@@ -192,6 +192,21 @@ describe("lib/rbac — role capabilities (09 §6, 07 §4)", () => {
     expect(can(["agent_accueil"], "dispense.read")).toBe(false);
   });
 
+  it("Phase 2D-7 — stock adjustments: pharmacist requests, Pharmacist-in-Charge approves (requester ≠ approver)", () => {
+    // The pharmacist REQUESTS but cannot approve.
+    expect(can(["pharmacien"], "stock.adjustment.request")).toBe(true);
+    expect(can(["pharmacien"], "stock.adjustment.approve")).toBe(false);
+    // The Pharmacist-in-Charge APPROVES but does not self-request (role split mirrors 2C).
+    expect(can(["pharmacien_chef"], "stock.adjustment.approve")).toBe(true);
+    expect(can(["pharmacien_chef"], "stock.adjustment.request")).toBe(false);
+    // No one else touches adjustments.
+    expect(can(["administrateur"], "stock.adjustment.request")).toBe(false);
+    expect(can(["administrateur"], "stock.adjustment.approve")).toBe(false);
+    expect(can(["directeur"], "stock.adjustment.approve")).toBe(false);
+    expect(can(["medecin"], "stock.adjustment.request")).toBe(false);
+    expect(can(["caissier"], "stock.adjustment.request")).toBe(false);
+  });
+
   it("Phase 2D-6 — FEFO override is the Pharmacist-in-Charge ONLY", () => {
     expect(can(["pharmacien_chef"], "fefo.override")).toBe(true);
     // A regular pharmacist follows FEFO and cannot override.

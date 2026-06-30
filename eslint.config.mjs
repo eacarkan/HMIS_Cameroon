@@ -39,8 +39,17 @@ const eslintConfig = defineConfig([
     },
   },
 
-  // Override default ignores of eslint-config-next.
-  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
+  // Override default ignores of eslint-config-next. Also ignore generated test artifacts —
+  // Playwright writes minified vendor bundles into playwright-report/ (and traces into
+  // test-results/) when a run retains traces; both are gitignored build output, not source.
+  globalIgnores([
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+    "playwright-report/**",
+    "test-results/**",
+  ]),
 ]);
 
 export default eslintConfig;

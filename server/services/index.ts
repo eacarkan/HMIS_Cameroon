@@ -225,6 +225,15 @@ export {
   getReservationOverrideOptions,
   overrideReservationBatch,
 } from "./fefo-service";
+
+// Phase 2D-7 — dual-validated stock adjustments (pharmacist requests; Pharmacist-in-Charge decides).
+export {
+  listStockAdjustmentsForActor,
+  getStockAdjustment,
+  requestStockAdjustment,
+  approveStockAdjustment,
+  rejectStockAdjustment,
+} from "./stock-adjustment-service";
 export {
   listUsers,
   createUserForActor,
