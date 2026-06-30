@@ -124,6 +124,8 @@ export {
   listTemplateApplications,
   overrideInstanceSetting,
 } from "./hospital-configuration-service";
+// Phase 3B — central aggregate oversight (cross-hospital, aggregate-only, audited).
+export { type CentralAggregates, getCentralAggregates } from "./central-oversight-service";
 export {
   listPatientContacts,
   addPatientContact,

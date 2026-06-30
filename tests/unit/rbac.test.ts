@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { can } from "@/lib/rbac";
+import { can, canAtHospital } from "@/lib/rbac";
 
 describe("lib/rbac — role capabilities (09 §6, 07 §4)", () => {
   it("agent d'accueil can create/read patients but cannot record payment", () => {
@@ -336,5 +336,56 @@ describe("lib/rbac — role capabilities (09 §6, 07 §4)", () => {
     expect(can([], "patient.read")).toBe(false);
     expect(can(["agent_accueil", "caissier"], "payment.record")).toBe(true);
     expect(can(["unknown_role"], "patient.read")).toBe(false);
+  });
+
+  it("Phase 3A — multi-hospital config: admin manages templates+instances+view; director views only", () => {
+    expect(can(["administrateur"], "config.template.manage")).toBe(true);
+    expect(can(["administrateur"], "config.instance.manage")).toBe(true);
+    expect(can(["administrateur"], "config.view")).toBe(true);
+    // Director gets read-only completeness oversight — no template/instance management.
+    expect(can(["directeur"], "config.view")).toBe(true);
+    expect(can(["directeur"], "config.template.manage")).toBe(false);
+    expect(can(["directeur"], "config.instance.manage")).toBe(false);
+    // Operational roles have none of the multi-hospital config capabilities.
+    for (const role of ["agent_accueil", "medecin", "caissier", "pharmacien"]) {
+      expect(can([role], "config.view")).toBe(false);
+      expect(can([role], "config.instance.manage")).toBe(false);
+    }
+  });
+
+  it("Phase 3B — central aggregate-only role holds ONLY oversight, no hospital operations", () => {
+    expect(can(["superviseur_central"], "central.aggregate.view")).toBe(true);
+    expect(can(["superviseur_central"], "dashboard.read")).toBe(true);
+    // Aggregate-only: NO patient / clinical / financial / pharmacy / config capability.
+    for (const cap of [
+      "patient.read",
+      "encounter.read",
+      "consultation.read",
+      "invoice.read",
+      "payment.record",
+      "config.view",
+      "stock.read",
+      "audit.read",
+      "diagnostic.read",
+    ] as const) {
+      expect(can(["superviseur_central"], cap)).toBe(false);
+    }
+    // No hospital role holds the central capability (it is national oversight, not hospital-level).
+    for (const role of ["administrateur", "directeur", "caissier", "medecin", "agent_accueil"]) {
+      expect(can([role], "central.aggregate.view")).toBe(false);
+    }
+  });
+
+  it("Phase 3B — canAtHospital resolves PER-HOSPITAL roles, never the cross-hospital union", () => {
+    // A multi-hospital member: administrateur at A, directeur at B.
+    const rolesByHospital = { A: ["administrateur"], B: ["directeur"] };
+    // The admin capability applies ONLY at A.
+    expect(canAtHospital(rolesByHospital, "A", "config.instance.manage")).toBe(true);
+    expect(canAtHospital(rolesByHospital, "B", "config.instance.manage")).toBe(false);
+    // The director capability applies ONLY at B.
+    expect(canAtHospital(rolesByHospital, "B", "config.view")).toBe(true);
+    // A hospital the member does not belong to grants nothing (no roles there).
+    expect(canAtHospital(rolesByHospital, "C", "config.view")).toBe(false);
+    expect(canAtHospital(rolesByHospital, "C", "patient.read")).toBe(false);
   });
 });

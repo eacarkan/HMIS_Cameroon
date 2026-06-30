@@ -26,7 +26,9 @@ export function AppShell({
     <div className="flex h-screen flex-col overflow-hidden">
       <PrototypeBanner />
       <div className="flex min-h-0 flex-1">
-        <Sidebar roles={actor.roles} />
+        {/* Phase 3B — nav is filtered by the roles held AT the active hospital, not the
+            cross-hospital union, so a multi-hospital member sees only what they may do here. */}
+        <Sidebar roles={actor.rolesByHospital[hospital.hospitalId] ?? []} />
         <div className="flex min-w-0 flex-1 flex-col">
           <Topbar actor={actor} hospital={hospital} hospitals={hospitals} />
           <main className="flex-1 overflow-y-auto">

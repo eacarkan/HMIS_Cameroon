@@ -132,6 +132,9 @@ export {
   applyTemplateToHospital,
   gatherHospitalConfigSummary,
 } from "./configuration-templates";
+
+// Phase 3B — central aggregate oversight (cross-hospital, aggregate-only; no patient-level access).
+export { type CentralHospitalAggregate, gatherCentralAggregates } from "./central-oversight";
 export {
   type CreatePriceListData,
   type CreateTariffData,

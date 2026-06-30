@@ -76,7 +76,9 @@ export async function getDashboardSummary(
   const breakdown = dailyBillingBreakdown(payments);
 
   return {
-    sections: visibleDashboardSections(actor.roles),
+    // Phase 3B — section visibility uses the roles held AT the active hospital (consistent with the
+    // per-hospital nav), not the cross-hospital union.
+    sections: visibleDashboardSections(actor.rolesByHospital[ctx.hospitalId] ?? []),
     patientsToday,
     openEncounters,
     encountersOpenedToday,

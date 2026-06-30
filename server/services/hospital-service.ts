@@ -48,7 +48,19 @@ export async function selectHospital(
   hospitalId: string,
 ): Promise<HospitalContext> {
   const context = await resolveHospitalContext(actor, hospitalId);
-  if (!context) throw new Error("Accès à cet hôpital refusé.");
+  if (!context) {
+    // Phase 3B — record the refused cross-hospital selection (the actor is not a member of this
+    // hospital). Append-only; the hospital row exists so the audit FK is satisfied.
+    await recordAudit({
+      hospitalId,
+      actorId: actor.id,
+      action: AUDIT_ACTIONS.securityCrossHospitalDenied,
+      entityType: "Hospital",
+      entityId: hospitalId,
+      summary: `Sélection d'hôpital refusée — accès non autorisé (${hospitalId})`,
+    });
+    throw new Error("Accès à cet hôpital refusé.");
+  }
 
   await recordAudit({
     hospitalId: context.hospitalId,

@@ -7,7 +7,7 @@
  * `server/services/authz-service`. A refused action fails server-side with a clear,
  * non-leaking error — hiding a button is never the control (09 §4, §13).
  */
-export { type Role, type Capability, ROLE_CAPABILITIES, can } from "@/lib/rbac";
+export { type Role, type Capability, ROLE_CAPABILITIES, can, canAtHospital } from "@/lib/rbac";
 
 /** Thrown when an actor lacks a capability. Mapped to a clean French error in the UI. */
 export class AuthorizationError extends Error {

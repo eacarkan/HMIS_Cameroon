@@ -132,6 +132,8 @@ export const ROLES: RoleSeed[] = [
   // Phase 2I — diagnostics roles (enter ≠ validate).
   { id: "role-technicien-diagnostic", code: "technicien_diagnostic", name: "Technicien de laboratoire / imagerie" },
   { id: "role-validateur-diagnostic", code: "validateur_diagnostic", name: "Validateur (biologiste / radiologue)" },
+  // Phase 3B — central oversight role (aggregate-only, cross-hospital, read-only).
+  { id: "role-superviseur-central", code: "superviseur_central", name: "Superviseur central (agrégats)" },
 ];
 
 type UserSeed = {
@@ -198,6 +200,14 @@ export const USERS: UserSeed[] = [
     displayName: "Dr Marie EYENGA",
     email: "marie.eyenga@hrb-demo.cm",
     roleCode: "validateur_diagnostic",
+  },
+  // Phase 3B — central supervisor demo user (aggregate-only oversight; no hospital operational caps).
+  // Synthetic; uses the fake demo domain. Membership at HRB-DEMO is only so the account can sign in.
+  {
+    id: "user-direction-regionale",
+    displayName: "Direction Régionale",
+    email: "direction.regionale@hrb-demo.cm",
+    roleCode: "superviseur_central",
   },
 ];
 

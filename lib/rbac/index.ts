@@ -21,7 +21,11 @@ export type Role =
   // Phase 2I — diagnostics roles. `technicien_diagnostic` enters lab/radiology results;
   // `validateur_diagnostic` validates them (the enter ≠ validate clinical control).
   | "technicien_diagnostic"
-  | "validateur_diagnostic";
+  | "validateur_diagnostic"
+  // Phase 3B — central oversight role. Aggregate-only, cross-hospital, READ-ONLY: it sees
+  // per-hospital AGGREGATE counts (never patient-level data) and holds NO hospital operational
+  // capability. The one deliberate cross-hospital role (national/regional supervision).
+  | "superviseur_central";
 
 export type Capability =
   // Phase 0 capabilities.
@@ -106,6 +110,11 @@ export type Capability =
   | "config.template.manage"
   | "config.instance.manage"
   | "config.view"
+  // Phase 3B — central aggregate oversight. `central.aggregate.view` is the ONLY cross-hospital
+  // capability: read-only, AGGREGATE-only (per-hospital counts), never patient-level. It is a GLOBAL
+  // capability (not bound to one hospital), so it is checked against the actor's full role set —
+  // unlike every hospital-scoped capability, which is checked against the active hospital's roles.
+  | "central.aggregate.view"
   // Phase 2C capabilities — cashier/billing strengthening. The cashier REQUESTS a cancellation
   // and EXECUTES an approved refund and manages their own shift; only the Hospital Administrator
   // APPROVES cancellations/refunds (cashier ≠ approver). Refund vouchers are widely readable.
@@ -381,6 +390,10 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "diagnostic.read",
     "diagnostic.validate",
   ],
+  // Phase 3B — central supervisor. AGGREGATE-only cross-hospital oversight; NO hospital
+  // operational capability (no patient/clinical/financial/pharmacy access). `dashboard.read`
+  // lets them reach the shell; `central.aggregate.view` is the only oversight capability.
+  superviseur_central: ["dashboard.read", "central.aggregate.view"],
 };
 
 /** True if any of the actor's roles grants the capability. */
@@ -388,4 +401,19 @@ export function can(roles: readonly string[], capability: Capability): boolean {
   return roles.some((role) =>
     ROLE_CAPABILITIES[role as Role]?.includes(capability),
   );
+}
+
+/**
+ * True if the roles the actor holds AT a specific hospital grant the capability (Phase 3B).
+ * This is the per-hospital authorization primitive: a hospital-scoped capability must be checked
+ * against `rolesByHospital[hospitalId]`, never the cross-hospital union — so a privilege granted
+ * at one hospital cannot be exercised at another. (Global capabilities like `central.aggregate.view`
+ * are the deliberate exception and are checked with `can(actor.roles, …)`.)
+ */
+export function canAtHospital(
+  rolesByHospital: Record<string, readonly string[]>,
+  hospitalId: string,
+  capability: Capability,
+): boolean {
+  return can(rolesByHospital[hospitalId] ?? [], capability);
 }

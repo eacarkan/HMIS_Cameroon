@@ -9,7 +9,7 @@ import {
 import { AGE_BANDS, ageBand, buildDhis2Csv, genderCode, patientAgeYears, type Dhis2Row } from "@/lib/dhis2";
 import { monthPeriod, topDiagnoses } from "@/lib/reporting";
 import { sumFcfa } from "@/lib/money";
-import { can } from "@/lib/rbac";
+import { canAtHospital } from "@/lib/rbac";
 import type { AuthenticatedActor } from "./auth-service";
 import { requireCapability } from "./authz-service";
 import { AUDIT_ACTIONS, recordAudit } from "./audit-service";
@@ -69,7 +69,7 @@ export async function getOperationalReport(
 
   // Pharmacy snapshot (only when the viewer may read stock; a current-state complement to the month).
   let pharmacy: { medicationsTracked: number; low: number; expiring: number; dispensedUnits30d: number } | null = null;
-  if (can(actor.roles, "stock.read")) {
+  if (canAtHospital(actor.rolesByHospital, ctx.hospitalId, "stock.read")) {
     const pr = await getPharmacyReport(actor, ctx);
     pharmacy = {
       medicationsTracked: pr.stockLevels.length,

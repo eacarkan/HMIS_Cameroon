@@ -5,7 +5,7 @@ import {
   findAuditEntries,
   findAuditEntryById,
 } from "@/server/db";
-import { AuthorizationError, can } from "@/server/authz";
+import { AuthorizationError, canAtHospital } from "@/server/authz";
 import type { AuthenticatedActor } from "./auth-service";
 
 /**
@@ -89,6 +89,11 @@ export const AUDIT_ACTIONS = {
   configTemplateApplied: "config.template.applied",
   configInstanceUpdated: "config.instance.updated",
   configCompletenessRecomputed: "config.completeness.recomputed",
+  // Phase 3B — multi-hospital data separation. `central.aggregate.accessed` records each
+  // aggregate-only cross-hospital oversight read (no patient-level data). `security.cross_hospital_denied`
+  // records a refused attempt to select/act on a hospital the actor is not a member of.
+  centralAggregateAccessed: "central.aggregate.accessed",
+  securityCrossHospitalDenied: "security.cross_hospital_denied",
   // Phase 2A — service/department catalogue configuration (capability-based; admin only).
   serviceCreated: "service.created",
   serviceUpdated: "service.updated",
@@ -205,7 +210,7 @@ export async function listAuditEntries(
   ctx: HospitalContext,
   opts: { action?: string } = {},
 ) {
-  if (!can(actor.roles, "audit.read")) {
+  if (!canAtHospital(actor.rolesByHospital, ctx.hospitalId, "audit.read")) {
     throw new AuthorizationError("audit.read");
   }
   return findAuditEntries(ctx.hospitalId, { action: opts.action, limit: 100 });
@@ -217,7 +222,7 @@ export async function getAuditEntry(
   ctx: HospitalContext,
   id: string,
 ) {
-  if (!can(actor.roles, "audit.read")) {
+  if (!canAtHospital(actor.rolesByHospital, ctx.hospitalId, "audit.read")) {
     throw new AuthorizationError("audit.read");
   }
   return findAuditEntryById(ctx.hospitalId, id);

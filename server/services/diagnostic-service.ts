@@ -28,7 +28,7 @@ import {
   validateDiagnosticCatalogueInput,
   validateResultText,
 } from "@/lib/diagnostics";
-import { can } from "@/lib/rbac";
+import { canAtHospital } from "@/lib/rbac";
 import { formatFcfa } from "@/lib/money";
 import type { AuthenticatedActor } from "./auth-service";
 import { requireCapability } from "./authz-service";
@@ -45,9 +45,13 @@ import { generateNumber } from "./numbering-service";
 
 type OrderRow = NonNullable<Awaited<ReturnType<typeof findDiagnosticOrderById>>>;
 
-/** A viewer is "staff" (may see a result before it is validated) iff they enter or validate results. */
-function isDiagnosticStaff(actor: AuthenticatedActor): boolean {
-  return can(actor.roles, "diagnostic.result.enter") || can(actor.roles, "diagnostic.validate");
+/** A viewer is "staff" (may see a result before it is validated) iff they enter or validate results
+ *  AT the active hospital — per-hospital roles, never the cross-hospital union (Phase 3B). */
+function isDiagnosticStaff(actor: AuthenticatedActor, hospitalId: string): boolean {
+  return (
+    canAtHospital(actor.rolesByHospital, hospitalId, "diagnostic.result.enter") ||
+    canAtHospital(actor.rolesByHospital, hospitalId, "diagnostic.validate")
+  );
 }
 
 /** Strip the result text unless the viewer is allowed to see it for this status (the visibility gate). */
@@ -300,7 +304,7 @@ export async function getDiagnosticOrder(actor: AuthenticatedActor, ctx: Hospita
   await requireCapability(actor, ctx, "diagnostic.read");
   const order = await findDiagnosticOrderById(ctx.hospitalId, id);
   if (!order) return null;
-  return applyVisibility(order, isDiagnosticStaff(actor));
+  return applyVisibility(order, isDiagnosticStaff(actor, ctx.hospitalId));
 }
 
 export async function listDiagnosticsForEncounter(
@@ -310,7 +314,7 @@ export async function listDiagnosticsForEncounter(
 ) {
   await requireCapability(actor, ctx, "diagnostic.read");
   const orders = await listDiagnosticOrdersForEncounter(ctx.hospitalId, encounterId);
-  const isStaff = isDiagnosticStaff(actor);
+  const isStaff = isDiagnosticStaff(actor, ctx.hospitalId);
   return orders.map((o) => applyVisibility(o, isStaff));
 }
 
@@ -321,7 +325,7 @@ export async function getDiagnosticWorklist(
 ) {
   await requireCapability(actor, ctx, "diagnostic.read");
   const orders = await listDiagnosticWorklist(ctx.hospitalId, modality);
-  const isStaff = isDiagnosticStaff(actor);
+  const isStaff = isDiagnosticStaff(actor, ctx.hospitalId);
   return orders.map((o) => applyVisibility(o, isStaff));
 }
 
