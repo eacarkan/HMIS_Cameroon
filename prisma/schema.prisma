@@ -244,6 +244,9 @@ model Hospital {
   // Phase 3A (multi-hospital configuration foundation) — guarded template-apply records
   // belonging to this hospital instance (additive; config only, never patient/transaction).
   configurationTemplateApplications ConfigurationTemplateApplication[]
+
+  // Phase 3C (site-readiness checklist) — per-hospital readiness status items (additive).
+  siteReadinessItems SiteReadinessItem[]
 }
 
 // ===================== Users / RBAC =====================
@@ -695,6 +698,39 @@ model ConfigurationTemplateApplication {
 
   @@index([hospitalId])
   @@index([templateId])
+}
+
+// ============ Phase 3C — Site readiness & deployment checklist (additive) ============
+// App-level STATUS TRACKING only — the software team performs no hardware/LAN/cyber work.
+// Supplier-dependent items (hardware/LAN/UPS/cybersecurity) cannot be self-claimed READY.
+
+enum SiteReadinessStatus {
+  not_started
+  in_progress
+  ready
+  blocked
+  not_applicable
+  needs_validation
+}
+
+/// One readiness checklist item for a hospital (per category). Status-tracking only — never
+/// performs infrastructure work. Hospital-scoped; one row per (hospital, category).
+model SiteReadinessItem {
+  id           String              @id @default(cuid())
+  hospitalId   String
+  category     String
+  status       SiteReadinessStatus @default(not_started)
+  owner        String?
+  evidenceNote String?
+  verifier     String?
+  statusDate   DateTime?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+
+  @@unique([hospitalId, category])
+  @@index([hospitalId])
 }
 
 // ============ Phase 1 (Gate 2) — Patient identity / contact (additive) ============

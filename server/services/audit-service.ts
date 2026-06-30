@@ -94,6 +94,9 @@ export const AUDIT_ACTIONS = {
   // records a refused attempt to select/act on a hospital the actor is not a member of.
   centralAggregateAccessed: "central.aggregate.accessed",
   securityCrossHospitalDenied: "security.cross_hospital_denied",
+  // Phase 3C — site-readiness checklist (status tracking only; hospital-scoped).
+  readinessItemUpdated: "readiness.item_updated",
+  readinessStatusChanged: "readiness.status_changed",
   // Phase 2A — service/department catalogue configuration (capability-based; admin only).
   serviceCreated: "service.created",
   serviceUpdated: "service.updated",

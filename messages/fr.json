@@ -457,7 +457,8 @@
     "integerFcfaHint": "Montant entier en FCFA (sans décimales).",
     "effectiveFrom": "Effectif du (optionnel)",
     "effectiveTo": "Effectif au (optionnel)",
-    "manageConfiguration": "Configuration multi-hôpitaux"
+    "manageConfiguration": "Configuration multi-hôpitaux",
+    "manageReadiness": "Préparation du site"
   },
   "patientIdentity": {
     "title": "Identité & contacts",
@@ -1022,5 +1023,29 @@
     "settingKey": "Clé du paramètre",
     "settingValue": "Valeur",
     "saveOverride": "Enregistrer"
+  },
+  "readinessAdmin": {
+    "title": "Préparation du site (déploiement)",
+    "subtitle": "Liste de contrôle de préparation par hôpital — suivi de statut uniquement",
+    "boundaryNote": "Données synthétiques · pas de Gate 7 · suivi de statut uniquement (aucune exécution d'infrastructure) · les éléments dépendant d'un fournisseur ne peuvent pas être auto-déclarés « prêts ».",
+    "summaryFor": "Préparation — {hospital}",
+    "siteReady": "Site prêt",
+    "blockedCount": "{count} bloqué(s)",
+    "checklist": "Liste de contrôle",
+    "supplierDependent": "dépend d'un fournisseur",
+    "status": "Statut",
+    "owner": "Responsable",
+    "verifier": "Vérificateur",
+    "evidenceNote": "Preuve / note",
+    "save": "Enregistrer",
+    "saved": "Enregistré.",
+    "statuses": {
+      "not_started": "Non démarré",
+      "in_progress": "En cours",
+      "ready": "Prêt",
+      "blocked": "Bloqué",
+      "not_applicable": "Non applicable",
+      "needs_validation": "À valider"
+    }
   }
 }

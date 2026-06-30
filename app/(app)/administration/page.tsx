@@ -1,4 +1,4 @@
-import { Building2, FlaskConical, Pill, ReceiptText, Users } from "lucide-react";
+import { Building2, ClipboardCheck, FlaskConical, Pill, ReceiptText, Users } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -79,6 +79,14 @@ export default async function AdministrationPage() {
                 <Link href="/administration/configuration">
                   <Building2 className="size-4" aria-hidden />
                   {t("manageConfiguration")}
+                </Link>
+              </Button>
+            ) : null}
+            {can(actor.roles, "readiness.view") ? (
+              <Button asChild variant="secondary" size="sm">
+                <Link href="/administration/preparation-site">
+                  <ClipboardCheck className="size-4" aria-hidden />
+                  {t("manageReadiness")}
                 </Link>
               </Button>
             ) : null}

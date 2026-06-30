@@ -742,6 +742,8 @@ export async function clearOperationalData(
   // Phase 3A — clear guarded template-apply records (the reference templates themselves persist and
   // are re-upserted idempotently by seedBaseData). Config-only; no patient/transaction data.
   await prisma.configurationTemplateApplication.deleteMany();
+  // Phase 3C — clear per-hospital site-readiness items (status tracking; re-created on demand).
+  await prisma.siteReadinessItem.deleteMany();
   await prisma.reportExport.deleteMany();
   await prisma.auditLog.deleteMany();
   await prisma.sequence.updateMany({ data: { current: 0 } });

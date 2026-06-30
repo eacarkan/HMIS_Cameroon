@@ -235,7 +235,8 @@
         "isEmergency": "Emergency"
       }
     },
-    "manageConfiguration": "Multi-hospital configuration"
+    "manageConfiguration": "Multi-hospital configuration",
+    "manageReadiness": "Site readiness"
   },
   "configAdmin": {
     "title": "Multi-hospital configuration",
@@ -267,5 +268,29 @@
     "settingKey": "Setting key",
     "settingValue": "Value",
     "saveOverride": "Save"
+  },
+  "readinessAdmin": {
+    "title": "Site readiness (deployment)",
+    "subtitle": "Per-hospital readiness checklist — status tracking only",
+    "boundaryNote": "Synthetic data · not Gate 7 · status tracking only (no infrastructure execution) · supplier-dependent items cannot be self-claimed \"ready\".",
+    "summaryFor": "Readiness — {hospital}",
+    "siteReady": "Site ready",
+    "blockedCount": "{count} blocked",
+    "checklist": "Checklist",
+    "supplierDependent": "supplier-dependent",
+    "status": "Status",
+    "owner": "Owner",
+    "verifier": "Verifier",
+    "evidenceNote": "Evidence / note",
+    "save": "Save",
+    "saved": "Saved.",
+    "statuses": {
+      "not_started": "Not started",
+      "in_progress": "In progress",
+      "ready": "Ready",
+      "blocked": "Blocked",
+      "not_applicable": "Not applicable",
+      "needs_validation": "Needs validation"
+    }
   }
 }

@@ -1,0 +1,6 @@
+
+> hmis-cameroon@0.1.0 check:privacy
+> tsx scripts/check-privacy.ts
+
+✓ privacy/fake-data check: no secrets found; .env gitignored; prototype label present (app + receipt); 10 demo accounts all @hrb-demo.cm (fake).
+exit=0
