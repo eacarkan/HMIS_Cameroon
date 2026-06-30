@@ -245,6 +245,14 @@ export {
 
 // Phase 2E — operational reporting + DHIS2-aligned aggregate CSV export (no patient identifiers).
 export { getOperationalReport, exportDhis2Csv } from "./operational-report-service";
+
+// Phase 2F — simple per-service digital queue.
+export {
+  getQueueForService,
+  addToQueue,
+  advanceQueueTicket,
+  setQueueUrgent,
+} from "./queue-service";
 export {
   listUsers,
   createUserForActor,

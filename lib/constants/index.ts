@@ -187,6 +187,10 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "stock.adjustment_rejected": "Ajustement de stock rejeté",
   // Phase 2E — aggregate DHIS2 CSV export.
   "report.exported_csv": "Export CSV agrégé (DHIS2)",
+  // Phase 2F — per-service digital queue.
+  "queue.ticket_created": "Ajout à la file d'attente",
+  "queue.status_changed": "Changement de statut de file",
+  "queue.marked_urgent": "File — priorité urgente",
 };
 
 /**

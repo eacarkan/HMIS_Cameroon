@@ -45,6 +45,7 @@ export {
   searchPatientsAdvanced,
   findPotentialDuplicatePatients,
   findPatientById,
+  findPatientByNumber,
 } from "./patients";
 export { listActiveDiagnosisCodes, findDiagnosisCodeByCode } from "./diagnosis-codes";
 export {
@@ -266,3 +267,13 @@ export {
   createReportExport,
   listReportExports,
 } from "./operational-reports";
+
+// Phase 2F — per-service digital queue.
+export {
+  type CreateQueueTicketData,
+  createQueueTicket,
+  findQueueTicketById,
+  listQueueForService,
+  updateQueueTicketStatus,
+  setQueueTicketUrgent,
+} from "./queue-tickets";

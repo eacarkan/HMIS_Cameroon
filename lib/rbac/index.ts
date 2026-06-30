@@ -55,6 +55,11 @@ export type Capability =
   // audited CSV export (admin only). Cross-hospital denied; the cashier keeps `cashier.report.read`.
   | "report.operational.read"
   | "report.export"
+  // Phase 2F — simple per-service digital queue. `read` = view the queue board; `manage` = add a
+  // patient + advance status; `urgent` = the triage override that jumps the line (audited).
+  | "queue.read"
+  | "queue.manage"
+  | "queue.urgent"
   // Phase 2A capabilities — service/department catalogue. `manage` = Hospital Admin (and
   // Local IT Lead when assigned); `view` = operational roles, scoped to ACTIVE services.
   | "service.config.manage"
@@ -136,6 +141,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "reservation.release",
     // Phase 2D-5 — oversight read of dispense records (not a dispenser).
     "dispense.read",
+    // Phase 2F — oversight view of the queue board.
+    "queue.read",
   ],
   agent_accueil: [
     "dashboard.read",
@@ -147,6 +154,10 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "patient.identity.manage",
     "patient.duplicate.manage",
     "service.config.view",
+    // Phase 2F — the reception / triage desk runs the queue: read, add+advance, and the urgent override.
+    "queue.read",
+    "queue.manage",
+    "queue.urgent",
   ],
   medecin: [
     "dashboard.read",
@@ -163,6 +174,10 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     // Phase 2D-2 — the doctor creates + reads prescriptions (clinical act).
     "prescription.create",
     "prescription.read",
+    // Phase 2F — the doctor reads/advances their consultation queue and may flag urgent (clinical triage).
+    "queue.read",
+    "queue.manage",
+    "queue.urgent",
   ],
   caissier: [
     "dashboard.read",
@@ -186,6 +201,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     // the prescription to do so (the confirm action lives on the prescription view).
     "prescription.payment.confirm",
     "prescription.read",
+    // Phase 2F — the cashier sees the queue board (read-only).
+    "queue.read",
   ],
   directeur: [
     "dashboard.read",
@@ -199,6 +216,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "service.config.view",
     // Phase 2E — the director views aggregate operational reports (no export).
     "report.operational.read",
+    // Phase 2F — oversight view of the queue board.
+    "queue.read",
     // Phase 2C — read-only oversight of refund vouchers.
     "refund.read",
     // Phase 2D-1 — oversight view of the medication catalogue.
@@ -230,6 +249,9 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "dispense.read",
     // Phase 2D-7 — the pharmacist REQUESTS stock adjustments (the Pharmacist-in-Charge approves).
     "stock.adjustment.request",
+    // Phase 2F — the pharmacy advances its dispensing queue.
+    "queue.read",
+    "queue.manage",
   ],
   pharmacien_chef: [
     "dashboard.read",
@@ -247,6 +269,9 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "fefo.override",
     // Phase 2D-7 — the Pharmacist-in-Charge APPROVES/REJECTS stock adjustments (cannot self-request).
     "stock.adjustment.approve",
+    // Phase 2F — the pharmacy advances its dispensing queue.
+    "queue.read",
+    "queue.manage",
   ],
 };
 

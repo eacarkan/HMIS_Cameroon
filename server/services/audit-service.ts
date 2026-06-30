@@ -129,6 +129,10 @@ export const AUDIT_ACTIONS = {
   stockAdjustmentRejected: "stock.adjustment_rejected",
   // Phase 2E — manual aggregate (DHIS2-aligned) CSV export. Records period + scope + row count only.
   reportExportedCsv: "report.exported_csv",
+  // Phase 2F — per-service digital queue.
+  queueTicketCreated: "queue.ticket_created",
+  queueStatusChanged: "queue.status_changed",
+  queueMarkedUrgent: "queue.marked_urgent",
 } as const;
 
 /**

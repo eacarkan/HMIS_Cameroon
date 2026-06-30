@@ -21,11 +21,12 @@ export default defineConfig({
     ["html", { open: "never", outputFolder: "playwright-report" }],
   ],
   globalSetup: "./tests/e2e/global-setup.ts",
-  // Dev-mode Next.js compiles routes on first hit; as the app grew (Phase 2 — many routes + a large
-  // server-services barrel) the first render of a fresh route can take several seconds. Generous
-  // timeouts absorb that cold-compile latency (the long multi-role journeys cross many new routes).
-  timeout: 120_000,
-  expect: { timeout: 20_000 },
+  // The e2e suite runs against a PRODUCTION build (`next build` + `next start`), not dev mode. As the
+  // app grew (Phase 2 — ~40 routes), dev-mode on-demand compilation made the first hit to each route
+  // several seconds, which timed out under machine load. A prebuilt server serves every route instantly
+  // and deterministically, so the long multi-role journeys are reliable regardless of host load.
+  timeout: 60_000,
+  expect: { timeout: 15_000 },
   use: {
     baseURL: `http://localhost:${PORT}`,
     locale: "fr-FR",
@@ -34,10 +35,11 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    command: `npm run dev -- --port ${PORT}`,
+    // Build once, then serve the production build — no per-route compile latency (load-resilient).
+    command: `npm run build && npm run start -- --port ${PORT}`,
     url: `http://localhost:${PORT}/connexion`,
     reuseExistingServer: false,
-    timeout: 120_000,
+    timeout: 300_000,
     env: {
       DATABASE_URL: TEST_DB,
       AUTH_SECRET:

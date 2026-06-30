@@ -50,6 +50,13 @@ export const NAV_ITEMS: NavItem[] = [
     capability: "consultation.read",
   },
   {
+    // Phase 2F — simple per-service digital queue.
+    href: "/file-attente",
+    labelKey: "queue",
+    icon: Users,
+    capability: "queue.read",
+  },
+  {
     href: "/facturation",
     labelKey: "billing",
     icon: ReceiptText,

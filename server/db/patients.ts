@@ -150,6 +150,14 @@ export function findPotentialDuplicatePatients(
 }
 
 /** A single patient within a hospital, with encounters (most recent first). */
+/** Phase 2F — resolve a patient by their hospital patient number (hospital-scoped). */
+export function findPatientByNumber(hospitalId: string, patientNumber: string) {
+  return prisma.patient.findFirst({
+    where: { hospitalId, patientNumber, deletedAt: null },
+    select: { id: true, patientNumber: true, familyName: true, givenName: true },
+  });
+}
+
 export function findPatientById(hospitalId: string, id: string) {
   return prisma.patient.findFirst({
     where: { id, hospitalId, deletedAt: null },

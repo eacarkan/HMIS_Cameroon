@@ -524,6 +524,7 @@ export async function clearOperationalData(
   await prisma.payment.deleteMany();
   await prisma.invoiceItem.deleteMany();
   await prisma.invoice.deleteMany();
+  await prisma.queueTicket.deleteMany();
   await prisma.diagnosis.deleteMany();
   await prisma.observation.deleteMany();
   await prisma.consultation.deleteMany();

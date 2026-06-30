@@ -240,6 +240,24 @@ describe("lib/rbac — role capabilities (09 §6, 07 §4)", () => {
     expect(can(["pharmacien"], "report.export")).toBe(false);
   });
 
+  it("Phase 2F — queue: reception/doctor manage+urgent, pharmacy manage, others read-only or none", () => {
+    // Reception (triage desk) + doctor: read, manage, urgent.
+    for (const role of ["agent_accueil", "medecin"]) {
+      expect(can([role], "queue.read")).toBe(true);
+      expect(can([role], "queue.manage")).toBe(true);
+      expect(can([role], "queue.urgent")).toBe(true);
+    }
+    // Pharmacy: read + manage, but NOT the triage urgent override.
+    expect(can(["pharmacien"], "queue.manage")).toBe(true);
+    expect(can(["pharmacien"], "queue.urgent")).toBe(false);
+    // Cashier / director / admin: read-only oversight, no manage/urgent.
+    for (const role of ["caissier", "directeur", "administrateur"]) {
+      expect(can([role], "queue.read")).toBe(true);
+      expect(can([role], "queue.manage")).toBe(false);
+      expect(can([role], "queue.urgent")).toBe(false);
+    }
+  });
+
   it("no roles grants nothing; multiple roles union their capabilities", () => {
     expect(can([], "patient.read")).toBe(false);
     expect(can(["agent_accueil", "caissier"], "payment.record")).toBe(true);

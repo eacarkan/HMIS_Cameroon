@@ -122,6 +122,15 @@ enum StockAdjustmentStatus {
   rejected
 }
 
+/// Phase 2F — per-service queue ticket lifecycle. `waiting → in_service → completed`, or
+/// `waiting → cancelled`. (`in_service` covers in-consultation / in-lab / at-the-counter.)
+enum QueueStatus {
+  waiting
+  in_service
+  completed
+  cancelled
+}
+
 // ===================== Phase 2C — cashier/billing strengthening =====================
 
 /// Invoice cancellation request lifecycle: a cashier requests, a Hospital Administrator decides.
@@ -200,6 +209,7 @@ model Hospital {
   dispenseRecordItems    DispenseRecordItem[]
   stockAdjustments       StockAdjustment[]
   reportExports          ReportExport[]
+  queueTickets           QueueTicket[]
 
   // Phase 1 (Gate 2) additive relations.
   departments                Department[]
@@ -314,6 +324,7 @@ model Patient {
   hospital      Hospital       @relation(fields: [hospitalId], references: [id])
   encounters    Encounter[]
   prescriptions Prescription[]
+  queueTickets  QueueTicket[]
 
   // Phase 1 (Gate 2) additive relations.
   contacts            PatientContact[]
@@ -553,9 +564,10 @@ model ServiceUnit {
   isInpatientWard     Boolean     @default(false)
   isEmergency         Boolean     @default(false)
 
-  hospital   Hospital    @relation(fields: [hospitalId], references: [id])
-  department Department? @relation(fields: [departmentId], references: [id])
-  encounters Encounter[]
+  hospital     Hospital      @relation(fields: [hospitalId], references: [id])
+  department   Department?   @relation(fields: [departmentId], references: [id])
+  encounters   Encounter[]
+  queueTickets QueueTicket[]
 
   @@unique([hospitalId, code])
   @@index([hospitalId, departmentId])
@@ -1026,6 +1038,33 @@ model ReportExport {
   exportedBy User     @relation("ReportExportedBy", fields: [exportedById], references: [id])
 
   @@index([hospitalId, createdAt])
+}
+
+/// Phase 2F — a simple per-service digital queue ticket (replaces the physical arrival register). A
+/// registered patient is queued for a service on a given day; `ticketNumber` is sequential per
+/// hospital + service + day (resets daily). `isUrgent` lets a triage override jump the line (audited).
+model QueueTicket {
+  id            String      @id @default(cuid())
+  hospitalId    String
+  serviceUnitId String
+  patientId     String
+  queueDate     DateTime    @db.Date
+  ticketNumber  Int
+  status        QueueStatus @default(waiting)
+  isUrgent      Boolean     @default(false)
+  calledAt      DateTime?
+  completedAt   DateTime?
+  cancelledAt   DateTime?
+  createdById   String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  hospital    Hospital    @relation(fields: [hospitalId], references: [id])
+  serviceUnit ServiceUnit @relation(fields: [serviceUnitId], references: [id])
+  patient     Patient     @relation(fields: [patientId], references: [id])
+
+  @@unique([hospitalId, serviceUnitId, queueDate, ticketNumber])
+  @@index([hospitalId, serviceUnitId, queueDate, status])
 }
 
 /// Phase 2D-2 — a structured prescription ("ordonnance") raised by a doctor during an encounter.
