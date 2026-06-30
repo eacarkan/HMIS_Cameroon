@@ -131,6 +131,14 @@ enum QueueStatus {
   cancelled
 }
 
+/// Phase 2H — emergency-debt ledger entry lifecycle. `outstanding → settled` (paid later at the
+/// cashier) or `outstanding → waived` (formally waived by the Hospital Director with a reason).
+enum EmergencyDebtStatus {
+  outstanding
+  settled
+  waived
+}
+
 // ===================== Phase 2C — cashier/billing strengthening =====================
 
 /// Invoice cancellation request lifecycle: a cashier requests, a Hospital Administrator decides.
@@ -210,6 +218,7 @@ model Hospital {
   stockAdjustments       StockAdjustment[]
   reportExports          ReportExport[]
   queueTickets           QueueTicket[]
+  emergencyDebts         EmergencyDebt[]
 
   // Phase 1 (Gate 2) additive relations.
   departments                Department[]
@@ -325,6 +334,7 @@ model Patient {
   encounters    Encounter[]
   prescriptions Prescription[]
   queueTickets  QueueTicket[]
+  emergencyDebts EmergencyDebt[]
 
   // Phase 1 (Gate 2) additive relations.
   contacts            PatientContact[]
@@ -356,6 +366,12 @@ model Encounter {
   createdById     String?
   updatedById     String?
   deletedAt       DateTime?
+  // Phase 2H — emergency ("treat first, pay later") exception. A triage nurse/doctor flags the
+  // encounter as emergency, which lets dispensing bypass the cashier paid-check and lets charges
+  // accrue as auditable Emergency Debt to be settled or waived (by the Director) before discharge.
+  isEmergency         Boolean   @default(false)
+  emergencyFlaggedById String?
+  emergencyFlaggedAt   DateTime?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
@@ -366,6 +382,7 @@ model Encounter {
   consultations Consultation[]
   invoices      Invoice[]
   prescriptions Prescription[]
+  emergencyDebts EmergencyDebt[]
 
   @@unique([hospitalId, encounterNumber])
   @@index([hospitalId, patientId])
@@ -1065,6 +1082,32 @@ model QueueTicket {
 
   @@unique([hospitalId, serviceUnitId, queueDate, ticketNumber])
   @@index([hospitalId, serviceUnitId, queueDate, status])
+}
+
+/// Phase 2H — an auditable Emergency Debt ledger entry. Each entry is an amount the patient owes for
+/// emergency ("treat first, pay later") care on an encounter; it can only move from `outstanding` to
+/// `settled` (paid later) or `waived` (Hospital Director). Entries are never deleted — the ledger is
+/// append-and-transition only, so emergency debt can never silently disappear.
+model EmergencyDebt {
+  id             String              @id @default(cuid())
+  hospitalId     String
+  encounterId    String
+  patientId      String
+  amount         Int // integer FCFA
+  source         String // what the debt is for, e.g. "Consultation", "Soins d'urgence"
+  status         EmergencyDebtStatus @default(outstanding)
+  createdById    String?
+  decidedById    String?
+  decisionReason String?
+  decidedAt      DateTime?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  hospital  Hospital  @relation(fields: [hospitalId], references: [id])
+  encounter Encounter @relation(fields: [encounterId], references: [id])
+  patient   Patient   @relation(fields: [patientId], references: [id])
+
+  @@index([hospitalId, encounterId, status])
 }
 
 /// Phase 2D-2 — a structured prescription ("ordonnance") raised by a doctor during an encounter.

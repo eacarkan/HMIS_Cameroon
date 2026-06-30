@@ -1,6 +1,7 @@
 import {
   dispenseReservationsForPrescription,
   findDispenseRecordById,
+  findEncounterById,
   findPrescriptionById,
   listDispenseRecordsForPrescription,
   listPharmacyWorklist,
@@ -88,8 +89,15 @@ export async function dispensePrescription(
   await requireCapability(actor, ctx, "dispense.perform", { type: "Prescription", id: prescriptionId });
   const presc = await findPrescriptionById(ctx.hospitalId, prescriptionId);
   if (!presc) throw new Error("Ordonnance introuvable dans cet hôpital.");
+  // Phase 2H — the cashier paid-check is bypassed for an EMERGENCY encounter ("treat first, pay later");
+  // the charge is then carried as auditable Emergency Debt to be settled/waived before discharge.
+  let emergencyBypass = false;
   if (!presc.isPaid) {
-    throw new Error("L'ordonnance doit être payée à la caisse avant la délivrance.");
+    const enc = await findEncounterById(ctx.hospitalId, presc.encounterId);
+    if (!enc?.isEmergency) {
+      throw new Error("L'ordonnance doit être payée à la caisse avant la délivrance.");
+    }
+    emergencyBypass = true;
   }
   if (presc.status !== "sent_to_pharmacy" && presc.status !== "partially_dispensed") {
     throw new Error("Cette ordonnance ne peut pas être délivrée dans son statut actuel.");
@@ -130,7 +138,8 @@ export async function dispensePrescription(
     summary:
       `Délivrance ${record.dispenseNumber} — ordonnance ${presc.prescriptionNumber}, ` +
       `${totalUnits} unité(s)` +
-      (allFull ? "" : " (délivrance partielle)"),
+      (allFull ? "" : " (délivrance partielle)") +
+      (emergencyBypass ? " (URGENCE — paiement différé)" : ""),
   });
   return record;
 }

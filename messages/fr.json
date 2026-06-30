@@ -783,6 +783,24 @@
     "expiringSoon": "À surveiller",
     "low": "Faible"
   },
+  "emergency": {
+    "title": "Urgence & dette d'urgence",
+    "status": "Statut",
+    "emergency": "URGENCE",
+    "normal": "Normal",
+    "flag": "Marquer urgence",
+    "unflag": "Retirer l'urgence",
+    "outstanding": "Dette d'urgence en cours",
+    "amount": "Montant (FCFA)",
+    "source": "Objet",
+    "accrue": "Enregistrer la dette",
+    "settle": "Régler",
+    "waive": "Annuler (Directeur)",
+    "waiveReason": "Motif d'annulation",
+    "debtStatus_outstanding": "En cours",
+    "debtStatus_settled": "Réglée",
+    "debtStatus_waived": "Annulée"
+  },
   "queue": {
     "title": "File d'attente",
     "subtitle": "File numérique simple par service (aujourd'hui) — remplace le registre d'arrivée papier",

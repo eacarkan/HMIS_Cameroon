@@ -133,6 +133,11 @@ export const AUDIT_ACTIONS = {
   queueTicketCreated: "queue.ticket_created",
   queueStatusChanged: "queue.status_changed",
   queueMarkedUrgent: "queue.marked_urgent",
+  // Phase 2H — emergency exception + emergency-debt ledger.
+  emergencyFlagged: "emergency.flagged",
+  emergencyDebtAccrued: "emergency.debt_accrued",
+  emergencyDebtSettled: "emergency.debt_settled",
+  emergencyDebtWaived: "emergency.debt_waived",
 } as const;
 
 /**

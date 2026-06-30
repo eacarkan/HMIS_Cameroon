@@ -60,6 +60,15 @@ export type Capability =
   | "queue.read"
   | "queue.manage"
   | "queue.urgent"
+  // Phase 2H — emergency "treat first, pay later" exception. `flag` = triage/doctor flags the
+  // encounter emergency (lets dispensing bypass the paid-check); `debt.accrue`/`debt.settle` =
+  // cashier records/settles Emergency Debt; `debt.waive` = Hospital Director ONLY (mandatory reason);
+  // `debt.read` = view the debt ledger (clinical + financial + oversight).
+  | "emergency.flag"
+  | "emergency.debt.read"
+  | "emergency.debt.accrue"
+  | "emergency.debt.settle"
+  | "emergency.debt.waive"
   // Phase 2A capabilities — service/department catalogue. `manage` = Hospital Admin (and
   // Local IT Lead when assigned); `view` = operational roles, scoped to ACTIVE services.
   | "service.config.manage"
@@ -143,6 +152,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "dispense.read",
     // Phase 2F — oversight view of the queue board.
     "queue.read",
+    // Phase 2H — oversight read of the emergency-debt ledger (admin cannot flag/waive).
+    "emergency.debt.read",
   ],
   agent_accueil: [
     "dashboard.read",
@@ -158,6 +169,9 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "queue.read",
     "queue.manage",
     "queue.urgent",
+    // Phase 2H — the triage desk flags an emergency encounter + reads the debt ledger.
+    "emergency.flag",
+    "emergency.debt.read",
   ],
   medecin: [
     "dashboard.read",
@@ -178,6 +192,9 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "queue.read",
     "queue.manage",
     "queue.urgent",
+    // Phase 2H — the doctor flags an emergency encounter + reads the debt ledger.
+    "emergency.flag",
+    "emergency.debt.read",
   ],
   caissier: [
     "dashboard.read",
@@ -203,6 +220,10 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "prescription.read",
     // Phase 2F — the cashier sees the queue board (read-only).
     "queue.read",
+    // Phase 2H — the cashier records (accrues) + settles Emergency Debt and reads the ledger.
+    "emergency.debt.read",
+    "emergency.debt.accrue",
+    "emergency.debt.settle",
   ],
   directeur: [
     "dashboard.read",
@@ -218,6 +239,9 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "report.operational.read",
     // Phase 2F — oversight view of the queue board.
     "queue.read",
+    // Phase 2H — the Hospital Director is the ONLY role that may WAIVE an emergency debt (+ read it).
+    "emergency.debt.read",
+    "emergency.debt.waive",
     // Phase 2C — read-only oversight of refund vouchers.
     "refund.read",
     // Phase 2D-1 — oversight view of the medication catalogue.

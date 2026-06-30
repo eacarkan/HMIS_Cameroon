@@ -191,6 +191,11 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "queue.ticket_created": "Ajout à la file d'attente",
   "queue.status_changed": "Changement de statut de file",
   "queue.marked_urgent": "File — priorité urgente",
+  // Phase 2H — emergency exception + emergency debt.
+  "emergency.flagged": "Encounter marqué urgence",
+  "emergency.debt_accrued": "Dette d'urgence enregistrée",
+  "emergency.debt_settled": "Dette d'urgence réglée",
+  "emergency.debt_waived": "Dette d'urgence annulée (Directeur)",
 };
 
 /**

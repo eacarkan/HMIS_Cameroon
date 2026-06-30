@@ -277,3 +277,16 @@ export {
   updateQueueTicketStatus,
   setQueueTicketUrgent,
 } from "./queue-tickets";
+
+// Phase 2H — emergency exception + emergency-debt ledger.
+export {
+  type CreateEmergencyDebtData,
+  setEncounterEmergency,
+  createEmergencyDebt,
+  accrueEmergencyDebtTx,
+  unflagEncounterEmergencyTx,
+  findEmergencyDebtById,
+  listEmergencyDebtsForEncounter,
+  decideEmergencyDebt,
+  countOutstandingEmergencyDebt,
+} from "./emergency";

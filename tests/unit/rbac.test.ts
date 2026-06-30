@@ -258,6 +258,26 @@ describe("lib/rbac — role capabilities (09 §6, 07 §4)", () => {
     }
   });
 
+  it("Phase 2H — emergency: triage/doctor flag; cashier accrues/settles; ONLY the Director waives", () => {
+    // Flag: reception (triage) + doctor.
+    expect(can(["agent_accueil"], "emergency.flag")).toBe(true);
+    expect(can(["medecin"], "emergency.flag")).toBe(true);
+    expect(can(["caissier"], "emergency.flag")).toBe(false);
+    // Accrue + settle: cashier (financial). Doctor/reception cannot accrue.
+    expect(can(["caissier"], "emergency.debt.accrue")).toBe(true);
+    expect(can(["caissier"], "emergency.debt.settle")).toBe(true);
+    expect(can(["medecin"], "emergency.debt.accrue")).toBe(false);
+    // WAIVE is the Hospital Director ONLY.
+    expect(can(["directeur"], "emergency.debt.waive")).toBe(true);
+    expect(can(["caissier"], "emergency.debt.waive")).toBe(false);
+    expect(can(["administrateur"], "emergency.debt.waive")).toBe(false);
+    expect(can(["medecin"], "emergency.debt.waive")).toBe(false);
+    // Read (ledger): clinical + financial + oversight.
+    for (const role of ["agent_accueil", "medecin", "caissier", "directeur", "administrateur"]) {
+      expect(can([role], "emergency.debt.read")).toBe(true);
+    }
+  });
+
   it("no roles grants nothing; multiple roles union their capabilities", () => {
     expect(can([], "patient.read")).toBe(false);
     expect(can(["agent_accueil", "caissier"], "payment.record")).toBe(true);

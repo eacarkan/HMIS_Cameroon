@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { ClinicalStructurePanel } from "@/components/consultations/clinical-structure-panel";
+import { EmergencyControls } from "@/components/emergency/emergency-controls";
 import {
   EncounterServiceForm,
   EncounterStatusControls,
@@ -24,6 +25,7 @@ import { formatFcfa } from "@/lib/money";
 import { can } from "@/lib/rbac";
 import { requireActorAndHospital } from "@/server/auth";
 import {
+  getEmergencyDebtSummary,
   getEncounter,
   getEncounterStatusHistory,
   listActiveOutpatientConsultationServices,
@@ -49,6 +51,17 @@ export default async function EncounterPage({
   const tInv = await getTranslations("invoiceStatus");
   const tPresc = await getTranslations("prescription");
   const tPrescStatus = await getTranslations("prescriptionStatus");
+  const tEm = await getTranslations("emergency");
+
+  // Phase 2H — emergency exception + emergency-debt ledger (clinical/financial/oversight read).
+  const canReadEmergency = can(actor.roles, "emergency.debt.read");
+  const emergency = canReadEmergency ? await getEmergencyDebtSummary(actor, hospital, id) : null;
+  const emergencyCaps = {
+    flag: can(actor.roles, "emergency.flag"),
+    accrue: can(actor.roles, "emergency.debt.accrue"),
+    settle: can(actor.roles, "emergency.debt.settle"),
+    waive: can(actor.roles, "emergency.debt.waive"),
+  };
 
   const invoice = encounter.invoices[0] ?? null;
   const clinician =
@@ -296,6 +309,29 @@ export default async function EncounterPage({
                   ))}
                 </ul>
               )}
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {canReadEmergency ? (
+          <Card className="lg:col-span-3">
+            <CardHeader>
+              <CardTitle className="text-base">{tEm("title")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <EmergencyControls
+                encounterId={encounter.id}
+                isEmergency={encounter.isEmergency}
+                entries={(emergency?.entries ?? []).map((e) => ({
+                  id: e.id,
+                  amountLabel: formatFcfa(e.amount),
+                  source: e.source,
+                  status: e.status,
+                  decisionReason: e.decisionReason,
+                }))}
+                outstandingLabel={formatFcfa(emergency?.outstandingTotal ?? 0)}
+                caps={emergencyCaps}
+              />
             </CardContent>
           </Card>
         ) : null}
