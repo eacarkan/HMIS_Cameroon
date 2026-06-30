@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client";
+
 import { computeBrouillard, type BrouillardTotals } from "@/lib/cashier-closing";
 import { formatFcfa } from "@/lib/money";
 import {
@@ -86,12 +88,25 @@ export async function openCashierShift(
 
   const year = new Date().getFullYear();
   const shiftNumber = await generateNumber(ctx, "cashier_shift", year);
-  const shift = await createCashierShift({
-    hospitalId: ctx.hospitalId,
-    shiftNumber,
-    cashierId: actor.id,
-    openingBalance,
-  });
+  // The pre-check above is a fast UX failure; the partial unique index
+  // (CashierShift_one_open_per_cashier, status='open') is the race backstop — a concurrent second
+  // open hits it and we surface the same message instead of a raw constraint error.
+  let shift;
+  try {
+    shift = await createCashierShift({
+      hospitalId: ctx.hospitalId,
+      shiftNumber,
+      cashierId: actor.id,
+      openingBalance,
+    });
+  } catch (error) {
+    // A unique-violation here is the open-shift partial index losing the race (shift numbers are
+    // sequential, so they don't collide) — surface the same friendly message.
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      throw new Error("Une caisse est déjà ouverte. Clôturez-la avant d'en ouvrir une autre.");
+    }
+    throw error;
+  }
 
   await recordAudit({
     hospitalId: ctx.hospitalId,

@@ -60,9 +60,12 @@ export function findExecutedRefundsForWindow(
   });
 }
 
-export function updateRefundVoucher(
+/** Transition a refund voucher with a STATUS-GUARDED claim: the update only applies when the row is
+ *  still in `expectedStatus`, so a concurrent double-transition (e.g. two approvals) loses (count 0). */
+export async function updateRefundVoucher(
   hospitalId: string,
   id: string,
+  expectedStatus: RefundVoucherStatus,
   data: Partial<{
     status: RefundVoucherStatus;
     approvedById: string;
@@ -73,5 +76,10 @@ export function updateRefundVoucher(
     cancelledAt: Date;
   }>,
 ) {
-  return prisma.refundVoucher.updateMany({ where: { id, hospitalId }, data });
+  const res = await prisma.refundVoucher.updateMany({
+    where: { id, hospitalId, status: expectedStatus },
+    data,
+  });
+  if (res.count === 0) throw new Error("Ce bon de remboursement a déjà été traité.");
+  return res;
 }

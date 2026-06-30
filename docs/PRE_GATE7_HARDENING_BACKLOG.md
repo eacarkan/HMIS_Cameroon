@@ -11,6 +11,15 @@ The Phase 2 expert audit (`docs/PHASE_2_EXPERT_AUDIT.md`) found **two new defect
 
 Low-priority test-quality follow-up (not a product defect): **16. Strengthen audit-log assertions** — several tests assert audit via `toContain(<number>)`; assert the full record (hospitalId + actorId + action enum + timestamp) so a malformed audit row can't pass.
 
+## ✅ Resolved in the pre-Gate-7 hardening pass (this branch)
+Implemented + regression-tested (`tests/integration/phase2-expert-audit.test.ts`); full suite green:
+- **[DONE] #3 — Lab/radiology 4-eyes.** `validateDiagnosticResult` now refuses self-validation (`validatedById ≠ resultEnteredById`) at the service AND as a DB-guarded claim, even if one user holds both capabilities.
+- **[DONE] #1 + #5 — 2C cancellation/refund atomicity + status guards.** Invoice-cancellation approval now runs in ONE `$transaction` (status-guarded claim → cancel invoice + payments → create voucher; all-or-nothing). Cancellation-decision and RefundVoucher transitions are status-pinned (`updateMany where status = expected`), so a concurrent double-decide loses. Concurrency tests added.
+- **[DONE] #4 — One open cashier shift.** A partial unique index `CashierShift_one_open_per_cashier (hospitalId, cashierId) WHERE status='open'` (dev migration + `setup-test-db.ts`) is the race backstop; `openCashierShift` catches the violation and returns the friendly message. Concurrency test added.
+- **[DONE] #2 — Emergency bypass auto-couples EmergencyDebt.** An emergency-bypassed **lab/radiology** start auto-accrues the real `EmergencyDebt(catalogue price)`; an emergency-bypassed **pharmacy** dispense (meds are unpriced in 2D) auto-opens a once-per-prescription **placeholder** outstanding debt ("à tarifer"), so the 2G discharge gate can never silently miss the charge. Probes flipped to assert the debt now exists.
+
+**Residual of the financial cluster (still open):** `recordPayment` reads the remaining balance then writes non-atomically, so two cashiers paying the SAME invoice concurrently could exceed the total (rare; partial payments are allowed and the UI shows the remaining). Wrap read+create+status in a transaction with a re-check before real cash use.
+
 ## High priority (before real cash / emergency / clinical pilot)
 
 1. **Transactional financial workflows (2C).** Compose the multi-step money flows as a single all-or-nothing transaction:

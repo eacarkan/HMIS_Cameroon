@@ -25,7 +25,7 @@ Reproduce with: `npm install` → provision Postgres (`.env.example`) → `npm r
 | `npm run check:arch` | green |
 | `npm run check:privacy` | green — **9** fake `@hrb-demo.cm` accounts |
 
-**Total Vitest (unit + component + integration): 527 tests across 92 files** (incl. the post-acceptance `phase2-expert-audit` probe suite; 297 unit+component + 230 integration). See `docs/qa-command-output/test.txt` + `test-integration.txt` for the exact split, and `docs/PHASE_2_EXPERT_AUDIT.md` for the independent audit.
+**Total Vitest (unit + component + integration): 531 tests across 92 files** (incl. the post-acceptance `phase2-expert-audit` probe suite; 297 unit+component + 234 integration). See `docs/qa-command-output/test.txt` + `test-integration.txt` for the exact split, and `docs/PHASE_2_EXPERT_AUDIT.md` for the independent audit.
 
 > If any count in a log and in `docs/qa-command-output/` disagree, the command-output files are the source of truth (they are the literal transcripts).
 

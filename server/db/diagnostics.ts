@@ -164,13 +164,19 @@ export async function enterDiagnosticResultTx(params: {
   return findDiagnosticOrderById(params.hospitalId, params.id);
 }
 
-/** Validator validates the result (result_entered → validated). Guarded. */
+/** Validator validates the result (result_entered → validated). Guarded — the claim also requires the
+ *  validator to differ from the result enterer (4-eyes), as a DB-level backstop to the service check. */
 export async function validateDiagnosticResultTx(params: { hospitalId: string; id: string; validatedById: string }) {
   const res = await prisma.diagnosticOrder.updateMany({
-    where: { id: params.id, hospitalId: params.hospitalId, status: "result_entered" },
+    where: {
+      id: params.id,
+      hospitalId: params.hospitalId,
+      status: "result_entered",
+      NOT: { resultEnteredById: params.validatedById },
+    },
     data: { status: "validated", validatedById: params.validatedById, validatedAt: new Date() },
   });
-  if (res.count === 0) throw new Error("Seul un résultat saisi peut être validé.");
+  if (res.count === 0) throw new Error("Seul un résultat saisi (par une autre personne) peut être validé.");
   return findDiagnosticOrderById(params.hospitalId, params.id);
 }
 

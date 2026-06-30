@@ -48,6 +48,10 @@ DO $$ BEGIN
   ALTER TABLE "MedicationStockBatch"
     ADD CONSTRAINT "MedicationStockBatch_quantityReserved_nonneg" CHECK ("quantityReserved" >= 0);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+-- Phase 2 hardening: at most one OPEN cashier shift per cashier (partial unique index; mirrors the
+-- dev migration 20260630160000_cashier_shift_one_open).
+CREATE UNIQUE INDEX IF NOT EXISTS "CashierShift_one_open_per_cashier"
+  ON "CashierShift" ("hospitalId", "cashierId") WHERE "status" = 'open';
 `;
 // libpq's connection-URI parser rejects Prisma-specific query params (e.g. `?schema=public`), so pass
 // psql the bare base URL (the schema defaults to "public" anyway).

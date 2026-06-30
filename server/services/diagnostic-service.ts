@@ -1,6 +1,7 @@
 import type { DiagnosticModality } from "@prisma/client";
 
 import {
+  accrueEmergencyDebtTx,
   cancelDiagnosticTx,
   confirmDiagnosticPaymentTx,
   createDiagnosticCatalogueItem as dbCreateCatalogueItem,
@@ -188,6 +189,7 @@ export async function startDiagnostic(actor: AuthenticatedActor, ctx: HospitalCo
   if (!canStartDiagnostic({ status: order.status as DiagnosticStatusCode, isPaid: order.isPaid, isEmergency })) {
     throw new Error("L'examen doit être payé à la caisse avant d'être réalisé (sauf urgence).");
   }
+  const emergencyBypass = order.status === "requested" && !order.isPaid && isEmergency;
   const updated = await startDiagnosticTx({ hospitalId: ctx.hospitalId, id });
   await recordAudit({
     hospitalId: ctx.hospitalId,
@@ -195,8 +197,30 @@ export async function startDiagnostic(actor: AuthenticatedActor, ctx: HospitalCo
     action: AUDIT_ACTIONS.diagnosticStarted,
     entityType: "DiagnosticOrder",
     entityId: id,
-    summary: `Examen ${order.orderNumber} démarré${isEmergency && !order.isPaid ? " (URGENCE — paiement différé)" : ""}`,
+    summary: `Examen ${order.orderNumber} démarré${emergencyBypass ? " (URGENCE — paiement différé)" : ""}`,
   });
+
+  // Pre-Gate-7 hardening: an emergency-bypassed exam must be TRACKED so the discharge gate (2G) cannot
+  // miss it. The catalogue item is priced, so we accrue the real Emergency Debt automatically (settled
+  // by the cashier or waived by the Director before discharge).
+  if (emergencyBypass && order.price > 0) {
+    const debt = await accrueEmergencyDebtTx({
+      hospitalId: ctx.hospitalId,
+      encounterId: order.encounterId,
+      patientId: order.patientId,
+      amount: order.price,
+      source: `Examen d'urgence — ${order.itemLabel} (${order.orderNumber})`,
+      createdById: actor.id,
+    });
+    await recordAudit({
+      hospitalId: ctx.hospitalId,
+      actorId: actor.id,
+      action: AUDIT_ACTIONS.emergencyDebtAccrued,
+      entityType: "EmergencyDebt",
+      entityId: debt.id,
+      summary: `Dette d'urgence ${formatFcfa(order.price)} ouverte automatiquement — examen ${order.orderNumber}`,
+    });
+  }
   return updated;
 }
 
@@ -232,7 +256,16 @@ export async function validateDiagnosticResult(actor: AuthenticatedActor, ctx: H
   await requireCapability(actor, ctx, "diagnostic.validate", { type: "DiagnosticOrder", id });
   const order = await findDiagnosticOrderById(ctx.hospitalId, id);
   if (!order) throw new Error("Examen introuvable dans cet hôpital.");
-  const updated = await validateDiagnosticResultTx({ hospitalId: ctx.hospitalId, id, validatedById: actor.id });
+  // Clinical separation of duties (4-eyes): the validator must NOT be the technician who entered the
+  // result — even if one person holds both capabilities. The DB guard below is defence-in-depth.
+  if (order.resultEnteredById && order.resultEnteredById === actor.id) {
+    throw new Error("La validation doit être effectuée par une personne différente de celle qui a saisi le résultat.");
+  }
+  const updated = await validateDiagnosticResultTx({
+    hospitalId: ctx.hospitalId,
+    id,
+    validatedById: actor.id,
+  });
   await recordAudit({
     hospitalId: ctx.hospitalId,
     actorId: actor.id,

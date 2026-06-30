@@ -3,10 +3,13 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { AuthorizationError } from "@/server/authz";
 import {
   accrueEmergencyDebt,
+  approveInvoiceCancellation,
+  approveRefund,
   assignWard,
   authorizeDischarge,
   confirmDiagnosticPayment,
   createInvoice,
+  requestInvoiceCancellation,
   createPatientForActor,
   createPrescription,
   dispensePrescription,
@@ -17,6 +20,7 @@ import {
   getDiagnosticOrder,
   getDiagnosticWorklist,
   listDiagnosticsForEncounter,
+  openCashierShift,
   openEncounter,
   recordPayment,
   requestAdmission,
@@ -141,16 +145,16 @@ describe("PHASE 2 AUDIT — 2I lab/radiology result-visibility gate", () => {
     expect((await getDiagnosticOrder(doctor.actor, doctor.ctx, orderId))!.resultText).toContain("SECRET");
   });
 
-  it("GAP (pre-Gate-7 backlog #3): a SINGLE actor holding BOTH caps can validate their own entry", async () => {
+  it("4-eyes (hardened): a SINGLE actor holding BOTH caps CANNOT validate their own entry", async () => {
     const { orderId, tech } = await orderToResultEntered();
-    // Simulate one person granted both technician + validator capabilities (RBAC has no same-user guard).
+    // One person granted both technician + validator capabilities — the same-user guard refuses self-validation.
     const dualRole = { ...tech.actor, roles: ["technicien_diagnostic", "validateur_diagnostic"] };
-    const validated = await validateDiagnosticResult(dualRole, tech.ctx, orderId);
-    // CURRENT behaviour: it succeeds, and the entry+validation share the same actor id.
-    expect(validated!.status).toBe("validated");
-    const row = await prisma.diagnosticOrder.findUnique({ where: { id: orderId } });
-    expect(row!.resultEnteredById).toBe(tech.actor.id);
-    expect(row!.validatedById).toBe(tech.actor.id); // ⇐ same person entered AND validated → backlog item
+    await expect(validateDiagnosticResult(dualRole, tech.ctx, orderId)).rejects.toThrow(/différente/i);
+    // The order is untouched (still result_entered), and a DIFFERENT validator can still validate it.
+    expect((await prisma.diagnosticOrder.findUnique({ where: { id: orderId } }))!.status).toBe("result_entered");
+    const validator = await loginAndSelect(ACCOUNTS.labValidator);
+    const ok = await validateDiagnosticResult(validator.actor, validator.ctx, orderId);
+    expect(ok!.status).toBe("validated");
   });
 });
 
@@ -173,14 +177,30 @@ describe("PHASE 2 AUDIT — 2H emergency exception", () => {
     return { encounterId };
   }
 
-  it("GAP (pre-Gate-7 backlog #2): emergency dispensing bypasses payment but creates NO automatic EmergencyDebt", async () => {
+  it("emergency dispensing (hardened) auto-opens a placeholder EmergencyDebt so the discharge gate can't miss it", async () => {
     const { encounterId } = await emergencyDispensedPrescription();
     // The dispense happened without payment (emergency bypass)…
     const dispensed = await prisma.dispenseRecord.count({ where: { hospitalId: HRB } });
     expect(dispensed).toBeGreaterThan(0);
-    // …but NO debt was auto-accrued for it — debt accrual is a separate manual cashier action.
-    const debts = await prisma.emergencyDebt.count({ where: { hospitalId: HRB, encounterId } });
-    expect(debts).toBe(0); // ⇐ the discharge gate could miss this charge → backlog item
+    // …and a placeholder outstanding EmergencyDebt (amount 0, "à tarifer") was auto-created → the gate blocks.
+    const debts = await prisma.emergencyDebt.findMany({ where: { hospitalId: HRB, encounterId } });
+    expect(debts.length).toBe(1);
+    expect(debts[0].status).toBe("outstanding");
+    expect(debts[0].source).toMatch(/à définir à la caisse/i);
+  });
+
+  it("emergency-bypassed LAB exam (priced) auto-accrues the real EmergencyDebt of the catalogue price", async () => {
+    const reception = await loginAndSelect(ACCOUNTS.reception);
+    const { encounterId } = await newPatientEncounter(reception, { emergency: true });
+    const doctor = await loginAndSelect(ACCOUNTS.doctor);
+    const order = await requestDiagnostic(doctor.actor, doctor.ctx, { encounterId, catalogueItemId: await labItemId("LAB-NFS") });
+    // Technician starts WITHOUT payment (emergency bypass) → a priced debt is auto-accrued.
+    const tech = await loginAndSelect(ACCOUNTS.labTech);
+    await startDiagnostic(tech.actor, tech.ctx, order.id);
+    const debts = await prisma.emergencyDebt.findMany({ where: { hospitalId: HRB, encounterId } });
+    expect(debts.length).toBe(1);
+    expect(debts[0].amount).toBe(3500); // the LAB-NFS catalogue price
+    expect(debts[0].status).toBe("outstanding");
   });
 
   it("an emergency encounter cannot be un-flagged while an outstanding emergency debt exists", async () => {
@@ -290,5 +310,63 @@ describe("PHASE 2 AUDIT — newly-found defects (now FIXED by this audit)", () =
         items: [{ medicationId: med!.id, dosage: "1 cp", duration: "5j", quantity: 5 }],
       }),
     ).rejects.toThrow(/ouverte/i);
+  });
+});
+
+describe("PHASE 2 AUDIT — 2C financial hardening (status guards + atomic approval)", () => {
+  beforeEach(resetTestDb);
+
+  async function paidInvoiceCancellationRequest() {
+    const reception = await loginAndSelect(ACCOUNTS.reception);
+    const { encounterId } = await newPatientEncounter(reception);
+    const cashier = await loginAndSelect(ACCOUNTS.cashier);
+    const invoice = await createInvoice(cashier.actor, cashier.ctx, encounterId, [
+      { label: "Consultation", unitAmount: 5000, quantity: 1 },
+    ]);
+    await recordPayment(cashier.actor, cashier.ctx, invoice.id, { amount: 5000, method: "cash" });
+    const request = await requestInvoiceCancellation(cashier.actor, cashier.ctx, invoice.id, "Erreur de saisie");
+    return { invoiceId: invoice.id, requestId: request.id };
+  }
+
+  it("concurrent cancellation approvals: exactly ONE succeeds, exactly ONE refund voucher, invoice cancelled once", async () => {
+    const { invoiceId, requestId } = await paidInvoiceCancellationRequest();
+    const admin = await loginAndSelect(ACCOUNTS.admin);
+    const results = await Promise.allSettled([
+      approveInvoiceCancellation(admin.actor, admin.ctx, requestId),
+      approveInvoiceCancellation(admin.actor, admin.ctx, requestId),
+    ]);
+    expect(results.filter((r) => r.status === "fulfilled").length).toBe(1);
+    // The status-guarded atomic approval created exactly one voucher and cancelled the invoice once.
+    expect(await prisma.refundVoucher.count({ where: { hospitalId: HRB, invoiceId } })).toBe(1);
+    expect((await prisma.invoice.findUnique({ where: { id: invoiceId } }))!.status).toBe("cancelled");
+    expect(
+      await prisma.invoiceCancellationRequest.count({ where: { id: requestId, status: "approved" } }),
+    ).toBe(1);
+  });
+
+  it("concurrent refund-voucher approvals: exactly ONE succeeds (status-guarded)", async () => {
+    const { requestId } = await paidInvoiceCancellationRequest();
+    const admin = await loginAndSelect(ACCOUNTS.admin);
+    await approveInvoiceCancellation(admin.actor, admin.ctx, requestId);
+    const voucher = await prisma.refundVoucher.findFirst({ where: { hospitalId: HRB, status: "requested" } });
+    expect(voucher).not.toBeNull();
+    const results = await Promise.allSettled([
+      approveRefund(admin.actor, admin.ctx, voucher!.id),
+      approveRefund(admin.actor, admin.ctx, voucher!.id),
+    ]);
+    expect(results.filter((r) => r.status === "fulfilled").length).toBe(1);
+    expect((await prisma.refundVoucher.findUnique({ where: { id: voucher!.id } }))!.status).toBe("approved");
+  });
+
+  it("concurrent open-shift requests for one cashier: exactly ONE open shift (DB partial unique index)", async () => {
+    const cashier = await loginAndSelect(ACCOUNTS.cashier);
+    const results = await Promise.allSettled([
+      openCashierShift(cashier.actor, cashier.ctx, 10000),
+      openCashierShift(cashier.actor, cashier.ctx, 10000),
+    ]);
+    expect(results.filter((r) => r.status === "fulfilled").length).toBe(1);
+    expect(
+      await prisma.cashierShift.count({ where: { hospitalId: HRB, cashierId: cashier.actor.id, status: "open" } }),
+    ).toBe(1);
   });
 });

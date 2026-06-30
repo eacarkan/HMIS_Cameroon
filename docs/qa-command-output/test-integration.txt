@@ -8,11 +8,11 @@
 
  RUN  v4.1.9 /Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon
 
-(node:16653) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(node:18805) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 
  Test Files  34 passed (34)
-      Tests  230 passed (230)
-   Start at  13:55:34
-   Duration  117.28s (transform 545ms, setup 252ms, import 4.83s, tests 109.03s, environment 2ms)
+      Tests  234 passed (234)
+   Start at  14:26:11
+   Duration  122.46s (transform 559ms, setup 255ms, import 4.63s, tests 114.40s, environment 2ms)
 

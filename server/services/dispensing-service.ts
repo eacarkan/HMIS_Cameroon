@@ -1,4 +1,5 @@
 import {
+  accrueEmergencyDebtTx,
   dispenseReservationsForPrescription,
   findDispenseRecordById,
   findEncounterById,
@@ -102,6 +103,7 @@ export async function dispensePrescription(
   if (presc.status !== "sent_to_pharmacy" && presc.status !== "partially_dispensed") {
     throw new Error("Cette ordonnance ne peut pas être délivrée dans son statut actuel.");
   }
+  const wasFirstDispense = presc.status === "sent_to_pharmacy";
   // Cheap pre-check so the common "nothing to dispense" case fails BEFORE a sequence number is spent.
   const active = await listReservationsForPrescription(ctx.hospitalId, prescriptionId, "active");
   if (active.length === 0) {
@@ -141,5 +143,28 @@ export async function dispensePrescription(
       (allFull ? "" : " (délivrance partielle)") +
       (emergencyBypass ? " (URGENCE — paiement différé)" : ""),
   });
+
+  // Pre-Gate-7 hardening: an emergency-bypassed dispense must be TRACKED so the discharge gate (2G)
+  // cannot silently miss it. Medications carry no price in 2D, so we accrue a PLACEHOLDER outstanding
+  // Emergency Debt (amount 0, "à tarifer") ONCE per prescription (only on the first dispense round);
+  // the cashier prices/settles it (or the Director waives it) before discharge.
+  if (emergencyBypass && wasFirstDispense) {
+    const debt = await accrueEmergencyDebtTx({
+      hospitalId: ctx.hospitalId,
+      encounterId: presc.encounterId,
+      patientId: presc.patientId,
+      amount: 0,
+      source: `Délivrance d'urgence (ordonnance ${presc.prescriptionNumber}) — montant à définir à la caisse`,
+      createdById: actor.id,
+    });
+    await recordAudit({
+      hospitalId: ctx.hospitalId,
+      actorId: actor.id,
+      action: AUDIT_ACTIONS.emergencyDebtAccrued,
+      entityType: "EmergencyDebt",
+      entityId: debt.id,
+      summary: `Dette d'urgence (à tarifer) ouverte automatiquement — délivrance ${record.dispenseNumber}`,
+    });
+  }
   return record;
 }

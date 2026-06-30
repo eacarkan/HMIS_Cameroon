@@ -64,5 +64,14 @@ The audit independently re-derived the mentor's hardening backlog. These are **r
 - **Concurrency:** 2D-5/2D-6/2D-7/2G/2H transactions are correctly guarded/locked; the 2C refund/cancellation/shift paths are the remaining hardening (backlog).
 - **Test quality:** broad and honest on happy paths + RBAC denial; the gap is concurrent-double-decide on the financial paths and a couple of cross-module/cross-hospital combinations (backlog #14).
 
+## 5bis. Pre-Gate-7 hardening pass (done after the audit, on request)
+Four of the highest-value deferred items were then implemented + regression-tested (see `docs/PRE_GATE7_HARDENING_BACKLOG.md` → "Resolved"):
+- **#3 Lab/radiology 4-eyes:** self-validation refused (service + DB guard) even when one user holds both caps.
+- **#1/#5 2C financial atomicity + status guards:** cancellation approval is one `$transaction`; cancellation/refund transitions are status-pinned (concurrent double-decide loses).
+- **#4 One open cashier shift:** enforced by a partial unique index (DB) + friendly catch.
+- **#2 Emergency auto-debt:** emergency-bypassed lab/radiology accrues the real priced debt; emergency-bypassed pharmacy opens a placeholder "à tarifer" debt — the discharge gate can no longer miss an emergency charge.
+
+Residual (documented, still open): `recordPayment` concurrent same-invoice overpay; audit-after-commit (#13); the medium-priority items (#6–#11); the test/coverage items (#14–#16).
+
 ## 6. Overall verdict
 **Confirmed: accepted for controlled synthetic-data UAT.** The two newly-found defects (expired-FEFO BLOCKER, prescription-on-closed-encounter MAJOR) are **fixed and regression-tested**. All remaining confirmed findings are the **known, mentor-deferred pre-Gate-7 hardening backlog** — real, documented, and **not** UAT blockers. **Gate 7 / real-data / production remain NOT approved** until the backlog (transactional + status-guarded financial flows, auto-coupled emergency debt, same-user validate guard, one-open-shift DB constraint, the missing concurrent/cross-hospital tests) is closed, alongside the organizational prerequisites (signed UAT, validated hardware, baseline cybersecurity assessment, MINSANTE authorization).

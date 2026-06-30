@@ -6,15 +6,13 @@ import {
 } from "@/lib/cancellation-rules";
 import { formatFcfa, sumFcfa } from "@/lib/money";
 import {
+  approveCancellationTx,
   createCancellationRequest,
-  createRefundVoucher,
   findCancellationRequestById,
   findInvoiceById,
   findPendingCancellationForInvoice,
   listCancellationRequests as listCancellationRequestsDb,
   updateCancellationDecision,
-  updateInvoiceStatus,
-  updatePaymentStatus,
   type HospitalContext,
 } from "@/server/db";
 import type { CancellationRequestStatus } from "@prisma/client";
@@ -110,22 +108,27 @@ export async function approveInvoiceCancellation(
   }
 
   const invoice = request.invoice;
-  const paidAmount = sumFcfa(
-    invoice.payments.filter((p) => p.status === "recorded").map((p) => p.amount),
-  );
+  const recordedPayments = invoice.payments.filter((p) => p.status === "recorded");
+  const paidAmount = sumFcfa(recordedPayments.map((p) => p.amount));
 
-  // Cancel the invoice and its recorded payments (history/snapshots preserved).
-  await updateInvoiceStatus(ctx.hospitalId, invoice.id, "cancelled");
-  for (const payment of invoice.payments) {
-    if (payment.status === "recorded") {
-      await updatePaymentStatus(ctx.hospitalId, payment.id, "cancelled");
-    }
-  }
-  await updateCancellationDecision(ctx.hospitalId, requestId, {
-    status: "approved",
+  // Pre-generate the refund voucher number only when money was collected (created inside the tx).
+  const voucherNumber =
+    paidAmount > 0 ? await generateNumber(ctx, "refund_voucher", new Date().getFullYear()) : null;
+
+  // ATOMIC + status-guarded: claim the request, cancel the invoice + recorded payments, and create the
+  // refund voucher in ONE transaction. A concurrent double-approval loses on the status-guarded claim,
+  // and a mid-sequence failure rolls back entirely (no cancelled invoice without its voucher).
+  const { voucherId } = await approveCancellationTx({
+    hospitalId: ctx.hospitalId,
+    requestId,
+    invoiceId: invoice.id,
     decidedById: actor.id,
     decisionReason: decisionReason?.trim() || null,
-    decidedAt: new Date(),
+    paidPaymentIds: recordedPayments.map((p) => p.id),
+    refund:
+      paidAmount > 0 && voucherNumber
+        ? { voucherNumber, amount: paidAmount, reason: request.reason, requestedById: request.requestedById }
+        : null,
   });
 
   await recordAudit({
@@ -136,27 +139,14 @@ export async function approveInvoiceCancellation(
     entityId: invoice.id,
     summary: `Annulation approuvée — facture ${invoice.invoiceNumber} (${formatFcfa(invoice.totalAmount)})`,
   });
-
-  // Generate a refund voucher only when money was actually collected.
-  if (paidAmount > 0) {
-    const year = new Date().getFullYear();
-    const voucherNumber = await generateNumber(ctx, "refund_voucher", year);
-    const voucher = await createRefundVoucher({
-      hospitalId: ctx.hospitalId,
-      voucherNumber,
-      invoiceId: invoice.id,
-      cancellationRequestId: requestId,
-      amount: paidAmount,
-      reason: request.reason,
-      requestedById: request.requestedById,
-    });
+  if (voucherId && voucherNumber) {
     await recordAudit({
       hospitalId: ctx.hospitalId,
       actorId: actor.id,
       action: AUDIT_ACTIONS.refundVoucherCreated,
       entityType: "RefundVoucher",
-      entityId: voucher.id,
-      summary: `Bon de remboursement ${voucher.voucherNumber} créé (${formatFcfa(paidAmount)}) — facture ${invoice.invoiceNumber}`,
+      entityId: voucherId,
+      summary: `Bon de remboursement ${voucherNumber} créé (${formatFcfa(paidAmount)}) — facture ${invoice.invoiceNumber}`,
     });
   }
 

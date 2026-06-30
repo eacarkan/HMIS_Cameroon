@@ -169,6 +169,7 @@ export {
   listCancellationRequests,
   findPendingCancellationForInvoice,
   updateCancellationDecision,
+  approveCancellationTx,
 } from "./cancellations";
 export {
   type CreateRefundVoucherData,

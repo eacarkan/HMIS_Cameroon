@@ -52,7 +52,7 @@ export async function approveRefund(
 ) {
   await requireCapability(actor, ctx, "invoice.cancel.approve", { type: "RefundVoucher", id });
   const voucher = await loadVoucherForTransition(ctx, id, "approved");
-  await updateRefundVoucher(ctx.hospitalId, id, {
+  await updateRefundVoucher(ctx.hospitalId, id, voucher.status, {
     status: "approved",
     approvedById: actor.id,
     approvedAt: new Date(),
@@ -76,7 +76,7 @@ export async function executeRefund(
 ) {
   await requireCapability(actor, ctx, "refund.execute", { type: "RefundVoucher", id });
   const voucher = await loadVoucherForTransition(ctx, id, "paid");
-  await updateRefundVoucher(ctx.hospitalId, id, {
+  await updateRefundVoucher(ctx.hospitalId, id, voucher.status, {
     status: "paid",
     executedById: actor.id,
     executedAt: new Date(),
@@ -102,7 +102,7 @@ export async function cancelRefund(
   await requireCapability(actor, ctx, "invoice.cancel.approve", { type: "RefundVoucher", id });
   const voucher = await loadVoucherForTransition(ctx, id, "cancelled");
   if (reason.trim().length === 0) throw new Error("Le motif d'annulation est obligatoire.");
-  await updateRefundVoucher(ctx.hospitalId, id, {
+  await updateRefundVoucher(ctx.hospitalId, id, voucher.status, {
     status: "cancelled",
     cancelledById: actor.id,
     cancelledAt: new Date(),
