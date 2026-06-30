@@ -1,17 +1,16 @@
 # $ npm run test
-# generated for mentor review — paths redacted, fake data only
+# refreshed: 2026-06-30 (final Phase 2 tip)
 
 
 > hmis-cameroon@0.1.0 test
 > vitest run --project unit --project component
 
 
- RUN  v4.1.9 <repo>
+ RUN  v4.1.9 /Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon
 
 
- Test Files  31 passed (31)
-      Tests  137 passed (137)
-   Start at  00:35:35
-   Duration  3.90s (transform 1.48s, setup 4.07s, import 6.57s, tests 2.72s, environment 14.60s)
+ Test Files  58 passed (58)
+      Tests  297 passed (297)
+   Start at  13:13:45
+   Duration  7.46s (transform 3.07s, setup 6.78s, import 13.84s, tests 7.00s, environment 28.51s)
 
-# exit code: 0
