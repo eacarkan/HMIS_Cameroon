@@ -25,7 +25,8 @@
     "administration": "Administration",
     "audit": "Audit log",
     "systemStatus": "System status",
-    "myAccount": "My account"
+    "myAccount": "My account",
+    "central": "Central oversight"
   },
   "admission": {
     "title": "Hospitalization",
@@ -292,5 +293,22 @@
       "not_applicable": "Not applicable",
       "needs_validation": "Needs validation"
     }
+  },
+  "central": {
+    "title": "Central oversight (aggregates)",
+    "subtitle": "Per-hospital aggregate indicators — read-only",
+    "noPatientNotice": "Aggregates only — no patient data (no name, identifier, or record). Snapshot-fed; no direct access to operational tables.",
+    "noData": "No snapshot available. A hospital must generate its aggregate snapshot.",
+    "consultations": "Consultations",
+    "patients": "Patients",
+    "revenue": "Revenue",
+    "queue": "Queue",
+    "admissions": "Admissions",
+    "diagnostics": "Diagnostics",
+    "emergencyDebt": "Emergency debt (outstanding)",
+    "pharmacyAlerts": "Pharmacy (low / expiring)",
+    "topDiagnoses": "Top diagnoses (ICD-10)",
+    "generateSnapshot": "Generate central snapshot",
+    "snapshotGenerated": "Snapshot generated."
   }
 }

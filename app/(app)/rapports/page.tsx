@@ -8,6 +8,7 @@ import { formatDateTimeFr } from "@/lib/dates";
 import { formatFcfa } from "@/lib/money";
 import { can } from "@/lib/rbac";
 import { monthLabel, parseMonthParam } from "@/lib/reporting";
+import { generateSnapshotAction } from "@/server/actions/central-actions";
 import { requireActorAndHospital } from "@/server/auth";
 import { getOperationalReport } from "@/server/services";
 
@@ -26,13 +27,24 @@ export default async function OperationalReportsPage({
   const t = await getTranslations("operationalReport");
   const tm = await getTranslations("paymentMethod");
   const canExport = can(actor.roles, "report.export");
+  const tc = await getTranslations("central");
 
   const methodLabel = (m: string) =>
     ({ cash: tm("cash"), mobile_money: tm("mobile_money"), card: tm("card"), bank_transfer: tm("bank_transfer") })[m] ?? m;
 
   return (
     <>
-      <PageHeader title={t("title")} description={t("subtitle")} />
+      <PageHeader
+        title={t("title")}
+        description={t("subtitle")}
+        actions={
+          <form action={generateSnapshotAction}>
+            <Button type="submit" variant="secondary" size="sm">
+              {tc("generateSnapshot")}
+            </Button>
+          </form>
+        }
+      />
 
       <div className="border-primary/30 bg-primary/5 mb-6 rounded-md border p-3 text-sm">
         {t("privacyNotice")}

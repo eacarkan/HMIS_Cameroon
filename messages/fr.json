@@ -54,7 +54,8 @@
     "administration": "Administration",
     "audit": "Journal d'audit",
     "systemStatus": "État du système",
-    "myAccount": "Mon compte"
+    "myAccount": "Mon compte",
+    "central": "Supervision centrale"
   },
   "topbar": {
     "hospitalLabel": "Hôpital actif",
@@ -1047,5 +1048,22 @@
       "not_applicable": "Non applicable",
       "needs_validation": "À valider"
     }
+  },
+  "central": {
+    "title": "Supervision centrale (agrégats)",
+    "subtitle": "Indicateurs agrégés par hôpital — lecture seule",
+    "noPatientNotice": "Agrégats uniquement — aucune donnée patient (ni nom, ni identifiant, ni dossier). Alimenté par des instantanés ; aucun accès direct aux tables opérationnelles.",
+    "noData": "Aucun instantané disponible. Un hôpital doit générer son instantané agrégé.",
+    "consultations": "Consultations",
+    "patients": "Patients",
+    "revenue": "Recettes",
+    "queue": "File d'attente",
+    "admissions": "Hospitalisations",
+    "diagnostics": "Examens",
+    "emergencyDebt": "Dette d'urgence (en cours)",
+    "pharmacyAlerts": "Pharmacie (bas / péremption)",
+    "topDiagnoses": "Principaux diagnostics (CIM-10)",
+    "generateSnapshot": "Générer l'instantané central",
+    "snapshotGenerated": "Instantané généré."
   }
 }

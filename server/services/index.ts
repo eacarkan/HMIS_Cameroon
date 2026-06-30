@@ -125,8 +125,15 @@ export {
   listTemplateApplications,
   overrideInstanceSetting,
 } from "./hospital-configuration-service";
-// Phase 3B — central aggregate oversight (cross-hospital, aggregate-only, audited).
-export { type CentralAggregates, getCentralAggregates } from "./central-oversight-service";
+// Phase 3B/3D — central aggregate oversight (cross-hospital, aggregate-only, audited; snapshot-fed).
+export {
+  type CentralAggregates,
+  type SnapshotIndicators,
+  type CentralOversightHospital,
+  getCentralAggregates,
+  generateHospitalAggregateSnapshot,
+  getCentralOversight,
+} from "./central-oversight-service";
 // Phase 3C — site-readiness & deployment checklist (status tracking only; hospital-scoped).
 export {
   type SiteReadinessView,

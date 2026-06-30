@@ -15,6 +15,7 @@ import {
   HeartPulse,
   BedDouble,
   FlaskConical,
+  Globe2,
   type LucideIcon,
 } from "lucide-react";
 
@@ -146,6 +147,13 @@ export const NAV_ITEMS: NavItem[] = [
     icon: Settings2,
     // Visible to roles that may read configuration (admin manages; director read-only).
     capability: "config.read",
+  },
+  {
+    // Phase 3D — central aggregate oversight (national/regional supervisor; aggregate-only).
+    href: "/central",
+    labelKey: "central",
+    icon: Globe2,
+    capability: "central.aggregate.view",
   },
   {
     href: "/journal-audit",

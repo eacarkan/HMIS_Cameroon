@@ -744,6 +744,8 @@ export async function clearOperationalData(
   await prisma.configurationTemplateApplication.deleteMany();
   // Phase 3C — clear per-hospital site-readiness items (status tracking; re-created on demand).
   await prisma.siteReadinessItem.deleteMany();
+  // Phase 3D — clear aggregate snapshots (regenerated on demand from operational data).
+  await prisma.hospitalAggregateSnapshot.deleteMany();
   await prisma.reportExport.deleteMany();
   await prisma.auditLog.deleteMany();
   await prisma.sequence.updateMany({ data: { current: 0 } });

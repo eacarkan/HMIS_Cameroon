@@ -247,6 +247,10 @@ model Hospital {
 
   // Phase 3C (site-readiness checklist) — per-hospital readiness status items (additive).
   siteReadinessItems SiteReadinessItem[]
+
+  // Phase 3D (central aggregate oversight) — per-hospital aggregate snapshots the central viewer
+  // reads instead of operational tables (additive; aggregate-only, no patient-level data).
+  hospitalAggregateSnapshots HospitalAggregateSnapshot[]
 }
 
 // ===================== Users / RBAC =====================
@@ -730,6 +734,28 @@ model SiteReadinessItem {
   hospital Hospital @relation(fields: [hospitalId], references: [id])
 
   @@unique([hospitalId, category])
+  @@index([hospitalId])
+}
+
+// ============ Phase 3D — Central aggregate oversight snapshot (additive) ============
+// The ONLY source the central (national) viewer reads. AGGREGATE-ONLY: `indicators` holds
+// per-hospital counts/totals (consultations, revenue, top-ICD-diagnoses counts, pharmacy alert
+// counts, emergency-debt total, …) — NEVER a name/number/DOB/diagnosis-at-patient-level. Generated
+// hospital-scoped; central never queries operational patient/encounter/invoice/lab/pharmacy tables.
+
+/// A precomputed, aggregate-only summary of one hospital for one period (`YYYY-MM`). No patient data.
+model HospitalAggregateSnapshot {
+  id            String   @id @default(cuid())
+  hospitalId    String
+  period        String
+  indicators    Json
+  generatedById String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+
+  @@unique([hospitalId, period])
   @@index([hospitalId])
 }
 

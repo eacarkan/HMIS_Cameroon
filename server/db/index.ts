@@ -134,8 +134,14 @@ export {
   gatherHospitalConfigSummary,
 } from "./configuration-templates";
 
-// Phase 3B — central aggregate oversight (cross-hospital, aggregate-only; no patient-level access).
-export { type CentralHospitalAggregate, gatherCentralAggregates } from "./central-oversight";
+// Phase 3B/3D — central aggregate oversight (cross-hospital, aggregate-only; snapshot-fed in 3D).
+export {
+  type CentralHospitalAggregate,
+  gatherCentralAggregates,
+  gatherSnapshotCounts,
+  upsertHospitalAggregateSnapshot,
+  listLatestHospitalSnapshots,
+} from "./central-oversight";
 
 // Phase 3C — site-readiness checklist (hospital-scoped status tracking).
 export {
