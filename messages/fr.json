@@ -55,7 +55,8 @@
     "audit": "Journal d'audit",
     "systemStatus": "État du système",
     "myAccount": "Mon compte",
-    "central": "Supervision centrale"
+    "central": "Supervision centrale",
+    "uat": "Recette / Gate 7"
   },
   "topbar": {
     "hospitalLabel": "Hôpital actif",
@@ -1065,5 +1066,41 @@
     "topDiagnoses": "Principaux diagnostics (CIM-10)",
     "generateSnapshot": "Générer l'instantané central",
     "snapshotGenerated": "Instantané généré."
+  },
+  "uat": {
+    "title": "Recette (UAT) + préparation Gate 7",
+    "subtitle": "Preuves de recette et critères Gate 7 — preuves uniquement, pas une autorisation",
+    "readinessFor": "Préparation — {hospital}",
+    "uatPass": "UAT réussies",
+    "gate7Ready": "Critères Gate 7 prêts",
+    "evidenceComplete": "Preuves assemblées",
+    "evidenceIncomplete": "Preuves incomplètes",
+    "hasBlocker": "Bloquant présent",
+    "notAuthorizedNote": "Le logiciel n'autorise pas Gate 7 : décision administrative co-signée Directeur + MINSANTE.",
+    "uatScenarios": "Scénarios UAT",
+    "gate7Checklist": "Liste Gate 7",
+    "notes": "Notes",
+    "note": "Note",
+    "save": "Enregistrer",
+    "saved": "Enregistré.",
+    "signoff": "Signatures (placeholder)",
+    "directorSignoff": "Directeur (placeholder)",
+    "minsanteSignoff": "MINSANTE (placeholder)",
+    "director": "Directeur",
+    "minsante": "MINSANTE",
+    "statuses": {
+      "not_run": "Non exécuté",
+      "pass": "Réussi",
+      "fail": "Échec",
+      "blocker": "Bloquant"
+    },
+    "gate7Statuses": {
+      "not_started": "Non démarré",
+      "in_progress": "En cours",
+      "ready": "Prêt",
+      "blocked": "Bloqué",
+      "not_applicable": "Non applicable",
+      "needs_validation": "À valider"
+    }
   }
 }

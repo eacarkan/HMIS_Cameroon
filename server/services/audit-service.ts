@@ -99,6 +99,12 @@ export const AUDIT_ACTIONS = {
   // Phase 3C — site-readiness checklist (status tracking only; hospital-scoped).
   readinessItemUpdated: "readiness.item_updated",
   readinessStatusChanged: "readiness.status_changed",
+  // Phase 3E — UAT evidence + Gate 7 readiness (evidence only; sign-off = placeholder).
+  uatScenarioCreated: "uat.scenario_created",
+  uatExecutionRecorded: "uat.execution_recorded",
+  uatStatusChanged: "uat.status_changed",
+  gate7ItemUpdated: "gate7.item_updated",
+  gate7SignoffPlaceholderChanged: "gate7.signoff_placeholder_changed",
   // Phase 2A — service/department catalogue configuration (capability-based; admin only).
   serviceCreated: "service.created",
   serviceUpdated: "service.updated",

@@ -26,7 +26,8 @@
     "audit": "Audit log",
     "systemStatus": "System status",
     "myAccount": "My account",
-    "central": "Central oversight"
+    "central": "Central oversight",
+    "uat": "UAT / Gate 7"
   },
   "admission": {
     "title": "Hospitalization",
@@ -310,5 +311,41 @@
     "topDiagnoses": "Top diagnoses (ICD-10)",
     "generateSnapshot": "Generate central snapshot",
     "snapshotGenerated": "Snapshot generated."
+  },
+  "uat": {
+    "title": "UAT + Gate 7 readiness",
+    "subtitle": "Acceptance-test evidence and Gate 7 criteria — evidence only, not an authorization",
+    "readinessFor": "Readiness — {hospital}",
+    "uatPass": "UAT passed",
+    "gate7Ready": "Gate 7 criteria ready",
+    "evidenceComplete": "Evidence assembled",
+    "evidenceIncomplete": "Evidence incomplete",
+    "hasBlocker": "Blocker present",
+    "notAuthorizedNote": "Software does not authorize Gate 7: administrative decision, co-signed Director + MINSANTE.",
+    "uatScenarios": "UAT scenarios",
+    "gate7Checklist": "Gate 7 checklist",
+    "notes": "Notes",
+    "note": "Note",
+    "save": "Save",
+    "saved": "Saved.",
+    "signoff": "Sign-off (placeholder)",
+    "directorSignoff": "Director (placeholder)",
+    "minsanteSignoff": "MINSANTE (placeholder)",
+    "director": "Director",
+    "minsante": "MINSANTE",
+    "statuses": {
+      "not_run": "Not run",
+      "pass": "Pass",
+      "fail": "Fail",
+      "blocker": "Blocker"
+    },
+    "gate7Statuses": {
+      "not_started": "Not started",
+      "in_progress": "In progress",
+      "ready": "Ready",
+      "blocked": "Blocked",
+      "not_applicable": "Not applicable",
+      "needs_validation": "Needs validation"
+    }
   }
 }

@@ -251,6 +251,11 @@ model Hospital {
   // Phase 3D (central aggregate oversight) — per-hospital aggregate snapshots the central viewer
   // reads instead of operational tables (additive; aggregate-only, no patient-level data).
   hospitalAggregateSnapshots HospitalAggregateSnapshot[]
+
+  // Phase 3E (UAT evidence + Gate 7 readiness) — per-hospital UAT + readiness records (additive).
+  uatScenarios       UatScenario[]
+  uatExecutions      UatExecution[]
+  gate7ReadinessItems Gate7ReadinessItem[]
 }
 
 // ===================== Users / RBAC =====================
@@ -756,6 +761,75 @@ model HospitalAggregateSnapshot {
   hospital Hospital @relation(fields: [hospitalId], references: [id])
 
   @@unique([hospitalId, period])
+  @@index([hospitalId])
+}
+
+// ============ Phase 3E — UAT evidence & Gate 7 readiness package (additive) ============
+// EVIDENCE ONLY. Software never authorizes Gate 7 (administrative, co-signed Director + MINSANTE);
+// the sign-off fields are PLACEHOLDERS (no legal e-signature). All records hospital-scoped.
+
+enum UatStatus {
+  not_run
+  pass
+  fail
+  blocker
+}
+
+/// A UAT scenario in a hospital's library (synthetic). Templates are seeded per hospital.
+model UatScenario {
+  id             String   @id @default(cuid())
+  hospitalId     String
+  code           String
+  category       String
+  titleFr        String
+  titleEn        String?
+  expectedResult String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  hospital   Hospital       @relation(fields: [hospitalId], references: [id])
+  executions UatExecution[]
+
+  @@unique([hospitalId, code])
+  @@index([hospitalId])
+}
+
+/// The latest UAT execution result for a scenario (pass / fail / blocker). Synthetic UAT only.
+model UatExecution {
+  id           String    @id @default(cuid())
+  hospitalId   String
+  scenarioId   String
+  status       UatStatus @default(not_run)
+  notes        String?
+  executedById String
+  executedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  hospital Hospital    @relation(fields: [hospitalId], references: [id])
+  scenario UatScenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+
+  @@unique([hospitalId, scenarioId])
+  @@index([hospitalId])
+}
+
+/// One Gate 7 readiness criterion for a hospital, with Director / MINSANTE sign-off PLACEHOLDERS
+/// (no legal e-signature). Status reuses SiteReadinessStatus. Evidence only — never authorization.
+model Gate7ReadinessItem {
+  id                         String              @id @default(cuid())
+  hospitalId                 String
+  criterion                  String
+  status                     SiteReadinessStatus @default(not_started)
+  note                       String?
+  directorSignoffPlaceholder String?
+  minsanteSignoffPlaceholder String?
+  createdAt                  DateTime            @default(now())
+  updatedAt                  DateTime            @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+
+  @@unique([hospitalId, criterion])
   @@index([hospitalId])
 }
 

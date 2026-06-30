@@ -10,7 +10,7 @@ import fr from "@/messages/fr.json";
  * the navigation) render correctly in English for Bamenda / Buéa. This test fails if a French key is
  * added to one of them without its English translation.
  */
-const BILINGUAL_NAMESPACES = ["nav", "emergency", "queue", "admission", "diagnostic", "draft", "gate7", "serviceType", "language", "configAdmin", "readinessAdmin", "central"] as const;
+const BILINGUAL_NAMESPACES = ["nav", "emergency", "queue", "admission", "diagnostic", "draft", "gate7", "serviceType", "language", "configAdmin", "readinessAdmin", "central", "uat"] as const;
 
 type Dict = Record<string, unknown>;
 

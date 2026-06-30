@@ -120,6 +120,12 @@ export type Capability =
   // = read-only checklist + status dashboard (Director + central aggregate viewer). Hospital-scoped.
   | "readiness.manage"
   | "readiness.view"
+  // Phase 3E capabilities — UAT evidence + Gate 7 readiness (evidence only). `uat.manage` = record
+  // UAT executions + set Gate 7 criteria (Hospital Admin). `uat.signoff_placeholder` = set the
+  // Director/MINSANTE sign-off PLACEHOLDERS (Director). `uat.view` = read-only (Director + central).
+  | "uat.manage"
+  | "uat.signoff_placeholder"
+  | "uat.view"
   // Phase 2C capabilities — cashier/billing strengthening. The cashier REQUESTS a cancellation
   // and EXECUTES an approved refund and manages their own shift; only the Hospital Administrator
   // APPROVES cancellations/refunds (cashier ≠ approver). Refund vouchers are widely readable.
@@ -182,6 +188,9 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     // Phase 3C — the Hospital Admin maintains + reads the site-readiness checklist.
     "readiness.manage",
     "readiness.view",
+    // Phase 3E — the Hospital Admin records UAT executions + maintains the Gate 7 checklist (+ reads).
+    "uat.manage",
+    "uat.view",
     "tariff.read",
     "tariff.manage",
     "cashier.report.read",
@@ -317,6 +326,9 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "config.view",
     // Phase 3C — the Director reads the site-readiness checklist (read-only oversight).
     "readiness.view",
+    // Phase 3E — the Director reads UAT evidence + provides the (placeholder) Gate 7 sign-off.
+    "uat.view",
+    "uat.signoff_placeholder",
     // Phase 2E — the director views aggregate operational reports (no export).
     "report.operational.read",
     // Phase 2F — oversight view of the queue board.
@@ -403,7 +415,7 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
   // Phase 3B — central supervisor. AGGREGATE-only cross-hospital oversight; NO hospital
   // operational capability (no patient/clinical/financial/pharmacy access). `dashboard.read`
   // lets them reach the shell; `central.aggregate.view` is the only oversight capability.
-  superviseur_central: ["dashboard.read", "central.aggregate.view", "readiness.view"],
+  superviseur_central: ["dashboard.read", "central.aggregate.view", "readiness.view", "uat.view"],
 };
 
 /** True if any of the actor's roles grants the capability. */

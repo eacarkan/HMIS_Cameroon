@@ -141,6 +141,16 @@ export {
   getSiteReadiness,
   setReadinessItem,
 } from "./site-readiness-service";
+// Phase 3E — UAT evidence + Gate 7 readiness (evidence only; hospital-scoped; audited).
+export {
+  type UatEvidenceView,
+  type UatScenarioView,
+  type Gate7ItemView,
+  getUatEvidence,
+  recordUatExecution,
+  setGate7Item,
+  setGate7Signoff,
+} from "./uat-gate7-service";
 export {
   listPatientContacts,
   addPatientContact,

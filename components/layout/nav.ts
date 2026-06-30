@@ -16,6 +16,7 @@ import {
   BedDouble,
   FlaskConical,
   Globe2,
+  ClipboardCheck,
   type LucideIcon,
 } from "lucide-react";
 
@@ -154,6 +155,13 @@ export const NAV_ITEMS: NavItem[] = [
     labelKey: "central",
     icon: Globe2,
     capability: "central.aggregate.view",
+  },
+  {
+    // Phase 3E — UAT evidence + Gate 7 readiness (evidence only).
+    href: "/uat",
+    labelKey: "uat",
+    icon: ClipboardCheck,
+    capability: "uat.view",
   },
   {
     href: "/journal-audit",

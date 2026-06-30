@@ -149,6 +149,18 @@ export {
   listSiteReadinessItems,
   upsertSiteReadinessItem,
 } from "./site-readiness";
+
+// Phase 3E — UAT evidence + Gate 7 readiness (hospital-scoped; evidence only).
+export {
+  type UpsertGate7Data,
+  listUatScenariosWithExecutions,
+  countUatScenarios,
+  upsertUatScenario,
+  findUatScenarioByCode,
+  upsertUatExecution,
+  listGate7Items,
+  upsertGate7Item,
+} from "./uat-gate7";
 export {
   type CreatePriceListData,
   type CreateTariffData,
