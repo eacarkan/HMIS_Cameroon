@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 
 import { ClinicalStructurePanel } from "@/components/consultations/clinical-structure-panel";
 import { EmergencyControls } from "@/components/emergency/emergency-controls";
+import { AdmissionControls } from "@/components/hospitalization/admission-controls";
 import {
   EncounterServiceForm,
   EncounterStatusControls,
@@ -25,9 +26,11 @@ import { formatFcfa } from "@/lib/money";
 import { can } from "@/lib/rbac";
 import { requireActorAndHospital } from "@/server/auth";
 import {
+  getAdmissionForEncounter,
   getEmergencyDebtSummary,
   getEncounter,
   getEncounterStatusHistory,
+  listActiveInpatientWardServices,
   listActiveOutpatientConsultationServices,
   listDiagnosisCodes,
   listObservations,
@@ -52,6 +55,7 @@ export default async function EncounterPage({
   const tPresc = await getTranslations("prescription");
   const tPrescStatus = await getTranslations("prescriptionStatus");
   const tEm = await getTranslations("emergency");
+  const tAdm = await getTranslations("admission");
 
   // Phase 2H — emergency exception + emergency-debt ledger (clinical/financial/oversight read).
   const canReadEmergency = can(actor.roles, "emergency.debt.read");
@@ -62,6 +66,38 @@ export default async function EncounterPage({
     settle: can(actor.roles, "emergency.debt.settle"),
     waive: can(actor.roles, "emergency.debt.waive"),
   };
+
+  // Phase 2G — ward-level hospitalization (admission + daily ward fee + discharge gate).
+  const canReadAdmission = can(actor.roles, "admission.read");
+  const admissionData = canReadAdmission ? await getAdmissionForEncounter(actor, hospital, id) : null;
+  const admissionCaps = {
+    request: can(actor.roles, "admission.request"),
+    assign: can(actor.roles, "admission.assign"),
+    discharge: can(actor.roles, "admission.discharge"),
+    fee: can(actor.roles, "admission.fee.charge"),
+  };
+  const wards = admissionCaps.assign
+    ? (await listActiveInpatientWardServices(actor, hospital)).map((w) => ({
+        id: w.id,
+        name: w.nameFr ?? w.name ?? w.code,
+      }))
+    : [];
+  const adm = admissionData?.admission ?? null;
+  const admissionView = adm
+    ? {
+        id: adm.id,
+        admissionNumber: adm.admissionNumber,
+        status: adm.status,
+        reason: adm.reason,
+        wardName: adm.wardService?.nameFr ?? adm.wardService?.name ?? null,
+        dailyWardFeeLabel: adm.dailyWardFee > 0 ? formatFcfa(adm.dailyWardFee) : null,
+        invoiceId: adm.invoice?.id ?? null,
+        invoiceNumber: adm.invoice?.invoiceNumber ?? null,
+        invoiceTotalLabel: adm.invoice ? formatFcfa(adm.invoice.totalAmount) : null,
+        dailyChargeCount: adm.dailyCharges.length,
+        cancelReason: adm.cancelReason,
+      }
+    : null;
 
   const invoice = encounter.invoices[0] ?? null;
   const clinician =
@@ -331,6 +367,23 @@ export default async function EncounterPage({
                 }))}
                 outstandingLabel={formatFcfa(emergency?.outstandingTotal ?? 0)}
                 caps={emergencyCaps}
+              />
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {canReadAdmission ? (
+          <Card className="lg:col-span-3">
+            <CardHeader>
+              <CardTitle className="text-base">{tAdm("title")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AdmissionControls
+                encounterId={encounter.id}
+                admission={admissionView}
+                wards={wards}
+                dischargeBlock={admissionData?.dischargeBlock ?? { blocked: false, reasons: [] }}
+                caps={admissionCaps}
               />
             </CardContent>
           </Card>

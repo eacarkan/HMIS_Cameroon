@@ -95,6 +95,7 @@ export {
   listServiceCatalogue,
   listActiveServices,
   listActiveOutpatientConsultationServices,
+  listActiveInpatientWardServices,
   createServiceUnit,
   updateServiceUnit,
   deactivateServiceUnit,
@@ -262,6 +263,18 @@ export {
   waiveEmergencyDebt,
   getEmergencyDebtSummary,
 } from "./emergency-service";
+
+// Phase 2G — ward-level hospitalization (admission + daily ward fee).
+export {
+  requestAdmission,
+  assignWard,
+  cancelAdmission,
+  requestDischarge,
+  authorizeDischarge,
+  generateDailyWardCharge,
+  getAdmissionForEncounter,
+  listHospitalAdmissions,
+} from "./hospitalization-service";
 export {
   listUsers,
   createUserForActor,

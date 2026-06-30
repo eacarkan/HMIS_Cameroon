@@ -49,7 +49,10 @@ DO $$ BEGIN
     ADD CONSTRAINT "MedicationStockBatch_quantityReserved_nonneg" CHECK ("quantityReserved" >= 0);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 `;
-execSync(`psql "${url}" -v ON_ERROR_STOP=1`, {
+// libpq's connection-URI parser rejects Prisma-specific query params (e.g. `?schema=public`), so pass
+// psql the bare base URL (the schema defaults to "public" anyway).
+const psqlUrl = url.split("?")[0];
+execSync(`psql "${psqlUrl}" -v ON_ERROR_STOP=1`, {
   input: checkConstraintsSql,
   stdio: ["pipe", "inherit", "inherit"],
 });

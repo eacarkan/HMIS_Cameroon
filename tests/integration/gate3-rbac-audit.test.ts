@@ -179,6 +179,6 @@ describe("integration: Gate 3 service RBAC / scoping / audit", () => {
   it("Phase 0 base + Gate 2 config/tariff seed remain intact", async () => {
     expect(await prisma.hospital.count()).toBe(8);
     expect(await prisma.user.count()).toBe(7); // Phase 2D: +2 pharmacy users
-    expect(await prisma.tariff.count({ where: { hospitalId: HRB } })).toBe(5);
+    expect(await prisma.tariff.count({ where: { hospitalId: HRB } })).toBe(9); // Phase 2G: +4 daily ward-fee tariffs
   });
 });

@@ -196,6 +196,13 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "emergency.debt_accrued": "Dette d'urgence enregistrée",
   "emergency.debt_settled": "Dette d'urgence réglée",
   "emergency.debt_waived": "Dette d'urgence annulée (Directeur)",
+  // Phase 2G — ward-level hospitalization.
+  "admission.requested": "Hospitalisation demandée",
+  "admission.ward_assigned": "Service d'hospitalisation attribué",
+  "admission.cancelled": "Demande d'hospitalisation annulée",
+  "admission.discharge_requested": "Sortie demandée",
+  "admission.discharged": "Sortie autorisée",
+  "admission.daily_fee_charged": "Frais journaliers d'hospitalisation facturés",
 };
 
 /**

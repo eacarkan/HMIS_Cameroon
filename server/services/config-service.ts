@@ -16,6 +16,7 @@ import {
   listServiceUnitsOrdered as dbListServiceUnitsOrdered,
   listActiveServiceUnits as dbListActiveServiceUnits,
   listActiveOutpatientConsultationServices as dbListActiveOutpatientConsultationServices,
+  listActiveInpatientWardServices as dbListActiveInpatientWardServices,
   reorderServiceUnits as dbReorderServiceUnits,
   createServiceUnit as dbCreateServiceUnit,
   findServiceUnitById,
@@ -170,6 +171,16 @@ export async function listActiveOutpatientConsultationServices(
 ) {
   await requireCapability(actor, ctx, "service.config.view");
   return dbListActiveOutpatientConsultationServices(ctx.hospitalId);
+}
+
+/** Active INPATIENT_WARD services — the hospitalization WARD picker (Phase 2G). Hospital-scoped
+ *  (service-layer capability + DB-layer where clause); excludes outpatient/support/inactive. */
+export async function listActiveInpatientWardServices(
+  actor: AuthenticatedActor,
+  ctx: HospitalContext,
+) {
+  await requireCapability(actor, ctx, "service.config.view");
+  return dbListActiveInpatientWardServices(ctx.hospitalId);
 }
 
 export async function createServiceUnit(

@@ -44,7 +44,7 @@ describe("integration: Phase 1 (Gate 2) data-model foundation", () => {
     expect(await getSetting(HRB, "locale.default")).toMatchObject({ value: "fr" });
 
     const tariffs = await listTariffs(HRB);
-    expect(tariffs).toHaveLength(5);
+    expect(tariffs).toHaveLength(9); // 5 base + Phase 2G: 4 daily ward-fee tariffs
     expect(tariffs.every((t) => Number.isInteger(t.amount))).toBe(true); // integer FCFA
 
     // Phase 0 base unchanged.
@@ -53,7 +53,7 @@ describe("integration: Phase 1 (Gate 2) data-model foundation", () => {
   });
 
   it("new config/tariff models are hospital-scoped — no cross-hospital leakage", async () => {
-    expect((await listTariffs(HRB)).length).toBe(5);
+    expect((await listTariffs(HRB)).length).toBe(9); // Phase 2G: +4 daily ward-fee tariffs
     expect((await listTariffs(OTHER)).length).toBe(0);
     expect((await listDepartments(OTHER)).length).toBe(0);
   });

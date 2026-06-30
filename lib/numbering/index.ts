@@ -19,11 +19,14 @@ export type DocumentKind =
   // Phase 2D-2 — prescription ("ordonnance").
   | "prescription"
   // Phase 2D-5 — dispense record ("délivrance").
-  | "dispense";
+  | "dispense"
+  // Phase 2G — hospitalization admission.
+  | "admission";
 
 /**
  * French-mnemonic letter per kind: P patient · V visite · F facture · R reçu ·
- * A avoir (bon de remboursement) · B brouillard de caisse · O ordonnance · D délivrance.
+ * A avoir (bon de remboursement) · B brouillard de caisse · O ordonnance · D délivrance ·
+ * H hospitalisation (admission).
  */
 const KIND_LETTER: Record<DocumentKind, string> = {
   patient: "P",
@@ -34,6 +37,7 @@ const KIND_LETTER: Record<DocumentKind, string> = {
   cashier_shift: "B",
   prescription: "O",
   dispense: "D",
+  admission: "H",
 };
 
 /** Zero-padded width of the per-year counter (e.g. 1 → "000001"). */

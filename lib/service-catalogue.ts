@@ -118,3 +118,17 @@ export function isOutpatientConsultationService(service: {
 }): boolean {
   return service.isActive && service.type === "OUTPATIENT" && service.acceptsConsultation;
 }
+
+/**
+ * Phase 2G — eligibility rule for the hospitalization WARD picker: a service may host an admission
+ * only when it is active, typed `INPATIENT_WARD`, and explicitly flagged `isInpatientWard`. Mirrors
+ * `isOutpatientConsultationService`; the DB read path (`listActiveInpatientWardServices`) mirrors it.
+ * Pure + unit-tested.
+ */
+export function isInpatientWardService(service: {
+  type: string;
+  isActive: boolean;
+  isInpatientWard: boolean;
+}): boolean {
+  return service.isActive && service.type === "INPATIENT_WARD" && service.isInpatientWard;
+}

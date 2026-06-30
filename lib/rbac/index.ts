@@ -69,6 +69,16 @@ export type Capability =
   | "emergency.debt.accrue"
   | "emergency.debt.settle"
   | "emergency.debt.waive"
+  // Phase 2G — simple ward-level hospitalization. `request` = doctor requests/cancels an admission;
+  // `assign` = admission desk / head nurse assigns a ward (starts the daily ward fee); `discharge` =
+  // doctor requests + authorises discharge (the financial gate blocks it while money is owed);
+  // `fee.charge` = generate a daily ward fee (a billing act — admission desk + cashier); `read` =
+  // view admissions (clinical + admission desk + financial + oversight).
+  | "admission.read"
+  | "admission.request"
+  | "admission.assign"
+  | "admission.discharge"
+  | "admission.fee.charge"
   // Phase 2A capabilities — service/department catalogue. `manage` = Hospital Admin (and
   // Local IT Lead when assigned); `view` = operational roles, scoped to ACTIVE services.
   | "service.config.manage"
@@ -154,6 +164,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "queue.read",
     // Phase 2H — oversight read of the emergency-debt ledger (admin cannot flag/waive).
     "emergency.debt.read",
+    // Phase 2G — oversight read of admissions (admin does not admit/assign/discharge/charge).
+    "admission.read",
   ],
   agent_accueil: [
     "dashboard.read",
@@ -172,6 +184,10 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     // Phase 2H — the triage desk flags an emergency encounter + reads the debt ledger.
     "emergency.flag",
     "emergency.debt.read",
+    // Phase 2G — the admission desk / head nurse assigns the ward, generates the daily fee, reads.
+    "admission.read",
+    "admission.assign",
+    "admission.fee.charge",
   ],
   medecin: [
     "dashboard.read",
@@ -195,6 +211,10 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     // Phase 2H — the doctor flags an emergency encounter + reads the debt ledger.
     "emergency.flag",
     "emergency.debt.read",
+    // Phase 2G — the doctor requests admission, requests/authorises discharge, and reads admissions.
+    "admission.read",
+    "admission.request",
+    "admission.discharge",
   ],
   caissier: [
     "dashboard.read",
@@ -224,6 +244,9 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "emergency.debt.read",
     "emergency.debt.accrue",
     "emergency.debt.settle",
+    // Phase 2G — the cashier generates the daily ward fee (billing act) and reads admissions.
+    "admission.read",
+    "admission.fee.charge",
   ],
   directeur: [
     "dashboard.read",
@@ -242,6 +265,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     // Phase 2H — the Hospital Director is the ONLY role that may WAIVE an emergency debt (+ read it).
     "emergency.debt.read",
     "emergency.debt.waive",
+    // Phase 2G — oversight read of admissions.
+    "admission.read",
     // Phase 2C — read-only oversight of refund vouchers.
     "refund.read",
     // Phase 2D-1 — oversight view of the medication catalogue.

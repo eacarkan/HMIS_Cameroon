@@ -13,6 +13,7 @@ import {
   Pill,
   UserCog,
   HeartPulse,
+  BedDouble,
   type LucideIcon,
 } from "lucide-react";
 
@@ -55,6 +56,13 @@ export const NAV_ITEMS: NavItem[] = [
     labelKey: "queue",
     icon: Users,
     capability: "queue.read",
+  },
+  {
+    // Phase 2G — ward-level hospitalization board (clinical + admission desk + financial + oversight).
+    href: "/hospitalisations",
+    labelKey: "hospitalizations",
+    icon: BedDouble,
+    capability: "admission.read",
   },
   {
     href: "/facturation",

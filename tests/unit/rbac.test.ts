@@ -278,6 +278,31 @@ describe("lib/rbac — role capabilities (09 §6, 07 §4)", () => {
     }
   });
 
+  it("Phase 2G — hospitalization: doctor requests/discharges; admission desk assigns + charges; reads broad", () => {
+    // Request + discharge: doctor only (clinical acts).
+    expect(can(["medecin"], "admission.request")).toBe(true);
+    expect(can(["medecin"], "admission.discharge")).toBe(true);
+    expect(can(["agent_accueil"], "admission.request")).toBe(false);
+    expect(can(["agent_accueil"], "admission.discharge")).toBe(false);
+    expect(can(["caissier"], "admission.discharge")).toBe(false);
+    // Ward assignment: admission desk / head nurse (reception), NOT the doctor or cashier.
+    expect(can(["agent_accueil"], "admission.assign")).toBe(true);
+    expect(can(["medecin"], "admission.assign")).toBe(false);
+    expect(can(["caissier"], "admission.assign")).toBe(false);
+    // Daily fee (billing act): admission desk + cashier; not the doctor; not the admin.
+    expect(can(["agent_accueil"], "admission.fee.charge")).toBe(true);
+    expect(can(["caissier"], "admission.fee.charge")).toBe(true);
+    expect(can(["medecin"], "admission.fee.charge")).toBe(false);
+    expect(can(["administrateur"], "admission.fee.charge")).toBe(false);
+    // The admin is NOT a clinical/billing superuser here — read-only oversight only.
+    expect(can(["administrateur"], "admission.request")).toBe(false);
+    expect(can(["administrateur"], "admission.assign")).toBe(false);
+    // Read: clinical + admission desk + financial + oversight.
+    for (const role of ["agent_accueil", "medecin", "caissier", "directeur", "administrateur"]) {
+      expect(can([role], "admission.read")).toBe(true);
+    }
+  });
+
   it("no roles grants nothing; multiple roles union their capabilities", () => {
     expect(can([], "patient.read")).toBe(false);
     expect(can(["agent_accueil", "caissier"], "payment.record")).toBe(true);

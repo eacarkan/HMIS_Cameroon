@@ -74,6 +74,7 @@ export {
   updatePaymentStatus,
   markReceiptPrinted,
   findPaymentById,
+  listOpenInvoicesForEncounter,
 } from "./invoices";
 export {
   countPatientsRegisteredSince,
@@ -100,6 +101,8 @@ export {
   listActiveOutpatientConsultationServices,
   findActiveOutpatientConsultationServiceByLabel,
   reorderServiceUnits,
+  listActiveInpatientWardServices,
+  findActiveInpatientWardServiceById,
   listSettings,
   getSetting,
   listDocumentTemplates,
@@ -277,6 +280,23 @@ export {
   updateQueueTicketStatus,
   setQueueTicketUrgent,
 } from "./queue-tickets";
+
+// Phase 2G — ward-level hospitalization (admission + daily ward fee).
+export {
+  type CreateAdmissionData,
+  type DailyChargeTxResult,
+  createAdmissionTx,
+  findAdmissionById,
+  findLatestAdmissionForEncounter,
+  findActiveAdmissionForEncounter,
+  listAdmissions,
+  assignWardTx,
+  cancelAdmissionTx,
+  requestDischargeTx,
+  authorizeDischargeTx,
+  listDailyChargesForAdmission,
+  accrueDailyChargeTx,
+} from "./hospitalization";
 
 // Phase 2H — emergency exception + emergency-debt ledger.
 export {

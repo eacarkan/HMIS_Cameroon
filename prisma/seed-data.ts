@@ -479,6 +479,12 @@ async function seedConfigAndTariffs(prisma: PrismaClient): Promise<void> {
     { code: "consultation_specialisee", label: "Consultation spécialisée", amount: 5000 },
     { code: "pansement", label: "Pansement", amount: 1500 },
     { code: "injection", label: "Injection", amount: 1000 },
+    // Phase 2G — daily ward fees. The tariff `code` MATCHES the INPATIENT_WARD service code, so
+    // `assignWard` resolves + snapshots the fee from the ward's active tariff. Integer FCFA.
+    { code: "SRV-MED-INTERNE", label: "Hospitalisation — médecine interne (journée)", amount: 10000 },
+    { code: "SRV-MATERNITE", label: "Hospitalisation — maternité (journée)", amount: 12000 },
+    { code: "SRV-CHIR-HOSP", label: "Hospitalisation — chirurgie (journée)", amount: 15000 },
+    { code: "SRV-PEDIA-HOSP", label: "Hospitalisation — pédiatrie (journée)", amount: 9000 },
   ];
   for (const t of tariffs) {
     await prisma.tariff.upsert({
@@ -521,6 +527,10 @@ export async function clearOperationalData(
   await prisma.cashierShift.deleteMany();
   await prisma.refundVoucher.deleteMany();
   await prisma.invoiceCancellationRequest.deleteMany();
+  // Phase 2G — clear admissions + daily charges BEFORE invoices/encounters (admission → invoice +
+  // encounter FKs; daily charges cascade with the admission but are cleared explicitly first).
+  await prisma.admissionDailyCharge.deleteMany();
+  await prisma.admission.deleteMany();
   await prisma.payment.deleteMany();
   await prisma.invoiceItem.deleteMany();
   await prisma.invoice.deleteMany();

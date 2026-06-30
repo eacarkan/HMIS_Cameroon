@@ -162,6 +162,38 @@ export function findActiveOutpatientConsultationServiceByLabel(
   });
 }
 
+/** Phase 2G — active INPATIENT_WARD services for the hospitalization ward picker. Hospital-scoped at
+ *  the DB layer; mirrors lib `isInpatientWardService` (active + type INPATIENT_WARD + isInpatientWard).
+ *  Excludes outpatient/support/cashier/pharmacy/lab/imaging/inactive services and other hospitals. */
+export function listActiveInpatientWardServices(hospitalId: string) {
+  return prisma.serviceUnit.findMany({
+    where: {
+      hospitalId,
+      deletedAt: null,
+      isActive: true,
+      type: "INPATIENT_WARD",
+      isInpatientWard: true,
+    },
+    orderBy: [{ displayOrder: "asc" }, { code: "asc" }],
+  });
+}
+
+/** Phase 2G — server-side ENFORCEMENT resolver for ward assignment: resolve a ward by id ONLY when it
+ *  is an active INPATIENT_WARD service in THIS hospital. Returns null otherwise, so a tampered submit
+ *  cannot assign an outpatient/support/other-hospital service as a ward. */
+export function findActiveInpatientWardServiceById(hospitalId: string, id: string) {
+  return prisma.serviceUnit.findFirst({
+    where: {
+      id,
+      hospitalId,
+      deletedAt: null,
+      isActive: true,
+      type: "INPATIENT_WARD",
+      isInpatientWard: true,
+    },
+  });
+}
+
 /** Atomically set displayOrder for a set of services in ONE hospital (reorder use-case). */
 export function reorderServiceUnits(
   hospitalId: string,

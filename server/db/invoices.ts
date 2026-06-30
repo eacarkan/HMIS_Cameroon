@@ -120,3 +120,20 @@ export function findPaymentById(hospitalId: string, id: string) {
     },
   });
 }
+
+/**
+ * Phase 2G — invoices on an encounter that are NOT yet settled (status not in paid / cancelled), used
+ * by the discharge gate. Soft-deleted invoices are excluded. Hospital-scoped.
+ */
+export function listOpenInvoicesForEncounter(hospitalId: string, encounterId: string) {
+  return prisma.invoice.findMany({
+    where: {
+      hospitalId,
+      encounterId,
+      deletedAt: null,
+      status: { notIn: ["paid", "cancelled"] },
+    },
+    select: { id: true, invoiceNumber: true, status: true, totalAmount: true },
+    orderBy: { createdAt: "asc" },
+  });
+}

@@ -83,6 +83,8 @@ enum SequenceType {
   prescription
   // Phase 2D-5 — dispense record number.
   dispense
+  // Phase 2G — hospitalization admission number.
+  admission
 }
 
 /// Phase 2D-2 — structured prescription lifecycle. Dispensing transitions (partially_dispensed /
@@ -219,6 +221,8 @@ model Hospital {
   reportExports          ReportExport[]
   queueTickets           QueueTicket[]
   emergencyDebts         EmergencyDebt[]
+  admissions             Admission[]
+  admissionDailyCharges  AdmissionDailyCharge[]
 
   // Phase 1 (Gate 2) additive relations.
   departments                Department[]
@@ -279,10 +283,10 @@ model User {
   stockAdjustmentsRequested StockAdjustment[] @relation("StockAdjustmentRequestedBy")
   stockAdjustmentsDecided   StockAdjustment[] @relation("StockAdjustmentDecidedBy")
   reportExports             ReportExport[]    @relation("ReportExportedBy")
-  prescriptionsPrescribed Prescription[]   @relation("PrescriptionPrescribedBy")
+  prescriptionsPrescribed   Prescription[]    @relation("PrescriptionPrescribedBy")
   // Phase 2D-5 additive relations.
-  prescriptionsPaid       Prescription[]   @relation("PrescriptionPaidBy")
-  dispensesPerformed      DispenseRecord[] @relation("DispensePerformedBy")
+  prescriptionsPaid         Prescription[]    @relation("PrescriptionPaidBy")
+  dispensesPerformed        DispenseRecord[]  @relation("DispensePerformedBy")
 }
 
 /// Assignment of a Role to a User, scoped to a Hospital (minimal RBAC, 05 §4).
@@ -330,11 +334,12 @@ model Patient {
   isTemporaryIdentity Boolean @default(false)
   temporaryIdentifier String?
 
-  hospital      Hospital       @relation(fields: [hospitalId], references: [id])
-  encounters    Encounter[]
-  prescriptions Prescription[]
-  queueTickets  QueueTicket[]
+  hospital       Hospital        @relation(fields: [hospitalId], references: [id])
+  encounters     Encounter[]
+  prescriptions  Prescription[]
+  queueTickets   QueueTicket[]
   emergencyDebts EmergencyDebt[]
+  admissions     Admission[]
 
   // Phase 1 (Gate 2) additive relations.
   contacts            PatientContact[]
@@ -350,39 +355,40 @@ model Patient {
 
 /// A visit bringing a patient into the hospital.
 model Encounter {
-  id              String          @id @default(cuid())
-  hospitalId      String
-  patientId       String
-  encounterNumber String
-  serviceLabel    String
+  id                   String          @id @default(cuid())
+  hospitalId           String
+  patientId            String
+  encounterNumber      String
+  serviceLabel         String
   // Phase 2B — optional link to the configured service catalogue (ServiceUnit). `serviceLabel`
   // (free text) is kept for back-compat; new visits also record the picked service id.
-  serviceUnitId   String?
-  reason          String
-  status          EncounterStatus @default(open)
-  assignedToId    String?
-  openedAt        DateTime        @default(now())
-  closedAt        DateTime?
-  createdById     String?
-  updatedById     String?
-  deletedAt       DateTime?
+  serviceUnitId        String?
+  reason               String
+  status               EncounterStatus @default(open)
+  assignedToId         String?
+  openedAt             DateTime        @default(now())
+  closedAt             DateTime?
+  createdById          String?
+  updatedById          String?
+  deletedAt            DateTime?
   // Phase 2H — emergency ("treat first, pay later") exception. A triage nurse/doctor flags the
   // encounter as emergency, which lets dispensing bypass the cashier paid-check and lets charges
   // accrue as auditable Emergency Debt to be settled or waived (by the Director) before discharge.
-  isEmergency         Boolean   @default(false)
+  isEmergency          Boolean         @default(false)
   emergencyFlaggedById String?
   emergencyFlaggedAt   DateTime?
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
 
-  hospital      Hospital       @relation(fields: [hospitalId], references: [id])
-  patient       Patient        @relation(fields: [patientId], references: [id])
-  serviceUnit   ServiceUnit?   @relation(fields: [serviceUnitId], references: [id])
-  assignedTo    User?          @relation("EncounterAssignedTo", fields: [assignedToId], references: [id])
-  consultations Consultation[]
-  invoices      Invoice[]
-  prescriptions Prescription[]
+  hospital       Hospital        @relation(fields: [hospitalId], references: [id])
+  patient        Patient         @relation(fields: [patientId], references: [id])
+  serviceUnit    ServiceUnit?    @relation(fields: [serviceUnitId], references: [id])
+  assignedTo     User?           @relation("EncounterAssignedTo", fields: [assignedToId], references: [id])
+  consultations  Consultation[]
+  invoices       Invoice[]
+  prescriptions  Prescription[]
   emergencyDebts EmergencyDebt[]
+  admissions     Admission[]
 
   @@unique([hospitalId, encounterNumber])
   @@index([hospitalId, patientId])
@@ -443,6 +449,9 @@ model Invoice {
   // Phase 2C additive relations.
   cancellationRequests InvoiceCancellationRequest[]
   refundVouchers       RefundVoucher[]
+
+  // Phase 2G additive relation — a hospitalization invoice belongs to at most one admission.
+  admission Admission?
 
   @@unique([hospitalId, invoiceNumber])
   @@index([hospitalId, encounterId])
@@ -581,10 +590,11 @@ model ServiceUnit {
   isInpatientWard     Boolean     @default(false)
   isEmergency         Boolean     @default(false)
 
-  hospital     Hospital      @relation(fields: [hospitalId], references: [id])
-  department   Department?   @relation(fields: [departmentId], references: [id])
-  encounters   Encounter[]
-  queueTickets QueueTicket[]
+  hospital       Hospital      @relation(fields: [hospitalId], references: [id])
+  department     Department?   @relation(fields: [departmentId], references: [id])
+  encounters     Encounter[]
+  queueTickets   QueueTicket[]
+  wardAdmissions Admission[]
 
   @@unique([hospitalId, code])
   @@index([hospitalId, departmentId])
@@ -1108,6 +1118,81 @@ model EmergencyDebt {
   patient   Patient   @relation(fields: [patientId], references: [id])
 
   @@index([hospitalId, encounterId, status])
+}
+
+/// Phase 2G — simple ward-level hospitalization lifecycle. A doctor REQUESTS admission; the admission
+/// desk / head nurse ASSIGNS a ward (an INPATIENT_WARD service) which starts the daily ward fee; the
+/// doctor REQUESTS then AUTHORISES discharge (the latter is blocked while invoices are unpaid or
+/// emergency debt is outstanding). `requested → admitted → discharge_requested → discharged`, plus
+/// `requested → cancelled` (before a ward is assigned). No bed/room-level tracking.
+enum AdmissionStatus {
+  requested
+  admitted
+  discharge_requested
+  discharged
+  cancelled
+}
+
+/// Phase 2G — a ward-level hospitalization tied to an encounter. Bed/room-level tracking is out of
+/// scope. The daily ward fee is resolved from the ward's active Tariff and SNAPSHOT here at assignment
+/// (deterministic + auditable); daily charges accrue onto a single hospitalization Invoice.
+model Admission {
+  id                   String          @id @default(cuid())
+  hospitalId           String
+  encounterId          String
+  patientId            String
+  admissionNumber      String
+  status               AdmissionStatus @default(requested)
+  reason               String
+  // Ward assignment (set when status → admitted). The daily ward fee is snapshot from the ward tariff.
+  wardServiceUnitId    String?
+  dailyWardFee         Int             @default(0) // integer FCFA, snapshot at assignment
+  dailyFeeTariffId     String?
+  // The single hospitalization invoice the daily ward fees accrue onto (created lazily on first charge).
+  invoiceId            String?         @unique
+  cancelReason         String?
+  requestedById        String?
+  admittedById         String?
+  dischargedById       String?
+  cancelledById        String?
+  requestedAt          DateTime        @default(now())
+  admittedAt           DateTime?
+  dischargeRequestedAt DateTime?
+  dischargedAt         DateTime?
+  cancelledAt          DateTime?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  hospital     Hospital               @relation(fields: [hospitalId], references: [id])
+  encounter    Encounter              @relation(fields: [encounterId], references: [id])
+  patient      Patient                @relation(fields: [patientId], references: [id])
+  wardService  ServiceUnit?           @relation(fields: [wardServiceUnitId], references: [id])
+  invoice      Invoice?               @relation(fields: [invoiceId], references: [id])
+  dailyCharges AdmissionDailyCharge[]
+
+  @@unique([hospitalId, admissionNumber])
+  @@index([hospitalId, status])
+  @@index([hospitalId, encounterId])
+}
+
+/// Phase 2G — one auditable daily ward-fee charge for an admission. The `@@unique` on (admission, day)
+/// makes fee generation idempotent: charging the same day twice never double-bills. Each charge maps to
+/// one InvoiceItem (`invoiceItemId`) appended to the admission's hospitalization invoice.
+model AdmissionDailyCharge {
+  id            String   @id @default(cuid())
+  hospitalId    String
+  admissionId   String
+  chargeDate    DateTime @db.Date
+  amount        Int // integer FCFA — the snapshot daily ward fee
+  invoiceItemId String?
+  createdById   String?
+  createdAt     DateTime @default(now())
+
+  hospital  Hospital  @relation(fields: [hospitalId], references: [id])
+  admission Admission @relation(fields: [admissionId], references: [id], onDelete: Cascade)
+
+  @@unique([hospitalId, admissionId, chargeDate])
+  @@index([hospitalId, admissionId])
 }
 
 /// Phase 2D-2 — a structured prescription ("ordonnance") raised by a doctor during an encounter.

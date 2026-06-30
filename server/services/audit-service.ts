@@ -138,6 +138,13 @@ export const AUDIT_ACTIONS = {
   emergencyDebtAccrued: "emergency.debt_accrued",
   emergencyDebtSettled: "emergency.debt_settled",
   emergencyDebtWaived: "emergency.debt_waived",
+  // Phase 2G — ward-level hospitalization.
+  admissionRequested: "admission.requested",
+  admissionWardAssigned: "admission.ward_assigned",
+  admissionCancelled: "admission.cancelled",
+  admissionDischargeRequested: "admission.discharge_requested",
+  admissionDischarged: "admission.discharged",
+  admissionDailyFeeCharged: "admission.daily_fee_charged",
 } as const;
 
 /**
