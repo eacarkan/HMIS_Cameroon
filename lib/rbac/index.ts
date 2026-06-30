@@ -17,7 +17,11 @@ export type Role =
   // `pharmacien_chef` (Pharmacist-in-Charge) authorises FEFO overrides + approves stock adjustments
   // (dual validation = pharmacien requests, pharmacien_chef approves).
   | "pharmacien"
-  | "pharmacien_chef";
+  | "pharmacien_chef"
+  // Phase 2I — diagnostics roles. `technicien_diagnostic` enters lab/radiology results;
+  // `validateur_diagnostic` validates them (the enter ≠ validate clinical control).
+  | "technicien_diagnostic"
+  | "validateur_diagnostic";
 
 export type Capability =
   // Phase 0 capabilities.
@@ -79,6 +83,16 @@ export type Capability =
   | "admission.assign"
   | "admission.discharge"
   | "admission.fee.charge"
+  // Phase 2I — manual lab & radiology. `request` = doctor orders a test/exam; `read` = view orders
+  // (the RESULT stays hidden from the doctor until validated, enforced in the service); `payment.confirm`
+  // = cashier validates payment; `result.enter` = technician enters the manual result; `validate` =
+  // biologist/radiologist validates; `catalogue.manage` = Admin/Lead Tech maintains the catalogue.
+  | "diagnostic.request"
+  | "diagnostic.read"
+  | "diagnostic.payment.confirm"
+  | "diagnostic.result.enter"
+  | "diagnostic.validate"
+  | "diagnostic.catalogue.manage"
   // Phase 2A capabilities — service/department catalogue. `manage` = Hospital Admin (and
   // Local IT Lead when assigned); `view` = operational roles, scoped to ACTIVE services.
   | "service.config.manage"
@@ -166,6 +180,9 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "emergency.debt.read",
     // Phase 2G — oversight read of admissions (admin does not admit/assign/discharge/charge).
     "admission.read",
+    // Phase 2I — the admin maintains the lab/radiology catalogue + reads orders (oversight).
+    "diagnostic.catalogue.manage",
+    "diagnostic.read",
   ],
   agent_accueil: [
     "dashboard.read",
@@ -215,6 +232,9 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "admission.read",
     "admission.request",
     "admission.discharge",
+    // Phase 2I — the doctor orders lab/radiology and reads them (results hidden until validated).
+    "diagnostic.request",
+    "diagnostic.read",
   ],
   caissier: [
     "dashboard.read",
@@ -247,6 +267,9 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     // Phase 2G — the cashier generates the daily ward fee (billing act) and reads admissions.
     "admission.read",
     "admission.fee.charge",
+    // Phase 2I — the cashier validates payment for a lab/radiology order (+ reads to do so).
+    "diagnostic.read",
+    "diagnostic.payment.confirm",
   ],
   directeur: [
     "dashboard.read",
@@ -267,6 +290,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "emergency.debt.waive",
     // Phase 2G — oversight read of admissions.
     "admission.read",
+    // Phase 2I — oversight read of lab/radiology orders.
+    "diagnostic.read",
     // Phase 2C — read-only oversight of refund vouchers.
     "refund.read",
     // Phase 2D-1 — oversight view of the medication catalogue.
@@ -321,6 +346,23 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     // Phase 2F — the pharmacy advances its dispensing queue.
     "queue.read",
     "queue.manage",
+  ],
+  // Phase 2I — diagnostics staff. The technician ENTERS results (lab + radiology); the validator
+  // VALIDATES them (enter ≠ validate). Both see the result they handle; neither touches money/clinical
+  // records beyond the order. (A finer biologiste/radiologue split by modality is a future refinement.)
+  technicien_diagnostic: [
+    "dashboard.read",
+    "patient.read",
+    "encounter.read",
+    "diagnostic.read",
+    "diagnostic.result.enter",
+  ],
+  validateur_diagnostic: [
+    "dashboard.read",
+    "patient.read",
+    "encounter.read",
+    "diagnostic.read",
+    "diagnostic.validate",
   ],
 };
 

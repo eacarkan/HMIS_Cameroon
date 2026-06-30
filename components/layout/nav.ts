@@ -14,6 +14,7 @@ import {
   UserCog,
   HeartPulse,
   BedDouble,
+  FlaskConical,
   type LucideIcon,
 } from "lucide-react";
 
@@ -63,6 +64,13 @@ export const NAV_ITEMS: NavItem[] = [
     labelKey: "hospitalizations",
     icon: BedDouble,
     capability: "admission.read",
+  },
+  {
+    // Phase 2I — lab/radiology worklist (clinical + diagnostics staff + oversight read).
+    href: "/laboratoire",
+    labelKey: "diagnostics",
+    icon: FlaskConical,
+    capability: "diagnostic.read",
   },
   {
     href: "/facturation",

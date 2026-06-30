@@ -21,12 +21,14 @@ export type DocumentKind =
   // Phase 2D-5 — dispense record ("délivrance").
   | "dispense"
   // Phase 2G — hospitalization admission.
-  | "admission";
+  | "admission"
+  // Phase 2I — lab / radiology diagnostic order (examen).
+  | "diagnostic";
 
 /**
  * French-mnemonic letter per kind: P patient · V visite · F facture · R reçu ·
  * A avoir (bon de remboursement) · B brouillard de caisse · O ordonnance · D délivrance ·
- * H hospitalisation (admission).
+ * H hospitalisation (admission) · E examen (laboratoire / imagerie).
  */
 const KIND_LETTER: Record<DocumentKind, string> = {
   patient: "P",
@@ -38,6 +40,7 @@ const KIND_LETTER: Record<DocumentKind, string> = {
   prescription: "O",
   dispense: "D",
   admission: "H",
+  diagnostic: "E",
 };
 
 /** Zero-padded width of the per-year counter (e.g. 1 → "000001"). */

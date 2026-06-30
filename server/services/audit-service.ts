@@ -145,6 +145,15 @@ export const AUDIT_ACTIONS = {
   admissionDischargeRequested: "admission.discharge_requested",
   admissionDischarged: "admission.discharged",
   admissionDailyFeeCharged: "admission.daily_fee_charged",
+  // Phase 2I — manual lab & radiology.
+  diagnosticCatalogueChanged: "diagnostic.catalogue_changed",
+  diagnosticRequested: "diagnostic.requested",
+  diagnosticPaymentConfirmed: "diagnostic.payment_confirmed",
+  diagnosticStarted: "diagnostic.started",
+  diagnosticResultEntered: "diagnostic.result_entered",
+  diagnosticValidated: "diagnostic.validated",
+  diagnosticCancelled: "diagnostic.cancelled",
+  diagnosticPdfGenerated: "diagnostic.pdf_generated",
 } as const;
 
 /**

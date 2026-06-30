@@ -9,6 +9,9 @@ export const ACCOUNTS = {
   // Phase 2D — pharmacy demo accounts.
   pharmacist: "georges.mballa@hrb-demo.cm",
   pharmacistChief: "claire.fotso@hrb-demo.cm",
+  // Phase 2I — diagnostics demo accounts (enter ≠ validate).
+  labTech: "paul.ngono@hrb-demo.cm",
+  labValidator: "marie.eyenga@hrb-demo.cm",
 };
 
 /** Log in (fresh context) and select HRB-DEMO, landing on the dashboard. */

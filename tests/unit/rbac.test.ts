@@ -303,6 +303,35 @@ describe("lib/rbac — role capabilities (09 §6, 07 §4)", () => {
     }
   });
 
+  it("Phase 2I — diagnostics: doctor requests; cashier pays; technician enters; validator validates", () => {
+    // Request + read: doctor (results hidden until validated, enforced in the service).
+    expect(can(["medecin"], "diagnostic.request")).toBe(true);
+    expect(can(["medecin"], "diagnostic.read")).toBe(true);
+    expect(can(["agent_accueil"], "diagnostic.request")).toBe(false);
+    // Payment: cashier only.
+    expect(can(["caissier"], "diagnostic.payment.confirm")).toBe(true);
+    expect(can(["medecin"], "diagnostic.payment.confirm")).toBe(false);
+    expect(can(["technicien_diagnostic"], "diagnostic.payment.confirm")).toBe(false);
+    // Enter ≠ validate: the technician enters; only the validator validates.
+    expect(can(["technicien_diagnostic"], "diagnostic.result.enter")).toBe(true);
+    expect(can(["technicien_diagnostic"], "diagnostic.validate")).toBe(false);
+    expect(can(["validateur_diagnostic"], "diagnostic.validate")).toBe(true);
+    expect(can(["validateur_diagnostic"], "diagnostic.result.enter")).toBe(false);
+    expect(can(["medecin"], "diagnostic.result.enter")).toBe(false);
+    expect(can(["medecin"], "diagnostic.validate")).toBe(false);
+    // Catalogue: admin only (Lead Tech mapping deferred).
+    expect(can(["administrateur"], "diagnostic.catalogue.manage")).toBe(true);
+    expect(can(["technicien_diagnostic"], "diagnostic.catalogue.manage")).toBe(false);
+    // Read: clinical + diagnostics staff + financial + oversight.
+    for (const role of ["medecin", "caissier", "directeur", "administrateur", "technicien_diagnostic", "validateur_diagnostic"]) {
+      expect(can([role], "diagnostic.read")).toBe(true);
+    }
+    // Diagnostics staff are NOT clinical/billing/admin superusers.
+    expect(can(["technicien_diagnostic"], "consultation.create")).toBe(false);
+    expect(can(["validateur_diagnostic"], "invoice.create")).toBe(false);
+    expect(can(["technicien_diagnostic"], "admin.manage")).toBe(false);
+  });
+
   it("no roles grants nothing; multiple roles union their capabilities", () => {
     expect(can([], "patient.read")).toBe(false);
     expect(can(["agent_accueil", "caissier"], "payment.record")).toBe(true);

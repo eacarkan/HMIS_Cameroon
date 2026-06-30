@@ -85,6 +85,8 @@ enum SequenceType {
   dispense
   // Phase 2G — hospitalization admission number.
   admission
+  // Phase 2I — lab / radiology diagnostic order number (examen).
+  diagnostic
 }
 
 /// Phase 2D-2 — structured prescription lifecycle. Dispensing transitions (partially_dispensed /
@@ -210,19 +212,21 @@ model Hospital {
   cashierShiftCorrections CashierShiftCorrection[]
 
   // Phase 2D additive relations.
-  medications            Medication[]
-  prescriptions          Prescription[]
-  prescriptionItems      PrescriptionItem[]
-  medicationStockBatches MedicationStockBatch[]
-  stockReservations      StockReservation[]
-  dispenseRecords        DispenseRecord[]
-  dispenseRecordItems    DispenseRecordItem[]
-  stockAdjustments       StockAdjustment[]
-  reportExports          ReportExport[]
-  queueTickets           QueueTicket[]
-  emergencyDebts         EmergencyDebt[]
-  admissions             Admission[]
-  admissionDailyCharges  AdmissionDailyCharge[]
+  medications              Medication[]
+  prescriptions            Prescription[]
+  prescriptionItems        PrescriptionItem[]
+  medicationStockBatches   MedicationStockBatch[]
+  stockReservations        StockReservation[]
+  dispenseRecords          DispenseRecord[]
+  dispenseRecordItems      DispenseRecordItem[]
+  stockAdjustments         StockAdjustment[]
+  reportExports            ReportExport[]
+  queueTickets             QueueTicket[]
+  emergencyDebts           EmergencyDebt[]
+  admissions               Admission[]
+  admissionDailyCharges    AdmissionDailyCharge[]
+  diagnosticCatalogueItems DiagnosticCatalogueItem[]
+  diagnosticOrders         DiagnosticOrder[]
 
   // Phase 1 (Gate 2) additive relations.
   departments                Department[]
@@ -334,12 +338,13 @@ model Patient {
   isTemporaryIdentity Boolean @default(false)
   temporaryIdentifier String?
 
-  hospital       Hospital        @relation(fields: [hospitalId], references: [id])
-  encounters     Encounter[]
-  prescriptions  Prescription[]
-  queueTickets   QueueTicket[]
-  emergencyDebts EmergencyDebt[]
-  admissions     Admission[]
+  hospital         Hospital          @relation(fields: [hospitalId], references: [id])
+  encounters       Encounter[]
+  prescriptions    Prescription[]
+  queueTickets     QueueTicket[]
+  emergencyDebts   EmergencyDebt[]
+  admissions       Admission[]
+  diagnosticOrders DiagnosticOrder[]
 
   // Phase 1 (Gate 2) additive relations.
   contacts            PatientContact[]
@@ -380,15 +385,16 @@ model Encounter {
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
 
-  hospital       Hospital        @relation(fields: [hospitalId], references: [id])
-  patient        Patient         @relation(fields: [patientId], references: [id])
-  serviceUnit    ServiceUnit?    @relation(fields: [serviceUnitId], references: [id])
-  assignedTo     User?           @relation("EncounterAssignedTo", fields: [assignedToId], references: [id])
-  consultations  Consultation[]
-  invoices       Invoice[]
-  prescriptions  Prescription[]
-  emergencyDebts EmergencyDebt[]
-  admissions     Admission[]
+  hospital         Hospital          @relation(fields: [hospitalId], references: [id])
+  patient          Patient           @relation(fields: [patientId], references: [id])
+  serviceUnit      ServiceUnit?      @relation(fields: [serviceUnitId], references: [id])
+  assignedTo       User?             @relation("EncounterAssignedTo", fields: [assignedToId], references: [id])
+  consultations    Consultation[]
+  invoices         Invoice[]
+  prescriptions    Prescription[]
+  emergencyDebts   EmergencyDebt[]
+  admissions       Admission[]
+  diagnosticOrders DiagnosticOrder[]
 
   @@unique([hospitalId, encounterNumber])
   @@index([hospitalId, patientId])
@@ -1133,6 +1139,24 @@ enum AdmissionStatus {
   cancelled
 }
 
+/// Phase 2I — diagnostic modality (manual workflows only; radiology is text-only, no PACS/DICOM).
+enum DiagnosticModality {
+  lab
+  radiology
+}
+
+/// Phase 2I — manual lab/radiology order lifecycle. `requested → payment_confirmed → in_progress →
+/// result_entered → validated` (+ `cancelled` before validation). The doctor cannot see the result
+/// until `validated`. Payment is bypassed for emergency (2H) encounters.
+enum DiagnosticOrderStatus {
+  requested
+  payment_confirmed
+  in_progress
+  result_entered
+  validated
+  cancelled
+}
+
 /// Phase 2G — a ward-level hospitalization tied to an encounter. Bed/room-level tracking is out of
 /// scope. The daily ward fee is resolved from the ward's active Tariff and SNAPSHOT here at assignment
 /// (deterministic + auditable); daily charges accrue onto a single hospitalization Invoice.
@@ -1193,6 +1217,67 @@ model AdmissionDailyCharge {
 
   @@unique([hospitalId, admissionId, chargeDate])
   @@index([hospitalId, admissionId])
+}
+
+/// Phase 2I — the orderable lab/radiology catalogue, maintained at hospital level by the Admin (or
+/// Lead Tech). `price` is integer FCFA (snapshot onto the order at request time). No analyzer/PACS.
+model DiagnosticCatalogueItem {
+  id           String             @id @default(cuid())
+  hospitalId   String
+  code         String
+  nameFr       String
+  nameEn       String?
+  modality     DiagnosticModality
+  price        Int                @default(0) // integer FCFA
+  isActive     Boolean            @default(true)
+  displayOrder Int                @default(0)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  hospital Hospital          @relation(fields: [hospitalId], references: [id])
+  orders   DiagnosticOrder[]
+
+  @@unique([hospitalId, code])
+  @@index([hospitalId, modality])
+}
+
+/// Phase 2I — a manual lab/radiology order. Doctor requests → cashier confirms payment (or emergency
+/// bypass, 2H) → technician enters a TEXT result → validator validates → PDF. The `resultText` is
+/// hidden from the requesting doctor (service-enforced) until `status = validated`. Modality/label/
+/// price are SNAPSHOT from the catalogue item at request time. Append-and-transition; never deleted.
+model DiagnosticOrder {
+  id                String                @id @default(cuid())
+  hospitalId        String
+  encounterId       String
+  patientId         String
+  catalogueItemId   String?
+  orderNumber       String
+  modality          DiagnosticModality
+  itemLabel         String // snapshot of the catalogue item name
+  price             Int                   @default(0) // integer FCFA, snapshot
+  status            DiagnosticOrderStatus @default(requested)
+  isPaid            Boolean               @default(false)
+  paidAt            DateTime?
+  paidById          String?
+  resultText        String?
+  resultEnteredById String?
+  resultEnteredAt   DateTime?
+  validatedById     String?
+  validatedAt       DateTime?
+  cancelReason      String?
+  requestedById     String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  hospital      Hospital                 @relation(fields: [hospitalId], references: [id])
+  encounter     Encounter                @relation(fields: [encounterId], references: [id])
+  patient       Patient                  @relation(fields: [patientId], references: [id])
+  catalogueItem DiagnosticCatalogueItem? @relation(fields: [catalogueItemId], references: [id])
+
+  @@unique([hospitalId, orderNumber])
+  @@index([hospitalId, status])
+  @@index([hospitalId, encounterId])
+  @@index([hospitalId, modality, status])
 }
 
 /// Phase 2D-2 — a structured prescription ("ordonnance") raised by a doctor during an encounter.

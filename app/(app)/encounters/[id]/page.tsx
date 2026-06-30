@@ -6,6 +6,7 @@ import { getTranslations } from "next-intl/server";
 import { ClinicalStructurePanel } from "@/components/consultations/clinical-structure-panel";
 import { EmergencyControls } from "@/components/emergency/emergency-controls";
 import { AdmissionControls } from "@/components/hospitalization/admission-controls";
+import { DiagnosticPanel } from "@/components/diagnostics/diagnostic-panel";
 import {
   EncounterServiceForm,
   EncounterStatusControls,
@@ -33,8 +34,10 @@ import {
   listActiveInpatientWardServices,
   listActiveOutpatientConsultationServices,
   listDiagnosisCodes,
+  listDiagnosticsForEncounter,
   listObservations,
   listDiagnoses,
+  listOrderableDiagnostics,
   listPrescriptionsForEncounter,
 } from "@/server/services";
 
@@ -56,6 +59,7 @@ export default async function EncounterPage({
   const tPrescStatus = await getTranslations("prescriptionStatus");
   const tEm = await getTranslations("emergency");
   const tAdm = await getTranslations("admission");
+  const tDiag = await getTranslations("diagnostic");
 
   // Phase 2H — emergency exception + emergency-debt ledger (clinical/financial/oversight read).
   const canReadEmergency = can(actor.roles, "emergency.debt.read");
@@ -82,6 +86,41 @@ export default async function EncounterPage({
         name: w.nameFr ?? w.name ?? w.code,
       }))
     : [];
+  // Phase 2I — manual lab & radiology (results hidden from the doctor until validated, server-enforced).
+  const canReadDiagnostic = can(actor.roles, "diagnostic.read");
+  const canRequestDiagnostic = can(actor.roles, "diagnostic.request");
+  const diagnosticOrders = canReadDiagnostic
+    ? (await listDiagnosticsForEncounter(actor, hospital, id)).map((o) => ({
+        id: o.id,
+        encounterId: o.encounterId,
+        orderNumber: o.orderNumber,
+        modality: o.modality as "lab" | "radiology",
+        itemLabel: o.itemLabel,
+        status: o.status as
+          | "requested"
+          | "payment_confirmed"
+          | "in_progress"
+          | "result_entered"
+          | "validated"
+          | "cancelled",
+        isPaid: o.isPaid,
+        priceLabel: formatFcfa(o.price),
+        resultText: o.resultText,
+        cancelReason: o.cancelReason,
+      }))
+    : [];
+  const diagnosticCatalogue = canRequestDiagnostic
+    ? (await listOrderableDiagnostics(actor, hospital)).map((c) => ({
+        id: c.id,
+        label: `${c.nameFr} — ${formatFcfa(c.price)} (${c.modality === "lab" ? "Labo" : "Imagerie"})`,
+      }))
+    : [];
+  const diagnosticCaps = {
+    pay: can(actor.roles, "diagnostic.payment.confirm"),
+    enter: can(actor.roles, "diagnostic.result.enter"),
+    validate: can(actor.roles, "diagnostic.validate"),
+  };
+
   const adm = admissionData?.admission ?? null;
   const admissionView = adm
     ? {
@@ -384,6 +423,23 @@ export default async function EncounterPage({
                 wards={wards}
                 dischargeBlock={admissionData?.dischargeBlock ?? { blocked: false, reasons: [] }}
                 caps={admissionCaps}
+              />
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {canReadDiagnostic ? (
+          <Card className="lg:col-span-3">
+            <CardHeader>
+              <CardTitle className="text-base">{tDiag("title")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DiagnosticPanel
+                encounterId={encounter.id}
+                orders={diagnosticOrders}
+                catalogue={diagnosticCatalogue}
+                caps={diagnosticCaps}
+                canRequest={canRequestDiagnostic}
               />
             </CardContent>
           </Card>

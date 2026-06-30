@@ -275,6 +275,24 @@ export {
   getAdmissionForEncounter,
   listHospitalAdmissions,
 } from "./hospitalization-service";
+
+// Phase 2I — manual lab & radiology (catalogue + order lifecycle + validation gate + report).
+export {
+  listDiagnosticCatalogueAll,
+  listOrderableDiagnostics,
+  createDiagnosticCatalogueItem,
+  setDiagnosticCatalogueItemActive,
+  requestDiagnostic,
+  confirmDiagnosticPayment,
+  startDiagnostic,
+  enterDiagnosticResult,
+  validateDiagnosticResult,
+  cancelDiagnostic,
+  getDiagnosticOrder,
+  listDiagnosticsForEncounter,
+  getDiagnosticWorklist,
+  getDiagnosticReport,
+} from "./diagnostic-service";
 export {
   listUsers,
   createUserForActor,

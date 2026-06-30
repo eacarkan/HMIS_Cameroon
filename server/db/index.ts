@@ -298,6 +298,26 @@ export {
   accrueDailyChargeTx,
 } from "./hospitalization";
 
+// Phase 2I — manual lab & radiology (catalogue + order lifecycle).
+export {
+  type CreateDiagnosticCatalogueItemData,
+  type CreateDiagnosticOrderData,
+  listDiagnosticCatalogue,
+  listActiveDiagnosticCatalogue,
+  findDiagnosticCatalogueItemById,
+  createDiagnosticCatalogueItem,
+  updateDiagnosticCatalogueItem,
+  createDiagnosticOrder,
+  findDiagnosticOrderById,
+  listDiagnosticOrdersForEncounter,
+  listDiagnosticWorklist,
+  confirmDiagnosticPaymentTx,
+  startDiagnosticTx,
+  enterDiagnosticResultTx,
+  validateDiagnosticResultTx,
+  cancelDiagnosticTx,
+} from "./diagnostics";
+
 // Phase 2H — emergency exception + emergency-debt ledger.
 export {
   type CreateEmergencyDebtData,

@@ -203,6 +203,15 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "admission.discharge_requested": "Sortie demandée",
   "admission.discharged": "Sortie autorisée",
   "admission.daily_fee_charged": "Frais journaliers d'hospitalisation facturés",
+  // Phase 2I — manual lab & radiology.
+  "diagnostic.catalogue_changed": "Catalogue d'examens modifié",
+  "diagnostic.requested": "Examen demandé",
+  "diagnostic.payment_confirmed": "Paiement d'examen confirmé",
+  "diagnostic.started": "Examen démarré",
+  "diagnostic.result_entered": "Résultat d'examen saisi",
+  "diagnostic.validated": "Résultat d'examen validé",
+  "diagnostic.cancelled": "Examen annulé",
+  "diagnostic.pdf_generated": "Compte rendu d'examen imprimé",
 };
 
 /**

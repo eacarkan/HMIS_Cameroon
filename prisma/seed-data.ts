@@ -123,6 +123,9 @@ export const ROLES: RoleSeed[] = [
   // Phase 2D — pharmacy roles.
   { id: "role-pharmacien", code: "pharmacien", name: "Pharmacien" },
   { id: "role-pharmacien-chef", code: "pharmacien_chef", name: "Pharmacien responsable" },
+  // Phase 2I — diagnostics roles (enter ≠ validate).
+  { id: "role-technicien-diagnostic", code: "technicien_diagnostic", name: "Technicien de laboratoire / imagerie" },
+  { id: "role-validateur-diagnostic", code: "validateur_diagnostic", name: "Validateur (biologiste / radiologue)" },
 ];
 
 type UserSeed = {
@@ -176,6 +179,19 @@ export const USERS: UserSeed[] = [
     displayName: "Claire FOTSO",
     email: "claire.fotso@hrb-demo.cm",
     roleCode: "pharmacien_chef",
+  },
+  // Phase 2I — diagnostics demo users (the technician enters results; the validator validates them).
+  {
+    id: "user-paul-ngono",
+    displayName: "Paul NGONO",
+    email: "paul.ngono@hrb-demo.cm",
+    roleCode: "technicien_diagnostic",
+  },
+  {
+    id: "user-marie-eyenga",
+    displayName: "Dr Marie EYENGA",
+    email: "marie.eyenga@hrb-demo.cm",
+    roleCode: "validateur_diagnostic",
   },
 ];
 
@@ -256,6 +272,33 @@ export async function seedBaseData(prisma: PrismaClient): Promise<void> {
   await seedDiagnosisCodes(prisma);
   await seedMedications(prisma);
   await seedStock(prisma);
+  await seedDiagnosticCatalogue(prisma);
+}
+
+/** Phase 2I — seed a small SYNTHETIC lab/radiology catalogue for HRB-DEMO (idempotent upsert). */
+async function seedDiagnosticCatalogue(prisma: PrismaClient): Promise<void> {
+  const items: {
+    code: string;
+    nameFr: string;
+    nameEn: string;
+    modality: "lab" | "radiology";
+    price: number;
+  }[] = [
+    { code: "LAB-NFS", nameFr: "Numération formule sanguine (NFS)", nameEn: "Complete blood count", modality: "lab", price: 3500 },
+    { code: "LAB-GE", nameFr: "Goutte épaisse (paludisme)", nameEn: "Thick smear (malaria)", modality: "lab", price: 1500 },
+    { code: "LAB-GLY", nameFr: "Glycémie à jeun", nameEn: "Fasting blood glucose", modality: "lab", price: 2000 },
+    { code: "LAB-CREAT", nameFr: "Créatininémie", nameEn: "Serum creatinine", modality: "lab", price: 2500 },
+    { code: "RAD-THORAX", nameFr: "Radiographie du thorax", nameEn: "Chest X-ray", modality: "radiology", price: 8000 },
+    { code: "RAD-ECHO-ABDO", nameFr: "Échographie abdominale", nameEn: "Abdominal ultrasound", modality: "radiology", price: 12000 },
+  ];
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i];
+    await prisma.diagnosticCatalogueItem.upsert({
+      where: { hospitalId_code: { hospitalId: DEMO_HOSPITAL_ID, code: it.code } },
+      create: { hospitalId: DEMO_HOSPITAL_ID, ...it, displayOrder: i + 1 },
+      update: { nameFr: it.nameFr, nameEn: it.nameEn, modality: it.modality, price: it.price },
+    });
+  }
 }
 
 /**
@@ -527,6 +570,8 @@ export async function clearOperationalData(
   await prisma.cashierShift.deleteMany();
   await prisma.refundVoucher.deleteMany();
   await prisma.invoiceCancellationRequest.deleteMany();
+  // Phase 2I — clear diagnostic orders BEFORE encounters/patients (order → encounter/patient FKs).
+  await prisma.diagnosticOrder.deleteMany();
   // Phase 2G — clear admissions + daily charges BEFORE invoices/encounters (admission → invoice +
   // encounter FKs; daily charges cascade with the admission but are cleared explicitly first).
   await prisma.admissionDailyCharge.deleteMany();
@@ -551,6 +596,8 @@ export async function clearOperationalData(
   await prisma.priceList.deleteMany();
   // Phase 2D-1 — medication catalogue (re-upserted by seedBaseData). No FK children yet.
   await prisma.medication.deleteMany();
+  // Phase 2I — diagnostic catalogue (master data, re-upserted by seedBaseData; after its orders).
+  await prisma.diagnosticCatalogueItem.deleteMany();
   await prisma.serviceUnit.deleteMany();
   await prisma.department.deleteMany();
   await prisma.setting.deleteMany();

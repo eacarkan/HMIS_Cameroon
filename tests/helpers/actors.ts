@@ -14,6 +14,9 @@ export const ACCOUNTS = {
   // Phase 2D — pharmacy roles (dual validation: pharmacist requests, pharmacist-in-charge approves).
   pharmacist: "georges.mballa@hrb-demo.cm",
   pharmacistChief: "claire.fotso@hrb-demo.cm",
+  // Phase 2I — diagnostics roles (enter ≠ validate).
+  labTech: "paul.ngono@hrb-demo.cm",
+  labValidator: "marie.eyenga@hrb-demo.cm",
 } as const;
 
 /** Authenticate a demo user (asserts success). */

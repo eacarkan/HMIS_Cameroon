@@ -1,4 +1,4 @@
-import { Pill, ReceiptText, Users } from "lucide-react";
+import { FlaskConical, Pill, ReceiptText, Users } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -95,6 +95,14 @@ export default async function AdministrationPage() {
                 <Link href="/administration/medicaments">
                   <Pill className="size-4" aria-hidden />
                   {t("manageMedications")}
+                </Link>
+              </Button>
+            ) : null}
+            {can(actor.roles, "diagnostic.catalogue.manage") ? (
+              <Button asChild variant="secondary" size="sm">
+                <Link href="/administration/examens">
+                  <FlaskConical className="size-4" aria-hidden />
+                  {t("manageDiagnostics")}
                 </Link>
               </Button>
             ) : null}
