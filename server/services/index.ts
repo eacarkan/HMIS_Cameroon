@@ -242,6 +242,9 @@ export {
   type ExpiringLotRow,
   getPharmacyReport,
 } from "./pharmacy-report-service";
+
+// Phase 2E — operational reporting + DHIS2-aligned aggregate CSV export (no patient identifiers).
+export { getOperationalReport, exportDhis2Csv } from "./operational-report-service";
 export {
   listUsers,
   createUserForActor,

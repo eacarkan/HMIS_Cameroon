@@ -62,6 +62,13 @@ export const NAV_ITEMS: NavItem[] = [
     capability: "cashier.report.read",
   },
   {
+    // Phase 2E — operational reports + DHIS2 aggregate CSV export (admin + director).
+    href: "/rapports",
+    labelKey: "operationalReports",
+    icon: Banknote,
+    capability: "report.operational.read",
+  },
+  {
     // Phase 2C — Brouillard de Caisse (cashier opens/closes their shift).
     href: "/caisse/brouillard",
     labelKey: "brouillard",

@@ -226,6 +226,20 @@ describe("lib/rbac — role capabilities (09 §6, 07 §4)", () => {
     expect(can(["caissier"], "reservation.release")).toBe(false);
   });
 
+  it("Phase 2E — operational reports: admin reads+exports; director reads only; others none", () => {
+    expect(can(["administrateur"], "report.operational.read")).toBe(true);
+    expect(can(["administrateur"], "report.export")).toBe(true);
+    // The director has read-only aggregate oversight — NO export.
+    expect(can(["directeur"], "report.operational.read")).toBe(true);
+    expect(can(["directeur"], "report.export")).toBe(false);
+    // Cashier keeps their own cashier report, not the operational one; clinicians/reception none.
+    expect(can(["caissier"], "report.operational.read")).toBe(false);
+    expect(can(["caissier"], "report.export")).toBe(false);
+    expect(can(["medecin"], "report.operational.read")).toBe(false);
+    expect(can(["agent_accueil"], "report.operational.read")).toBe(false);
+    expect(can(["pharmacien"], "report.export")).toBe(false);
+  });
+
   it("no roles grants nothing; multiple roles union their capabilities", () => {
     expect(can([], "patient.read")).toBe(false);
     expect(can(["agent_accueil", "caissier"], "payment.record")).toBe(true);

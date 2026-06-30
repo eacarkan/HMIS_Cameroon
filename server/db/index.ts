@@ -257,3 +257,12 @@ export {
 
 // Phase 2D-8 — read-only pharmacy reporting.
 export { listDispenseItemsSince, countDispenseRecordsSince } from "./pharmacy-reports";
+
+// Phase 2E — operational reporting + DHIS2 aggregate export history.
+export {
+  type CreateReportExportData,
+  listConsultationDemographicsForPeriod,
+  listRecordedPaymentsForPeriod,
+  createReportExport,
+  listReportExports,
+} from "./operational-reports";

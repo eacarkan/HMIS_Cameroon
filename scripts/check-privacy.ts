@@ -145,6 +145,35 @@ if (!/DÉMO \/ PILOTE — données fictives/.test(dataMode)) {
   problems.push("lib/data-mode.ts: visible fake-data marker (DATA_MODE_LABEL) missing");
 }
 
+// Phase 2E: the DHIS2 aggregate export must carry NO nominative patient fields. Statically assert the
+// export builder + its data-access path reference no nominative tokens, and the CSV header is the strict
+// aggregate set (period / orgUnit / dataElement / ageBand / gender / value).
+// PATIENT nominative fields (the export-history staff `displayName` is metadata, not patient data).
+const NOMINATIVE_FIELDS = [
+  "familyName",
+  "givenName",
+  "patientNumber",
+  "temporaryIdentifier",
+  "residence",
+  "guardianPhone",
+];
+for (const f of [
+  "lib/dhis2.ts",
+  "server/services/operational-report-service.ts",
+  "server/db/operational-reports.ts",
+]) {
+  const src = readFileSync(f, "utf8");
+  for (const tok of NOMINATIVE_FIELDS) {
+    if (src.includes(tok)) {
+      problems.push(`${f}: references nominative field "${tok}" — the DHIS2 export must be aggregate-only`);
+    }
+  }
+}
+const dhis2Src = readFileSync("lib/dhis2.ts", "utf8");
+if (!/"period"[\s\S]*"orgUnit"[\s\S]*"dataElement"[\s\S]*"ageBand"[\s\S]*"gender"[\s\S]*"value"/.test(dhis2Src)) {
+  problems.push("lib/dhis2.ts: DHIS2_CSV_HEADER must be the strict aggregate columns (no patient field)");
+}
+
 if (problems.length) {
   console.error("✗ privacy/fake-data check found issues:");
   for (const p of problems) console.error("  - " + p);

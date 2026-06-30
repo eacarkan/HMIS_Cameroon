@@ -50,6 +50,11 @@ export type Capability =
   // Phase 1 (Gate 5B) capabilities.
   | "cashier.report.read"
   | "user.manage"
+  // Phase 2E — hospital operational reporting + the DHIS2-aligned AGGREGATE CSV export (no patient
+  // identifiers). `read` = aggregate report views (admin + director oversight); `export` = run the
+  // audited CSV export (admin only). Cross-hospital denied; the cashier keeps `cashier.report.read`.
+  | "report.operational.read"
+  | "report.export"
   // Phase 2A capabilities — service/department catalogue. `manage` = Hospital Admin (and
   // Local IT Lead when assigned); `view` = operational roles, scoped to ACTIVE services.
   | "service.config.manage"
@@ -112,6 +117,9 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "tariff.manage",
     "cashier.report.read",
     "user.manage",
+    // Phase 2E — the administrator views operational reports AND runs the audited DHIS2 CSV export.
+    "report.operational.read",
+    "report.export",
     // Phase 2C — the administrator APPROVES cancellations/refunds (cannot request or execute),
     // and can read refund vouchers for oversight. No payment/refund execution (not clinical, not
     // a cashier).
@@ -189,6 +197,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "config.read",
     "cashier.report.read",
     "service.config.view",
+    // Phase 2E — the director views aggregate operational reports (no export).
+    "report.operational.read",
     // Phase 2C — read-only oversight of refund vouchers.
     "refund.read",
     // Phase 2D-1 — oversight view of the medication catalogue.

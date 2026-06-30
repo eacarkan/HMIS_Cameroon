@@ -127,6 +127,8 @@ export const AUDIT_ACTIONS = {
   stockAdjustmentRequested: "stock.adjustment_requested",
   stockAdjustmentApproved: "stock.adjustment_approved",
   stockAdjustmentRejected: "stock.adjustment_rejected",
+  // Phase 2E — manual aggregate (DHIS2-aligned) CSV export. Records period + scope + row count only.
+  reportExportedCsv: "report.exported_csv",
 } as const;
 
 /**

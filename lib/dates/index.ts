@@ -52,11 +52,15 @@ export function dayRange(isoDate: string): { start: Date; end: Date } {
   return { start, end };
 }
 
-/** Whole years between `dob` and `now` (age). */
+/**
+ * Whole years between `dob` and `now` (age). Uses UTC calendar fields so the result is timezone-stable
+ * — a date of birth is a calendar date, and age banding (Phase 2E aggregate reports) must not shift with
+ * the server's local timezone.
+ */
 export function ageInYears(dob: Date, now: Date = new Date()): number {
-  let age = now.getFullYear() - dob.getFullYear();
-  const monthDelta = now.getMonth() - dob.getMonth();
-  if (monthDelta < 0 || (monthDelta === 0 && now.getDate() < dob.getDate())) {
+  let age = now.getUTCFullYear() - dob.getUTCFullYear();
+  const monthDelta = now.getUTCMonth() - dob.getUTCMonth();
+  if (monthDelta < 0 || (monthDelta === 0 && now.getUTCDate() < dob.getUTCDate())) {
     age -= 1;
   }
   return age;

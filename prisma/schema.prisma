@@ -199,6 +199,7 @@ model Hospital {
   dispenseRecords        DispenseRecord[]
   dispenseRecordItems    DispenseRecordItem[]
   stockAdjustments       StockAdjustment[]
+  reportExports          ReportExport[]
 
   // Phase 1 (Gate 2) additive relations.
   departments                Department[]
@@ -258,6 +259,7 @@ model User {
   // Phase 2D-2 additive relation.
   stockAdjustmentsRequested StockAdjustment[] @relation("StockAdjustmentRequestedBy")
   stockAdjustmentsDecided   StockAdjustment[] @relation("StockAdjustmentDecidedBy")
+  reportExports             ReportExport[]    @relation("ReportExportedBy")
   prescriptionsPrescribed Prescription[]   @relation("PrescriptionPrescribedBy")
   // Phase 2D-5 additive relations.
   prescriptionsPaid       Prescription[]   @relation("PrescriptionPaidBy")
@@ -1004,6 +1006,26 @@ model StockAdjustment {
 
   @@index([hospitalId, status, createdAt])
   @@index([batchId])
+}
+
+/// Phase 2E — an audited record of a manual aggregate export (e.g. the DHIS2-aligned monthly CSV).
+/// History only — it stores WHAT aggregate export was run (kind, period, row count) and BY WHOM, never
+/// any exported patient data (the exports themselves are aggregate-only, no nominative fields).
+model ReportExport {
+  id           String   @id @default(cuid())
+  hospitalId   String
+  kind         String // e.g. "dhis2_monthly"
+  periodLabel  String // e.g. "2026-06"
+  periodStart  DateTime
+  periodEnd    DateTime
+  rowCount     Int
+  exportedById String
+  createdAt    DateTime @default(now())
+
+  hospital   Hospital @relation(fields: [hospitalId], references: [id])
+  exportedBy User     @relation("ReportExportedBy", fields: [exportedById], references: [id])
+
+  @@index([hospitalId, createdAt])
 }
 
 /// Phase 2D-2 — a structured prescription ("ordonnance") raised by a doctor during an encounter.

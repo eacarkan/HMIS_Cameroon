@@ -543,6 +543,7 @@ export async function clearOperationalData(
   await prisma.department.deleteMany();
   await prisma.setting.deleteMany();
   await prisma.documentTemplate.deleteMany();
+  await prisma.reportExport.deleteMany();
   await prisma.auditLog.deleteMany();
   await prisma.sequence.updateMany({ data: { current: 0 } });
 }

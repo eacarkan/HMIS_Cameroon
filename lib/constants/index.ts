@@ -185,6 +185,8 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "stock.adjustment_requested": "Ajustement de stock demandé",
   "stock.adjustment_approved": "Ajustement de stock approuvé",
   "stock.adjustment_rejected": "Ajustement de stock rejeté",
+  // Phase 2E — aggregate DHIS2 CSV export.
+  "report.exported_csv": "Export CSV agrégé (DHIS2)",
 };
 
 /**
