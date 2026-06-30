@@ -1,7 +1,6 @@
 import type { DiagnosticModality } from "@prisma/client";
 
 import {
-  accrueEmergencyDebtTx,
   cancelDiagnosticTx,
   confirmDiagnosticPaymentTx,
   createDiagnosticCatalogueItem as dbCreateCatalogueItem,
@@ -194,7 +193,26 @@ export async function startDiagnostic(actor: AuthenticatedActor, ctx: HospitalCo
     throw new Error("L'examen doit être payé à la caisse avant d'être réalisé (sauf urgence).");
   }
   const emergencyBypass = order.status === "requested" && !order.isPaid && isEmergency;
-  const updated = await startDiagnosticTx({ hospitalId: ctx.hospitalId, id });
+  // Pre-Gate-7 hardening: an emergency-bypassed exam must be TRACKED so the discharge gate (2G) cannot
+  // miss it. Phase 3 QA patch — the priced Emergency Debt is now accrued INSIDE the start transaction
+  // (commit-or-fail together): the start fails if the debt cannot be created, and the debt is
+  // idempotent by source (a concurrent/retried start cannot duplicate it). Settled by the cashier or
+  // waived by the Director before discharge.
+  const { order: updated, emergencyDebt } = await startDiagnosticTx({
+    hospitalId: ctx.hospitalId,
+    id,
+    emergencyDebt:
+      emergencyBypass && order.price > 0
+        ? {
+            hospitalId: ctx.hospitalId,
+            encounterId: order.encounterId,
+            patientId: order.patientId,
+            amount: order.price,
+            source: `Examen d'urgence — ${order.itemLabel} (${order.orderNumber})`,
+            createdById: actor.id,
+          }
+        : null,
+  });
   await recordAudit({
     hospitalId: ctx.hospitalId,
     actorId: actor.id,
@@ -203,25 +221,14 @@ export async function startDiagnostic(actor: AuthenticatedActor, ctx: HospitalCo
     entityId: id,
     summary: `Examen ${order.orderNumber} démarré${emergencyBypass ? " (URGENCE — paiement différé)" : ""}`,
   });
-
-  // Pre-Gate-7 hardening: an emergency-bypassed exam must be TRACKED so the discharge gate (2G) cannot
-  // miss it. The catalogue item is priced, so we accrue the real Emergency Debt automatically (settled
-  // by the cashier or waived by the Director before discharge).
-  if (emergencyBypass && order.price > 0) {
-    const debt = await accrueEmergencyDebtTx({
-      hospitalId: ctx.hospitalId,
-      encounterId: order.encounterId,
-      patientId: order.patientId,
-      amount: order.price,
-      source: `Examen d'urgence — ${order.itemLabel} (${order.orderNumber})`,
-      createdById: actor.id,
-    });
+  // Audit the accrual only when a debt was newly created (idempotent reuse must not re-audit).
+  if (emergencyDebt?.created) {
     await recordAudit({
       hospitalId: ctx.hospitalId,
       actorId: actor.id,
       action: AUDIT_ACTIONS.emergencyDebtAccrued,
       entityType: "EmergencyDebt",
-      entityId: debt.id,
+      entityId: emergencyDebt.id,
       summary: `Dette d'urgence ${formatFcfa(order.price)} ouverte automatiquement — examen ${order.orderNumber}`,
     });
   }

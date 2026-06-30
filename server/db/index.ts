@@ -367,6 +367,7 @@ export {
   setEncounterEmergency,
   createEmergencyDebt,
   accrueEmergencyDebtTx,
+  accrueEmergencyDebtWithinTx,
   unflagEncounterEmergencyTx,
   findEmergencyDebtById,
   listEmergencyDebtsForEncounter,

@@ -1,6 +1,7 @@
 import type { DiagnosticModality } from "@prisma/client";
 
 import { prisma } from "./prisma";
+import { accrueEmergencyDebtWithinTx, type CreateEmergencyDebtData } from "./emergency";
 
 /**
  * Phase 2I — manual lab/radiology data-access (hospital-scoped; integer FCFA). Catalogue CRUD plus the
@@ -129,19 +130,47 @@ export async function confirmDiagnosticPaymentTx(params: { hospitalId: string; i
   return findDiagnosticOrderById(params.hospitalId, params.id);
 }
 
-/** Technician starts the test ((requested | payment_confirmed) → in_progress). Guarded. Eligibility
- *  (paid or emergency) is checked in the service before this call. */
-export async function startDiagnosticTx(params: { hospitalId: string; id: string }) {
-  const res = await prisma.diagnosticOrder.updateMany({
-    where: {
-      id: params.id,
-      hospitalId: params.hospitalId,
-      status: { in: ["requested", "payment_confirmed"] },
-    },
-    data: { status: "in_progress" },
+/**
+ * Technician starts the test ((requested | payment_confirmed) → in_progress). Guarded. Eligibility
+ * (paid or emergency) is checked in the service before this call.
+ *
+ * Phase 3 QA patch: the start and any emergency-bypass debt now commit-or-fail TOGETHER in one
+ * `$transaction`. The guarded status claim wins for exactly one starter (a concurrent second start
+ * sees count 0 and throws before any debt), and the priced debt is accrued inside the same tx,
+ * idempotent by source. If the encounter is no longer an emergency the accrual throws and the start
+ * rolls back. Returns the started order plus whether a debt was newly `created` (for the audit).
+ */
+export async function startDiagnosticTx(params: {
+  hospitalId: string;
+  id: string;
+  emergencyDebt?: CreateEmergencyDebtData | null;
+}) {
+  const debtInfo = await prisma.$transaction(async (tx) => {
+    const res = await tx.diagnosticOrder.updateMany({
+      where: {
+        id: params.id,
+        hospitalId: params.hospitalId,
+        status: { in: ["requested", "payment_confirmed"] },
+      },
+      data: { status: "in_progress" },
+    });
+    if (res.count === 0) throw new Error("Cet examen ne peut pas être démarré dans son état actuel.");
+    if (params.emergencyDebt) {
+      // Re-derive emergency eligibility UNDER the claimed row's lock: a payment confirmed between the
+      // service's pre-tx read and now (status payment_confirmed, isPaid=true) means this is no longer a
+      // bypass — accrue NO debt on a paid exam.
+      const locked = await tx.diagnosticOrder.findUniqueOrThrow({ where: { id: params.id } });
+      if (!locked.isPaid) {
+        return accrueEmergencyDebtWithinTx(tx, params.emergencyDebt, { idempotentBySource: true });
+      }
+    }
+    return null;
   });
-  if (res.count === 0) throw new Error("Cet examen ne peut pas être démarré dans son état actuel.");
-  return findDiagnosticOrderById(params.hospitalId, params.id);
+  const order = await findDiagnosticOrderById(params.hospitalId, params.id);
+  return {
+    order,
+    emergencyDebt: debtInfo ? { id: debtInfo.debt.id, created: debtInfo.created } : null,
+  };
 }
 
 /** Technician enters the manual result (in_progress → result_entered). Guarded. */

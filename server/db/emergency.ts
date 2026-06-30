@@ -1,4 +1,4 @@
-import type { EmergencyDebtStatus } from "@prisma/client";
+import type { EmergencyDebt, EmergencyDebtStatus, Prisma } from "@prisma/client";
 
 import { prisma } from "./prisma";
 
@@ -34,22 +34,56 @@ export function createEmergencyDebt(data: CreateEmergencyDebtData) {
 }
 
 /**
- * Accrue a debt ATOMICALLY, asserting the encounter is still emergency. One `$transaction`: a guarded
- * `updateMany(where isEmergency:true)` both ASSERTS the flag and takes the encounter row's write lock,
- * then the debt is created. This serialises against `unflagEncounterEmergencyTx` (which locks the same
- * row), so a concurrent un-flag can never leave `isEmergency=false` WITH outstanding debt.
+ * Accrue an emergency debt WITHIN AN EXISTING interactive transaction — so the debt can be folded
+ * atomically into the TRIGGERING action (pharmacy dispense / diagnostic start) and the two
+ * commit-or-fail together. Steps, on the caller's `tx`:
+ *   1. a guarded `updateMany(where isEmergency:true)` ASSERTS the encounter is still flagged emergency
+ *      AND takes that row's write lock — this serialises against `unflagEncounterEmergencyTx` (which
+ *      locks the same row), so a concurrent un-flag can never leave `isEmergency=false` WITH outstanding
+ *      debt, AND against a concurrent accrual on the same encounter. If the encounter is no longer an
+ *      emergency the call THROWS, which (inside the action's tx) rolls back the whole action.
+ *   2. IDEMPOTENCY (opt-in `idempotentBySource`): if a debt with the SAME deterministic `source`
+ *      already exists on the encounter it is REUSED (never duplicated). The row lock from step 1 makes
+ *      this find-then-create atomic against a concurrent retry / double-submit / partial re-dispense.
+ * Returns the debt and whether it was newly `created` (so the caller audits only a real accrual).
+ */
+export async function accrueEmergencyDebtWithinTx(
+  tx: Prisma.TransactionClient,
+  data: CreateEmergencyDebtData,
+  opts: { idempotentBySource?: boolean } = {},
+): Promise<{ debt: EmergencyDebt; created: boolean }> {
+  const lock = await tx.encounter.updateMany({
+    where: { id: data.encounterId, hospitalId: data.hospitalId, isEmergency: true },
+    data: { updatedAt: new Date() },
+  });
+  if (lock.count === 0) {
+    throw new Error("La dette d'urgence ne peut être enregistrée que sur une visite marquée urgence.");
+  }
+  if (opts.idempotentBySource) {
+    // Reuse ONLY a still-OUTSTANDING debt with this source. A placeholder already settled or waived is
+    // NOT live coverage — a new dispense round must accrue a fresh outstanding debt, otherwise the
+    // discharge gate (which counts only outstanding) would let goods leave with no chargeable debt.
+    const existing = await tx.emergencyDebt.findFirst({
+      where: {
+        hospitalId: data.hospitalId,
+        encounterId: data.encounterId,
+        source: data.source,
+        status: "outstanding",
+      },
+    });
+    if (existing) return { debt: existing, created: false };
+  }
+  const debt = await tx.emergencyDebt.create({ data });
+  return { debt, created: true };
+}
+
+/**
+ * Accrue a debt ATOMICALLY in its OWN `$transaction` — for the manual cashier/Director accrual where
+ * recording the debt IS the action (no triggering side-effect to couple to). Always creates a row.
  */
 export async function accrueEmergencyDebtTx(data: CreateEmergencyDebtData) {
-  return prisma.$transaction(async (tx) => {
-    const lock = await tx.encounter.updateMany({
-      where: { id: data.encounterId, hospitalId: data.hospitalId, isEmergency: true },
-      data: { updatedAt: new Date() },
-    });
-    if (lock.count === 0) {
-      throw new Error("La dette d'urgence ne peut être enregistrée que sur une visite marquée urgence.");
-    }
-    return tx.emergencyDebt.create({ data });
-  });
+  const { debt } = await prisma.$transaction((tx) => accrueEmergencyDebtWithinTx(tx, data));
+  return debt;
 }
 
 /**

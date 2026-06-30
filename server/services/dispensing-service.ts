@@ -1,5 +1,4 @@
 import {
-  accrueEmergencyDebtTx,
   dispenseReservationsForPrescription,
   findDispenseRecordById,
   findEncounterById,
@@ -103,7 +102,6 @@ export async function dispensePrescription(
   if (presc.status !== "sent_to_pharmacy" && presc.status !== "partially_dispensed") {
     throw new Error("Cette ordonnance ne peut pas être délivrée dans son statut actuel.");
   }
-  const wasFirstDispense = presc.status === "sent_to_pharmacy";
   // Cheap pre-check so the common "nothing to dispense" case fails BEFORE a sequence number is spent.
   const active = await listReservationsForPrescription(ctx.hospitalId, prescriptionId, "active");
   if (active.length === 0) {
@@ -112,9 +110,14 @@ export async function dispensePrescription(
 
   // The entire consume → deduct → record → status transition runs atomically (one $transaction in the
   // data layer) with a guarded reservation claim, so a concurrent double-dispense cannot deduct twice.
+  // Phase 3 QA patch: for an emergency bypass the PLACEHOLDER Emergency Debt is now accrued INSIDE that
+  // same transaction (commit-or-fail together) — the dispense fails if the debt cannot be created, and
+  // the debt is idempotent per prescription (no duplicate on retry / partial re-dispense). Medications
+  // carry no price in 2D, so the placeholder is amount 0 ("à tarifer"), priced/settled at the cashier
+  // (or waived by the Director) before discharge.
   const year = new Date().getFullYear();
   const dispenseNumber = await generateNumber(ctx, "dispense", year);
-  const { record, totalUnits, allFull } = await dispenseReservationsForPrescription({
+  const { record, totalUnits, allFull, emergencyDebt } = await dispenseReservationsForPrescription({
     hospitalId: ctx.hospitalId,
     prescriptionId,
     dispensedById: actor.id,
@@ -125,6 +128,15 @@ export async function dispensePrescription(
       unit: it.unit,
       quantity: it.quantity,
     })),
+    emergencyDebt: emergencyBypass
+      ? {
+          encounterId: presc.encounterId,
+          patientId: presc.patientId,
+          amount: 0,
+          source: `Délivrance d'urgence (ordonnance ${presc.prescriptionNumber}) — montant à définir à la caisse`,
+          createdById: actor.id,
+        }
+      : null,
   });
   if (!record) {
     // A concurrent dispense won every reservation between the pre-check and the transaction.
@@ -144,25 +156,16 @@ export async function dispensePrescription(
       (emergencyBypass ? " (URGENCE — paiement différé)" : ""),
   });
 
-  // Pre-Gate-7 hardening: an emergency-bypassed dispense must be TRACKED so the discharge gate (2G)
-  // cannot silently miss it. Medications carry no price in 2D, so we accrue a PLACEHOLDER outstanding
-  // Emergency Debt (amount 0, "à tarifer") ONCE per prescription (only on the first dispense round);
-  // the cashier prices/settles it (or the Director waives it) before discharge.
-  if (emergencyBypass && wasFirstDispense) {
-    const debt = await accrueEmergencyDebtTx({
-      hospitalId: ctx.hospitalId,
-      encounterId: presc.encounterId,
-      patientId: presc.patientId,
-      amount: 0,
-      source: `Délivrance d'urgence (ordonnance ${presc.prescriptionNumber}) — montant à définir à la caisse`,
-      createdById: actor.id,
-    });
+  // The emergency-bypass debt was coupled inside the dispense transaction above (so the discharge gate
+  // 2G can never miss it). Audit the accrual ONLY when a debt was newly created — a retry / partial
+  // re-dispense reuses the existing placeholder (idempotent) and must not re-audit.
+  if (emergencyDebt?.created) {
     await recordAudit({
       hospitalId: ctx.hospitalId,
       actorId: actor.id,
       action: AUDIT_ACTIONS.emergencyDebtAccrued,
       entityType: "EmergencyDebt",
-      entityId: debt.id,
+      entityId: emergencyDebt.id,
       summary: `Dette d'urgence (à tarifer) ouverte automatiquement — délivrance ${record.dispenseNumber}`,
     });
   }

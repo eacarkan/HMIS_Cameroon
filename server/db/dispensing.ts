@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import { accrueEmergencyDebtWithinTx } from "./emergency";
 
 /** Phase 2D-5 — dispense-record data-access (hospital-scoped, integer quantities). */
 
@@ -69,6 +70,17 @@ export type DispenseTxResult = {
   totalUnits: number;
   allFull: boolean;
   consumedCount: number;
+  /** Set when an emergency-bypass debt was coupled in the SAME transaction (`created` false on reuse). */
+  emergencyDebt: { id: string; created: boolean } | null;
+};
+
+/** Emergency-bypass debt to couple atomically with the dispense (Phase 3 QA patch). */
+export type DispenseEmergencyDebt = {
+  encounterId: string;
+  patientId: string;
+  amount: number;
+  source: string;
+  createdById?: string | null;
 };
 
 /**
@@ -90,6 +102,8 @@ export async function dispenseReservationsForPrescription(params: {
   dispensedById: string;
   dispenseNumber: string;
   lines: DispenseLine[];
+  /** When set (emergency bypass), the placeholder debt is created in THIS transaction, idempotent by source. */
+  emergencyDebt?: DispenseEmergencyDebt | null;
 }): Promise<DispenseTxResult> {
   const { hospitalId, prescriptionId, dispensedById, dispenseNumber, lines } = params;
 
@@ -145,7 +159,14 @@ export async function dispenseReservationsForPrescription(params: {
     }
 
     if (dispenseItems.length === 0) {
-      return { recordId: null as string | null, totalUnits: 0, allFull: false, consumedCount: 0 };
+      // Nothing dispensed (a concurrent dispense won every reservation) → accrue NO debt.
+      return {
+        recordId: null as string | null,
+        totalUnits: 0,
+        allFull: false,
+        consumedCount: 0,
+        emergencyDebt: null as { id: string; created: boolean } | null,
+      };
     }
 
     const record = await tx.dispenseRecord.create({
@@ -171,9 +192,36 @@ export async function dispenseReservationsForPrescription(params: {
       data: { status: allFull ? "dispensed" : "partially_dispensed" },
     });
 
-    return { recordId: record.id, totalUnits, allFull, consumedCount: dispenseItems.length };
+    // Phase 3 QA patch: fold the emergency-bypass debt into THIS transaction so the dispense and the
+    // debt commit-or-fail together. It runs only AFTER a real dispense record exists (a no-op dispense
+    // accrues nothing); if the encounter is no longer an emergency the accrual THROWS and the whole
+    // dispense rolls back (no service delivered without a coupled debt). Idempotent per source, so a
+    // retry or a later partial round reuses the existing placeholder instead of duplicating it.
+    let emergencyDebt: { id: string; created: boolean } | null = null;
+    if (params.emergencyDebt) {
+      // Re-derive emergency eligibility UNDER the (just-updated, row-locked) prescription: if it was
+      // paid concurrently between the service's pre-tx read and now, accrue NO placeholder on a paid
+      // prescription. The status updateMany above holds the row lock, so this read is authoritative.
+      const presc = await tx.prescription.findUniqueOrThrow({ where: { id: prescriptionId } });
+      if (!presc.isPaid) {
+        const { debt, created } = await accrueEmergencyDebtWithinTx(
+          tx,
+          { hospitalId, ...params.emergencyDebt },
+          { idempotentBySource: true },
+        );
+        emergencyDebt = { id: debt.id, created };
+      }
+    }
+
+    return { recordId: record.id, totalUnits, allFull, consumedCount: dispenseItems.length, emergencyDebt };
   });
 
   const record = result.recordId ? await findDispenseRecordById(hospitalId, result.recordId) : null;
-  return { record, totalUnits: result.totalUnits, allFull: result.allFull, consumedCount: result.consumedCount };
+  return {
+    record,
+    totalUnits: result.totalUnits,
+    allFull: result.allFull,
+    consumedCount: result.consumedCount,
+    emergencyDebt: result.emergencyDebt,
+  };
 }

@@ -41,7 +41,7 @@ async function emergencyEncounter() {
   return { reception, encounterId: enc.id };
 }
 
-async function sendPrescription(encounterId: string, emergency: boolean) {
+async function sendPrescription(encounterId: string) {
   const med = await prisma.medication.findFirstOrThrow({ where: { hospitalId: HRB, code: "MED-PARA-500" } });
   const doctor = await loginAndSelect(ACCOUNTS.doctor);
   const presc = await createPrescription(doctor.actor, doctor.ctx, {
@@ -58,7 +58,7 @@ describe("integration: Phase 3F-2 emergency debt auto-coupling (verifies H4)", (
 
   it("emergency pharmacy dispense auto-creates/links an outstanding EmergencyDebt", async () => {
     const { encounterId } = await emergencyEncounter();
-    const presc = await sendPrescription(encounterId, true);
+    const presc = await sendPrescription(encounterId);
     const pharm = await loginAndSelect(ACCOUNTS.pharmacist);
     await dispensePrescription(pharm.actor, pharm.ctx, presc.id); // emergency bypass — unpaid
     const debts = await prisma.emergencyDebt.findMany({ where: { hospitalId: HRB, encounterId } });
@@ -85,7 +85,7 @@ describe("integration: Phase 3F-2 emergency debt auto-coupling (verifies H4)", (
       familyName: "NORMAL", givenName: "Probe", sex: "male", dateOfBirth: new Date("1985-01-01"), phone: null, residence: null,
     });
     const enc = await openEncounter(reception.actor, reception.ctx, patient.id, { serviceLabel: "Médecine générale", reason: "RAS" });
-    const presc = await sendPrescription(enc.id, false); // NOT flagged emergency, NOT paid
+    const presc = await sendPrescription(enc.id); // NOT flagged emergency, NOT paid
     const pharm = await loginAndSelect(ACCOUNTS.pharmacist);
     await expect(dispensePrescription(pharm.actor, pharm.ctx, presc.id)).rejects.toThrow();
     // No emergency debt is created on the refused path.
