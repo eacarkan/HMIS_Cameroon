@@ -36,6 +36,26 @@ export function temporaryIdentifierFor(date: Date, seq: number): string {
   return `${temporaryIdDayPrefix(date)}${String(seq).padStart(2, "0")}`;
 }
 
+/** Numeric `NN` suffix of a temporary identifier sharing `dayPrefix`, or null if it doesn't match.
+ *  Used to compute the next sequence as MAX(suffix)+1 (gap-tolerant, concurrency-safe — Phase 3F-5). */
+export function parseTemporarySeq(identifier: string, dayPrefix: string): number | null {
+  if (!identifier.startsWith(dayPrefix)) return null;
+  const suffix = identifier.slice(dayPrefix.length);
+  if (!/^\d+$/.test(suffix)) return null;
+  return Number(suffix);
+}
+
+/** Next sequence number for a day given the existing temporary identifiers: MAX(suffix)+1 (1 if none).
+ *  MAX-based (not count-based) so a gap in the suffix sequence never reproduces a taken number. */
+export function nextTemporarySeq(existingIdentifiers: readonly string[], dayPrefix: string): number {
+  let max = 0;
+  for (const id of existingIdentifiers) {
+    const seq = parseTemporarySeq(id, dayPrefix);
+    if (seq !== null && seq > max) max = seq;
+  }
+  return max + 1;
+}
+
 export type AgeInput = {
   /** ISO date string (or empty/undefined when unknown). */
   dateOfBirth?: string | null;
@@ -72,15 +92,20 @@ export function validateAgeInput(
     }
   }
   if (hasDob) {
-    const dob = new Date(input.dateOfBirth as string);
-    if (Number.isNaN(dob.getTime())) {
-      return { ok: false, error: "La date de naissance est invalide." };
+    const parsed = parseStrictDob((input.dateOfBirth as string).trim());
+    if (!parsed) {
+      return { ok: false, error: "La date de naissance doit être une date réelle au format AAAA-MM-JJ." };
     }
     if (now) {
-      if (dob.getTime() > now.getTime()) {
+      // Compare at CALENDAR-DAY granularity with a one-day tolerance: `parsed` is UTC-midnight and
+      // `now` is an absolute instant, so an instant comparison would wrongly reject a DOB of "today"
+      // when the local date is ahead of UTC (e.g. a newborn registered just after midnight in WAT,
+      // UTC+1). The +1-day grace covers any UTC+ timezone; a DOB beyond tomorrow-UTC is still future.
+      const nowUtcMidnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+      if (parsed.getTime() > nowUtcMidnight + 24 * 60 * 60 * 1000) {
         return { ok: false, error: "La date de naissance ne peut pas être dans le futur." };
       }
-      if (now.getFullYear() - dob.getFullYear() > MAX_ESTIMATED_AGE) {
+      if (ageInYearsUtc(parsed, now) > MAX_ESTIMATED_AGE) {
         return {
           ok: false,
           error: "La date de naissance implique un âge invalide (supérieur à 130 ans).",
@@ -89,4 +114,27 @@ export function validateAgeInput(
     }
   }
   return { ok: true };
+}
+
+/** Strict `YYYY-MM-DD` calendar date → UTC Date, or null. Rejects loose strings (e.g. "2020",
+ *  "01/02/2020", "Jan 2020") and impossible dates (e.g. "2020-02-30"); round-trip-checked so
+ *  no silent normalisation slips through. Phase 3F-5 identity hardening. */
+export function parseStrictDob(value: string): Date | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const [y, m, d] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d));
+  if (date.getUTCFullYear() !== y || date.getUTCMonth() !== m - 1 || date.getUTCDate() !== d) {
+    return null;
+  }
+  return date;
+}
+
+/** Whole years between a UTC DOB and `now` (timezone-stable; used for the >130y guard). */
+function ageInYearsUtc(dob: Date, now: Date): number {
+  let age = now.getUTCFullYear() - dob.getUTCFullYear();
+  const beforeBirthday =
+    now.getUTCMonth() < dob.getUTCMonth() ||
+    (now.getUTCMonth() === dob.getUTCMonth() && now.getUTCDate() < dob.getUTCDate());
+  if (beforeBirthday) age -= 1;
+  return age;
 }

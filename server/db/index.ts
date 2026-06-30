@@ -41,6 +41,7 @@ export {
   createPatient,
   updatePatient,
   countTemporaryPatientsForDay,
+  listTemporaryIdentifiersForDay,
   searchPatients,
   searchPatientsAdvanced,
   findPotentialDuplicatePatients,

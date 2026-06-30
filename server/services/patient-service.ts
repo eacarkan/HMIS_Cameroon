@@ -1,4 +1,4 @@
-import type { Sex } from "@prisma/client";
+import { Prisma, type Sex } from "@prisma/client";
 
 import {
   classifyDuplicates,
@@ -6,11 +6,12 @@ import {
 } from "@/lib/patient-matching";
 import {
   estimatedBirthDate,
+  nextTemporarySeq,
   temporaryIdDayPrefix,
   temporaryIdentifierFor,
 } from "@/lib/patient-identity";
 import {
-  countTemporaryPatientsForDay,
+  listTemporaryIdentifiersForDay,
   createPatient,
   findPatientById,
   findPotentialDuplicatePatients,
@@ -192,8 +193,6 @@ export async function createTemporaryPatient(
   const now = new Date();
   const year = now.getFullYear();
   const dayPrefix = temporaryIdDayPrefix(now);
-  const seq = (await countTemporaryPatientsForDay(ctx.hospitalId, dayPrefix)) + 1;
-  const temporaryId = temporaryIdentifierFor(now, seq);
   const patientNumber = await generateNumber(ctx, "patient", year);
 
   const hasEstimate = input.estimatedAge != null;
@@ -201,22 +200,48 @@ export async function createTemporaryPatient(
     ? estimatedBirthDate(input.estimatedAge as number, year)
     : new Date(Date.UTC(1900, 0, 1)); // unknown-DOB sentinel for a temporary record
 
-  const patient = await createPatient({
-    hospitalId: ctx.hospitalId,
-    patientNumber,
-    familyName: "Inconnu",
-    givenName: temporaryId,
-    sex: input.sex,
-    dateOfBirth,
-    phone: input.phone ?? null,
-    residence: null,
-    guardianPhone: input.guardianPhone ?? null,
-    estimatedAge: input.estimatedAge ?? null,
-    isEstimatedAge: hasEstimate,
-    isTemporaryIdentity: true,
-    temporaryIdentifier: temporaryId,
-    createdById: actor.id,
-  });
+  // Phase 3F-5 — concurrency-safe temporary numbering. The `Inconnu_YYMMDD_NN` sequence is computed
+  // from a live count, so two concurrent creations could pick the same NN; the partial unique index
+  // `Patient_temporary_identifier_unique` makes the clash a P2002 we retry (recompute the count → the
+  // winner has committed, so the next number is free). Mirrors the 2F queue-ticket numbering pattern.
+  let patient: Awaited<ReturnType<typeof createPatient>> | null = null;
+  let temporaryId = "";
+  for (let attempt = 0; attempt < 6; attempt++) {
+    // MAX(suffix)+1 (not count+1): gap-tolerant, so a future deletion/void can never reproduce a
+    // taken number; under concurrency the winner has committed by the retry, so the next is free.
+    const existing = await listTemporaryIdentifiersForDay(ctx.hospitalId, dayPrefix);
+    const seq = nextTemporarySeq(existing, dayPrefix);
+    temporaryId = temporaryIdentifierFor(now, seq);
+    try {
+      patient = await createPatient({
+        hospitalId: ctx.hospitalId,
+        patientNumber,
+        familyName: "Inconnu",
+        givenName: temporaryId,
+        sex: input.sex,
+        dateOfBirth,
+        phone: input.phone ?? null,
+        residence: null,
+        guardianPhone: input.guardianPhone ?? null,
+        estimatedAge: input.estimatedAge ?? null,
+        isEstimatedAge: hasEstimate,
+        isTemporaryIdentity: true,
+        temporaryIdentifier: temporaryId,
+        createdById: actor.id,
+      });
+      break;
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002" &&
+        attempt < 5
+      ) {
+        continue; // the temporary identifier was taken concurrently — recompute and retry
+      }
+      throw error;
+    }
+  }
+  if (!patient) throw new Error("Impossible d'attribuer un identifiant temporaire unique. Réessayez.");
 
   await recordAudit({
     hospitalId: ctx.hospitalId,
@@ -228,6 +253,26 @@ export async function createTemporaryPatient(
   });
 
   return patient;
+}
+
+/**
+ * Phase 3F-5 — record a `patient.dob_validation_failed` audit when a date of birth is rejected
+ * (strict `YYYY-MM-DD` / future / >130y). No patient row is created; the actions call this on a
+ * validation failure so the edge case leaves an audit trail. Keeps audit-writing in the service.
+ */
+export async function auditDobValidationFailure(
+  actor: AuthenticatedActor,
+  ctx: HospitalContext,
+  reason: string,
+) {
+  await recordAudit({
+    hospitalId: ctx.hospitalId,
+    actorId: actor.id,
+    action: AUDIT_ACTIONS.patientDobValidationFailed,
+    entityType: "Patient",
+    entityId: null,
+    summary: `Date de naissance refusée : ${reason}`,
+  });
 }
 
 export type CorrectPatientIdentityInput = {

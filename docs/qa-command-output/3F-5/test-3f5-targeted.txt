@@ -1,0 +1,10 @@
+
+ RUN  v4.1.9 /Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon
+
+
+ Test Files  2 passed (2)
+      Tests  13 passed (13)
+   Start at  18:36:54
+   Duration  2.06s (transform 270ms, setup 10ms, import 396ms, tests 1.49s, environment 0ms)
+
+exit=0

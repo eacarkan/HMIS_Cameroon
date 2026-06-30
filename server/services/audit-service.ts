@@ -105,6 +105,9 @@ export const AUDIT_ACTIONS = {
   // diagnosis reuses `diagnosis.create`). The original temporary ID is retained in the audit.
   patientTemporaryCreated: "patient.temporary_created",
   patientIdentityUpdated: "patient.identity_updated",
+  // Phase 3F-5 — a rejected date-of-birth (strict YYYY-MM-DD / future / >130y), recorded so the
+  // identity-hardening edge cases leave an audit trail (no patient row is created on failure).
+  patientDobValidationFailed: "patient.dob_validation_failed",
   // Phase 2C — cancellation workflow, refund voucher, Brouillard de Caisse. Append-only;
   // every money-affecting action carries actor + hospital + amounts (in the French summary).
   invoiceCancellationRequested: "invoice.cancellation_requested",

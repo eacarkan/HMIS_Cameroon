@@ -60,6 +60,18 @@ export function countTemporaryPatientsForDay(hospitalId: string, dayPrefix: stri
   });
 }
 
+/** Temporary identifiers already issued for a hospital + day — for MAX(suffix)+1 numbering (3F-5). */
+export async function listTemporaryIdentifiersForDay(
+  hospitalId: string,
+  dayPrefix: string,
+): Promise<string[]> {
+  const rows = await prisma.patient.findMany({
+    where: { hospitalId, temporaryIdentifier: { startsWith: dayPrefix } },
+    select: { temporaryIdentifier: true },
+  });
+  return rows.map((r) => r.temporaryIdentifier).filter((v): v is string => v !== null);
+}
+
 /** Structured patient search filters (Phase 1A Batch 1A). All optional; all hospital-scoped. */
 export type PatientSearchFilters = {
   /** Free text: family name, given name, or patient number. */

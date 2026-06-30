@@ -50,6 +50,7 @@ export {
   createPatientForActor,
   createTemporaryPatient,
   correctPatientIdentity,
+  auditDobValidationFailure,
 } from "./patient-service";
 export {
   type OpenEncounterInput,

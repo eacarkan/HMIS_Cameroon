@@ -13,6 +13,7 @@ import { z } from "@/lib/validation";
 import { AuthorizationError } from "@/server/authz";
 import { requireActorAndHospital } from "@/server/auth";
 import {
+  auditDobValidationFailure,
   correctPatientIdentity,
   createPatientForActor,
   createTemporaryPatient,
@@ -122,7 +123,23 @@ export async function createPatientAction(
   }
 
   const age = resolveAge(parsed.data.dateOfBirth, parsed.data.estimatedAge);
-  if ("error" in age) return { errors: { dateOfBirth: age.error } };
+  if ("error" in age) {
+    // Phase 3F-5 — audit the rejected DOB and preserve the user's input so the form repopulates.
+    await auditDobValidationFailure(actor, hospital, age.error);
+    return {
+      errors: { dateOfBirth: age.error },
+      values: {
+        familyName: parsed.data.familyName,
+        givenName: parsed.data.givenName,
+        sex: parsed.data.sex,
+        dateOfBirth: parsed.data.dateOfBirth?.trim() ?? "",
+        estimatedAge: parsed.data.estimatedAge?.trim() ?? "",
+        phone: parsed.data.phone?.trim() ?? "",
+        guardianPhone: parsed.data.guardianPhone?.trim() ?? "",
+        residence: parsed.data.residence?.trim() ?? "",
+      },
+    };
+  }
 
   // A "create anyway" override is honoured ONLY when the user explicitly confirmed AND the
   // resubmitted identifying data is the SAME data that was warned about (Phase 1A QA fix 2).
@@ -255,7 +272,10 @@ export async function correctPatientIdentityAction(
     return { errors };
   }
   const age = resolveAge(parsed.data.dateOfBirth, parsed.data.estimatedAge);
-  if ("error" in age) return { errors: { dateOfBirth: age.error } };
+  if ("error" in age) {
+    await auditDobValidationFailure(actor, hospital, age.error);
+    return { errors: { dateOfBirth: age.error } };
+  }
 
   try {
     await correctPatientIdentity(actor, hospital, patientId, {

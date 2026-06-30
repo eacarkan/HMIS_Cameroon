@@ -52,6 +52,10 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 -- dev migration 20260630160000_cashier_shift_one_open).
 CREATE UNIQUE INDEX IF NOT EXISTS "CashierShift_one_open_per_cashier"
   ON "CashierShift" ("hospitalId", "cashierId") WHERE "status" = 'open';
+-- Phase 3F-5 hardening: a temporary-patient identifier is unique per hospital (concurrency-safe
+-- numbering; mirrors the dev migration 20260630180000_temp_patient_unique).
+CREATE UNIQUE INDEX IF NOT EXISTS "Patient_temporary_identifier_unique"
+  ON "Patient" ("hospitalId", "temporaryIdentifier") WHERE "temporaryIdentifier" IS NOT NULL;
 `;
 // libpq's connection-URI parser rejects Prisma-specific query params (e.g. `?schema=public`), so pass
 // psql the bare base URL (the schema defaults to "public" anyway).
