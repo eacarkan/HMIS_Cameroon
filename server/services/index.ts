@@ -210,6 +210,15 @@ export {
   listPrescriptionReservations,
   releaseStaleReservations,
 } from "./reservation-service";
+
+// Phase 2D-5 — dispensing (paid-check → consume reservations → deduct on-hand).
+export {
+  getPharmacyWorklist,
+  getDispenseRecord,
+  listDispensesForPrescription,
+  confirmPrescriptionPayment,
+  dispensePrescription,
+} from "./dispensing-service";
 export {
   listUsers,
   createUserForActor,

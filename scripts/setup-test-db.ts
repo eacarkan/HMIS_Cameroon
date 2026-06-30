@@ -35,4 +35,22 @@ execSync("npx prisma db push", {
   env: { ...process.env, DATABASE_URL: url },
   stdio: "inherit",
 });
-console.log("✓ test database schema is in sync");
+
+// Phase 2D-5 — apply the non-negative stock CHECK constraints. These are raw-SQL invariants not
+// representable in schema.prisma, so `db push` will not add them; the migrate path (dev/prod) gets
+// them from migration `20260630120000_stock_nonnegative_check`. Idempotent (skips if already present).
+const checkConstraintsSql = `
+DO $$ BEGIN
+  ALTER TABLE "MedicationStockBatch"
+    ADD CONSTRAINT "MedicationStockBatch_quantityOnHand_nonneg" CHECK ("quantityOnHand" >= 0);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  ALTER TABLE "MedicationStockBatch"
+    ADD CONSTRAINT "MedicationStockBatch_quantityReserved_nonneg" CHECK ("quantityReserved" >= 0);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+`;
+execSync(`psql "${url}" -v ON_ERROR_STOP=1`, {
+  input: checkConstraintsSql,
+  stdio: ["pipe", "inherit", "inherit"],
+});
+console.log("✓ test database schema is in sync (incl. non-negative stock constraints)");

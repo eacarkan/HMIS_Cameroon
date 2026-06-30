@@ -81,6 +81,8 @@ enum SequenceType {
   cashier_shift
   // Phase 2D-2 — prescription ("ordonnance") number.
   prescription
+  // Phase 2D-5 — dispense record number.
+  dispense
 }
 
 /// Phase 2D-2 — structured prescription lifecycle. Dispensing transitions (partially_dispensed /
@@ -177,6 +179,8 @@ model Hospital {
   prescriptionItems      PrescriptionItem[]
   medicationStockBatches MedicationStockBatch[]
   stockReservations      StockReservation[]
+  dispenseRecords        DispenseRecord[]
+  dispenseRecordItems    DispenseRecordItem[]
 
   // Phase 1 (Gate 2) additive relations.
   departments                Department[]
@@ -234,7 +238,10 @@ model User {
   cashierShiftCorrections     CashierShiftCorrection[]     @relation("ShiftCorrectedBy")
 
   // Phase 2D-2 additive relation.
-  prescriptionsPrescribed Prescription[] @relation("PrescriptionPrescribedBy")
+  prescriptionsPrescribed Prescription[]   @relation("PrescriptionPrescribedBy")
+  // Phase 2D-5 additive relations.
+  prescriptionsPaid       Prescription[]   @relation("PrescriptionPaidBy")
+  dispensesPerformed      DispenseRecord[] @relation("DispensePerformedBy")
 }
 
 /// Assignment of a Role to a User, scoped to a Hospital (minimal RBAC, 05 §4).
@@ -903,9 +910,10 @@ model MedicationStockBatch {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  hospital     Hospital           @relation(fields: [hospitalId], references: [id])
-  medication   Medication         @relation(fields: [medicationId], references: [id])
-  reservations StockReservation[]
+  hospital            Hospital             @relation(fields: [hospitalId], references: [id])
+  medication          Medication           @relation(fields: [medicationId], references: [id])
+  reservations        StockReservation[]
+  dispenseRecordItems DispenseRecordItem[]
 
   @@index([hospitalId, medicationId, expiryDate])
 }
@@ -956,17 +964,24 @@ model Prescription {
   finalizedAt        DateTime?
   sentAt             DateTime?
   cancelledAt        DateTime?
+  // Phase 2D-5 — collection payment confirmation (the patient paid at the cashier). Dispensing
+  // requires `isPaid` (the paid check; emergency exception is Phase 2H, not built).
+  isPaid             Boolean            @default(false)
+  paidAt             DateTime?
+  paidById           String?
   createdById        String?
   deletedAt          DateTime?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
-  hospital     Hospital           @relation(fields: [hospitalId], references: [id])
-  patient      Patient            @relation(fields: [patientId], references: [id])
-  encounter    Encounter          @relation(fields: [encounterId], references: [id])
-  prescribedBy User               @relation("PrescriptionPrescribedBy", fields: [prescribedById], references: [id])
-  items        PrescriptionItem[]
-  reservations StockReservation[]
+  hospital        Hospital           @relation(fields: [hospitalId], references: [id])
+  patient         Patient            @relation(fields: [patientId], references: [id])
+  encounter       Encounter          @relation(fields: [encounterId], references: [id])
+  prescribedBy    User               @relation("PrescriptionPrescribedBy", fields: [prescribedById], references: [id])
+  paidBy          User?              @relation("PrescriptionPaidBy", fields: [paidById], references: [id])
+  items           PrescriptionItem[]
+  reservations    StockReservation[]
+  dispenseRecords DispenseRecord[]
 
   @@unique([hospitalId, prescriptionNumber])
   @@index([hospitalId, status])
@@ -990,11 +1005,54 @@ model PrescriptionItem {
   instructions    String?
   createdAt       DateTime @default(now())
 
-  hospital     Hospital           @relation(fields: [hospitalId], references: [id])
-  prescription Prescription       @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
-  medication   Medication         @relation(fields: [medicationId], references: [id])
-  reservations StockReservation[]
+  hospital            Hospital             @relation(fields: [hospitalId], references: [id])
+  prescription        Prescription         @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  medication          Medication           @relation(fields: [medicationId], references: [id])
+  reservations        StockReservation[]
+  dispenseRecordItems DispenseRecordItem[]
 
   @@index([prescriptionId])
   @@index([medicationId])
+}
+
+/// Phase 2D-5 — a dispense event for a prescription. Records WHO dispensed WHAT from WHICH batch
+/// (snapshot label) and HOW MUCH. Dispensing deducts batch `quantityOnHand` and consumes the
+/// matching reservations. Printable with a tracking number. Integer quantities.
+model DispenseRecord {
+  id             String   @id @default(cuid())
+  hospitalId     String
+  dispenseNumber String
+  prescriptionId String
+  dispensedById  String
+  createdAt      DateTime @default(now())
+
+  hospital     Hospital             @relation(fields: [hospitalId], references: [id])
+  prescription Prescription         @relation(fields: [prescriptionId], references: [id])
+  dispensedBy  User                 @relation("DispensePerformedBy", fields: [dispensedById], references: [id])
+  items        DispenseRecordItem[]
+
+  @@unique([hospitalId, dispenseNumber])
+  @@index([prescriptionId])
+}
+
+/// One dispensed line: which prescription line, which batch, how much (integer). `medicationLabel`
+/// is a snapshot. FEFO-override (2D-6) records the override on this batch choice.
+model DispenseRecordItem {
+  id                 String   @id @default(cuid())
+  hospitalId         String
+  dispenseRecordId   String
+  prescriptionItemId String
+  batchId            String
+  medicationLabel    String
+  unit               String
+  quantity           Int
+  createdAt          DateTime @default(now())
+
+  hospital         Hospital             @relation(fields: [hospitalId], references: [id])
+  dispenseRecord   DispenseRecord       @relation(fields: [dispenseRecordId], references: [id], onDelete: Cascade)
+  prescriptionItem PrescriptionItem     @relation(fields: [prescriptionItemId], references: [id])
+  batch            MedicationStockBatch @relation(fields: [batchId], references: [id])
+
+  @@index([dispenseRecordId])
+  @@index([batchId])
 }

@@ -206,7 +206,21 @@ export {
   listPrescriptionsForEncounter,
   listPrescriptions,
   updatePrescriptionStatus,
+  setPrescriptionPaid,
+  listPharmacyWorklist,
 } from "./prescriptions";
+
+// Phase 2D-5 — dispense records.
+export {
+  type CreateDispenseRecordData,
+  type DispenseLine,
+  type DispenseTxResult,
+  createDispenseRecordWithItems,
+  dispenseReservationsForPrescription,
+  findDispenseRecordById,
+  listDispenseRecordsForPrescription,
+  sumDispensedByPrescriptionItem,
+} from "./dispensing";
 
 // Phase 2D-3 — medication stock batches.
 export {

@@ -74,6 +74,11 @@ test.describe.serial("cashier controls (Phase 2C)", () => {
     await page.goto("/annulations");
     await expect(page.getByText("Erreur de facturation (test)")).toBeVisible();
     await page.getByRole("button", { name: "Approuver" }).first().click();
+    // Wait for the approval to COMMIT before navigating away: the server action revalidates
+    // /annulations in place, replacing the decide-forms with the linked refund-voucher number.
+    // A bare page.goto() here can abort the still-in-flight server action (the voucher would never
+    // be written) — slower under the grown app, which is why this raced only as routes multiplied.
+    await expect(page.getByText(/HRB-DEMO-A-2026-/).first()).toBeVisible();
     await page.goto("/remboursements");
     await expect(page.getByText("HRB-DEMO-A-2026-000001")).toBeVisible();
     await page.screenshot({ path: `${SHOTS}/04-refund-voucher.png`, fullPage: true });

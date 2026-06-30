@@ -176,6 +176,9 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   // Phase 2D-4 — stock reservations.
   "reservation.created": "Réservation de stock",
   "reservation.released": "Libération de réservation",
+  // Phase 2D-5 — collection payment + dispensing.
+  "prescription.payment_confirmed": "Paiement d'ordonnance confirmé",
+  "dispense.completed": "Délivrance de médicaments",
 };
 
 /**

@@ -75,7 +75,13 @@ export type Capability =
   | "stock.receive"
   | "stock.read"
   // Phase 2D-4 — manual release of stale (48h non-collection) stock reservations (pharmacy + admin).
-  | "reservation.release";
+  | "reservation.release"
+  // Phase 2D-5 — the cashier confirms the prescription was paid at the cashier; the pharmacy
+  // dispenses (consuming reservations + deducting on-hand). `dispense.read` views the pharmacy
+  // dispense records (batch-level decisions) — pharmacy + oversight, NOT the cashier/doctor.
+  | "prescription.payment.confirm"
+  | "dispense.perform"
+  | "dispense.read";
 
 export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
   // Hospital administrator — configuration, tariffs, users, service catalogue, and oversight
@@ -113,6 +119,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "stock.read",
     // Phase 2D-4 — may run the 48h reservation-release sweep.
     "reservation.release",
+    // Phase 2D-5 — oversight read of dispense records (not a dispenser).
+    "dispense.read",
   ],
   agent_accueil: [
     "dashboard.read",
@@ -159,6 +167,10 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "refund.read",
     "refund.execute",
     "cashier.shift.manage",
+    // Phase 2D-5 — the cashier confirms a prescription was paid (collection payment), and reads
+    // the prescription to do so (the confirm action lives on the prescription view).
+    "prescription.payment.confirm",
+    "prescription.read",
   ],
   directeur: [
     "dashboard.read",
@@ -178,6 +190,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "prescription.read",
     // Phase 2D-3 — oversight read of stock.
     "stock.read",
+    // Phase 2D-5 — oversight read of dispense records.
+    "dispense.read",
   ],
   // Phase 2D — pharmacy roles. Baseline operational reads + catalogue view; the pharmacy-specific
   // capabilities (dispense, stock, FEFO override, adjustment approval) are added in later 2D sub-batches.
@@ -194,6 +208,9 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "stock.read",
     // Phase 2D-4 — release stale (48h) reservations.
     "reservation.release",
+    // Phase 2D-5 — dispense (consume reservations + deduct on-hand) + read dispense records.
+    "dispense.perform",
+    "dispense.read",
   ],
   pharmacien_chef: [
     "dashboard.read",
@@ -205,6 +222,8 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "stock.receive",
     "stock.read",
     "reservation.release",
+    "dispense.perform",
+    "dispense.read",
   ],
 };
 

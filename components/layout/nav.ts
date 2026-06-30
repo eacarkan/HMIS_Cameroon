@@ -10,6 +10,7 @@ import {
   Boxes,
   Settings2,
   ScrollText,
+  Pill,
   UserCog,
   HeartPulse,
   type LucideIcon,
@@ -80,6 +81,13 @@ export const NAV_ITEMS: NavItem[] = [
     labelKey: "refunds",
     icon: Undo2,
     capability: "refund.read",
+  },
+  {
+    // Phase 2D-5 — pharmacy dispensing worklist (pharmacy).
+    href: "/pharmacie/dispensation",
+    labelKey: "dispensation",
+    icon: Pill,
+    capability: "dispense.perform",
   },
   {
     // Phase 2D-3 — pharmacy stock (pharmacy + oversight read).

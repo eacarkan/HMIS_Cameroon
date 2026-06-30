@@ -21,8 +21,11 @@ export default defineConfig({
     ["html", { open: "never", outputFolder: "playwright-report" }],
   ],
   globalSetup: "./tests/e2e/global-setup.ts",
-  timeout: 60_000,
-  expect: { timeout: 10_000 },
+  // Dev-mode Next.js compiles routes on first hit; as the app grew (Phase 2 — many routes + a large
+  // server-services barrel) the first render of a fresh route can take several seconds. Generous
+  // timeouts absorb that cold-compile latency (the long multi-role journeys cross many new routes).
+  timeout: 120_000,
+  expect: { timeout: 20_000 },
   use: {
     baseURL: `http://localhost:${PORT}`,
     locale: "fr-FR",

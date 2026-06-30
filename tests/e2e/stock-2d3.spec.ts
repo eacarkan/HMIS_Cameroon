@@ -13,8 +13,10 @@ test.describe("Phase 2D-3 — pharmacy stock", () => {
     await login(page, ACCOUNTS.pharmacist);
     await page.goto("/pharmacie/stock");
     await expect(page.getByRole("heading", { name: "Stock pharmacie" }).first()).toBeVisible();
-    // Seeded stock is listed.
-    await expect(page.getByText("Paracétamol").first()).toBeVisible();
+    // Seeded stock is listed. Assert on a seeded batch number — it appears only in the visible
+    // ledger, never in the receive-form medication <select> (whose options Playwright treats as
+    // hidden, which would make a bare "Paracétamol" match fail toBeVisible()).
+    await expect(page.getByText("LOT-PARA-B")).toBeVisible();
 
     // Receive a new batch.
     await page.locator('input[name="batchNumber"]').fill("LOT-E2E-1");

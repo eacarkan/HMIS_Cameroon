@@ -161,6 +161,37 @@ describe("lib/rbac — role capabilities (09 §6, 07 §4)", () => {
     expect(can(["caissier"], "stock.read")).toBe(false);
   });
 
+  it("Phase 2D-5 — cashier confirms payment; pharmacy dispenses (separated)", () => {
+    expect(can(["caissier"], "prescription.payment.confirm")).toBe(true);
+    // The cashier reads the prescription to confirm payment, but NEVER dispenses or reads pharmacy
+    // dispense records (segregation of duties).
+    expect(can(["caissier"], "prescription.read")).toBe(true);
+    expect(can(["caissier"], "dispense.perform")).toBe(false);
+    expect(can(["caissier"], "dispense.read")).toBe(false);
+    expect(can(["pharmacien"], "dispense.perform")).toBe(true);
+    expect(can(["pharmacien_chef"], "dispense.perform")).toBe(true);
+    expect(can(["pharmacien"], "prescription.payment.confirm")).toBe(false);
+    // Doctor/admin neither confirm payment nor dispense.
+    expect(can(["medecin"], "dispense.perform")).toBe(false);
+    expect(can(["medecin"], "prescription.payment.confirm")).toBe(false);
+    expect(can(["administrateur"], "dispense.perform")).toBe(false);
+  });
+
+  it("Phase 2D-5 — dispense records (`dispense.read`): pharmacy performs+reads; oversight reads; cashier/doctor cannot", () => {
+    // Pharmacy both performs and reads.
+    expect(can(["pharmacien"], "dispense.read")).toBe(true);
+    expect(can(["pharmacien_chef"], "dispense.read")).toBe(true);
+    // Oversight reads dispense records but never performs.
+    expect(can(["administrateur"], "dispense.read")).toBe(true);
+    expect(can(["administrateur"], "dispense.perform")).toBe(false);
+    expect(can(["directeur"], "dispense.read")).toBe(true);
+    expect(can(["directeur"], "dispense.perform")).toBe(false);
+    // The cashier (payment) and doctor (clinical) are NOT in the dispensing read surface.
+    expect(can(["caissier"], "dispense.read")).toBe(false);
+    expect(can(["medecin"], "dispense.read")).toBe(false);
+    expect(can(["agent_accueil"], "dispense.read")).toBe(false);
+  });
+
   it("Phase 2D-4 — the 48h reservation-release sweep is pharmacy + admin only", () => {
     expect(can(["pharmacien"], "reservation.release")).toBe(true);
     expect(can(["pharmacien_chef"], "reservation.release")).toBe(true);

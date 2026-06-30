@@ -78,3 +78,20 @@ export function updatePrescriptionStatus(
     data: { status, ...stamps },
   });
 }
+
+/** Phase 2D-5 — record that the prescription was paid at the cashier (the dispensing precondition). */
+export function setPrescriptionPaid(hospitalId: string, id: string, paidById: string) {
+  return prisma.prescription.updateMany({
+    where: { id, hospitalId },
+    data: { isPaid: true, paidAt: new Date(), paidById },
+  });
+}
+
+/** Prescriptions awaiting dispensing (sent or partially dispensed) — the pharmacy worklist. */
+export function listPharmacyWorklist(hospitalId: string) {
+  return prisma.prescription.findMany({
+    where: { hospitalId, deletedAt: null, status: { in: ["sent_to_pharmacy", "partially_dispensed"] } },
+    orderBy: { sentAt: "asc" },
+    include: { items: true, patient: true, prescribedBy: true },
+  });
+}

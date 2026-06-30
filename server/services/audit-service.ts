@@ -118,6 +118,9 @@ export const AUDIT_ACTIONS = {
   // Phase 2D-4 — stock reservations (reserve on send-to-pharmacy; release on cancel / 48h sweep).
   reservationCreated: "reservation.created",
   reservationReleased: "reservation.released",
+  // Phase 2D-5 — collection payment confirmation + dispensing (deducts on-hand).
+  prescriptionPaymentConfirmed: "prescription.payment_confirmed",
+  dispenseCompleted: "dispense.completed",
 } as const;
 
 /**
