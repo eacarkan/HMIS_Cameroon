@@ -7,8 +7,15 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDateTimeFr } from "@/lib/dates";
 import { can } from "@/lib/rbac";
+import { GATE7_READINESS } from "@/lib/deployment-readiness";
 import { requireActorAndHospital } from "@/server/auth";
 import { getSystemStatus } from "@/server/services";
+
+const READINESS_BADGE: Record<string, "secondary" | "outline" | "destructive"> = {
+  ready: "secondary",
+  placeholder: "outline",
+  administrative: "destructive",
+};
 
 /**
  * System status / pilot-readiness page (Phase 1A Batch 6). Reports real signals (DB,
@@ -21,6 +28,7 @@ export default async function SystemStatusPage() {
 
   const status = await getSystemStatus();
   const t = await getTranslations("systemStatus");
+  const tG = await getTranslations("gate7");
 
   return (
     <>
@@ -76,6 +84,26 @@ export default async function SystemStatusPage() {
               ))}
             </ul>
             <p className="text-muted-foreground mt-3 text-xs">{t("readinessNote")}</p>
+          </CardContent>
+        </Card>
+
+        {/* Phase 2J — Gate 7 readiness evidence. The software marks what it carries (ready/placeholder);
+            administrative prerequisites are flagged as NOT software-self-authorizable. */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-base">{tG("title")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="grid gap-2 text-sm sm:grid-cols-2">
+              {GATE7_READINESS.map((r) => (
+                <li key={r.key} className="flex items-center justify-between gap-3 rounded-md border p-2">
+                  <span>{tG(`item_${r.key}`)}</span>
+                  <Badge variant={READINESS_BADGE[r.status]}>{tG(`status_${r.status}`)}</Badge>
+                </li>
+              ))}
+            </ul>
+            <p className="text-muted-foreground mt-3 text-xs">{tG("adminNote")}</p>
+            <p className="text-muted-foreground mt-1 text-xs">{tG("backupNote")}</p>
           </CardContent>
         </Card>
       </div>

@@ -883,6 +883,32 @@
     "validatedBy": "Validé par",
     "print": "Imprimer"
   },
+  "draft": {
+    "saving": "Enregistrement du brouillon…",
+    "savedLocal": "Brouillon local enregistré",
+    "error": "Échec de l'enregistrement local",
+    "recovered": "Un brouillon local a été retrouvé.",
+    "restore": "Restaurer",
+    "discard": "Ignorer"
+  },
+  "gate7": {
+    "title": "Préparation Gate 7 (évidence — synthétique)",
+    "item_bilingual": "Interface bilingue (Fr/En)",
+    "item_healthStatusPage": "Page d'état / santé du système",
+    "item_auditTrail": "Journal d'audit en annexe seule",
+    "item_syntheticDataOnly": "Données synthétiques uniquement",
+    "item_backupExportHook": "Crochet d'export de sauvegarde",
+    "item_localServerConfig": "Configuration serveur local",
+    "item_encryptionBeforeLeavingServer": "Chiffrement avant sortie du serveur",
+    "item_signedUat": "UAT signée",
+    "item_validatedHardware": "Matériel validé / déployé",
+    "item_baselineCybersecurity": "Évaluation cybersécurité de base",
+    "status_ready": "Fourni",
+    "status_placeholder": "Crochet (à configurer)",
+    "status_administrative": "Administratif",
+    "adminNote": "Les éléments « Administratif » ne peuvent pas être auto-validés par le logiciel : l'autorisation Gate 7 est un processus MINSANTE / infrastructure (UAT signée, matériel validé, évaluation cybersécurité).",
+    "backupNote": "Sauvegarde : aucune cible configurée dans le logiciel (pas d'URL CETIC/sauvegarde codée en dur) ; le chiffrement avant sortie du serveur et la gestion des clés relèvent de l'infrastructure."
+  },
   "queue": {
     "title": "File d'attente",
     "subtitle": "File numérique simple par service (aujourd'hui) — remplace le registre d'arrivée papier",

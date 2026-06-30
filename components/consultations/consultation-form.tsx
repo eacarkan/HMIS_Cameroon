@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DraftNoteField } from "@/components/drafts/draft-note-field";
 import {
   recordConsultationAction,
   type ConsultationFormState,
@@ -42,16 +43,16 @@ export function ConsultationForm({
         ) : null}
       </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="clinicalNote">{t("clinicalNote")}</Label>
-        <textarea
-          id="clinicalNote"
-          name="clinicalNote"
-          rows={3}
-          placeholder={t("clinicalNotePlaceholder")}
-          className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm shadow-xs"
-        />
-      </div>
+      {/* Phase 2J — the long clinical note gets local draft autosave (draft protection, not offline). */}
+      <DraftNoteField
+        kind="consultation-note"
+        scopeId={encounterId}
+        id="clinicalNote"
+        name="clinicalNote"
+        rows={3}
+        placeholder={t("clinicalNotePlaceholder")}
+        label={t("clinicalNote")}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
