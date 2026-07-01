@@ -1,0 +1,5 @@
+
+> hmis-cameroon@0.1.0 check:release
+> tsx scripts/check-release.ts
+
+✓ release check: v0.5.0-rc.1 (synthetic RC); release docs + QA evidence folders present.

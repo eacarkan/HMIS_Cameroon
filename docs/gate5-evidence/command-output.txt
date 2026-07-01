@@ -1,0 +1,53 @@
+# Gate 5 — verification command outputs
+# Generated for mentor review. Paths redacted; fake data only. Branch feature/gate4-ui-workflows.
+# Package manager: npm (11.6.2) · Node v24.8.0
+
+## git-status  —  $ git status --short || true
+exit=0
+
+## typecheck  —  $ npm run typecheck
+exit=0
+
+## lint  —  $ npm run lint
+exit=0
+
+## build  —  $ npm run build
+exit=0
+✓ Compiled successfully in 2.2s
+
+## test  —  $ npm run test
+exit=0
+ Test Files  12 passed (12)
+      Tests  41 passed (41)
+   Duration  1.36s (transform 539ms, setup 1.23s, import 1.62s, tests 451ms, environment 4.77s)
+
+## integration  —  $ npm run test:integration
+exit=0
+ Test Files  12 passed (12)
+      Tests  45 passed (45)
+   Duration  17.87s (transform 202ms, setup 88ms, import 1.07s, tests 15.67s, environment 1ms)
+
+## e2e  —  $ npm run test:e2e
+exit=0
+Running 8 tests using 1 worker
+  ✓  1 [chromium] › tests/e2e/golden-path.spec.ts:11:7 › golden path › E2E-01 login + hospital selection → dashboard (1.8s)
+  ✓  2 [chromium] › tests/e2e/golden-path.spec.ts:27:7 › golden path › E2E-02 patient search-before-create (2.2s)
+  ✓  3 [chromium] › tests/e2e/golden-path.spec.ts:56:7 › golden path › E2E-03 open a visit (2.1s)
+  ✓  4 [chromium] › tests/e2e/golden-path.spec.ts:73:7 › golden path › E2E-03b record the consultation (doctor) (1.9s)
+  ✓  5 [chromium] › tests/e2e/golden-path.spec.ts:94:7 › golden path › E2E-04 invoice + payment + receipt (cashier) (2.6s)
+
+## smoke  —  $ npm run smoke:test
+exit=0
+✓ GOLDEN PATH PASSED — all acceptance-critical outcomes verified.
+
+## check:arch  —  $ npm run check:arch
+exit=0
+✓ architecture guardrail: UI → server/actions → server/services → server/db → Prisma (no direct DB access in app/, components/, features/).
+
+## check:privacy  —  $ npm run check:privacy
+exit=0
+✓ privacy/fake-data check: no secrets found; .env gitignored; prototype label present (app + receipt); 5 demo accounts all @hrb-demo.cm (fake).
+
+## screenshots:gate4  —  $ npm run screenshots:gate4
+✓ All 7 screenshots captured and validated (no 404).
+

@@ -1,0 +1,83 @@
+
+> hmis-cameroon@0.1.0 build
+> next build
+
+▲ Next.js 16.2.9 (Turbopack)
+- Environments: .env
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 3.3s
+  Running TypeScript ...
+  Finished TypeScript in 8.2s ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/45) ...
+  Generating static pages using 9 workers (11/45) 
+  Generating static pages using 9 workers (22/45) 
+  Generating static pages using 9 workers (33/45) 
+✓ Generating static pages using 9 workers (45/45) in 205ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /administration
+├ ƒ /administration/analytics
+├ ƒ /administration/configuration
+├ ƒ /administration/dhis2
+├ ƒ /administration/dhis2/export
+├ ƒ /administration/examens
+├ ƒ /administration/integration
+├ ƒ /administration/medicaments
+├ ƒ /administration/preparation-site
+├ ƒ /administration/tarifs
+├ ƒ /administration/utilisateurs
+├ ƒ /annulations
+├ ƒ /api/auth/[...nextauth]
+├ ƒ /caisse/brouillard
+├ ƒ /caisse/brouillard/[id]
+├ ƒ /central
+├ ƒ /connexion
+├ ƒ /consultations
+├ ƒ /consultations/[id]
+├ ƒ /diagnostics/[id]/rapport
+├ ƒ /dispensations/[id]
+├ ƒ /encounters/[id]
+├ ƒ /encounters/[id]/consultation/nouvelle
+├ ƒ /encounters/[id]/facturation
+├ ƒ /encounters/[id]/ordonnance/nouvelle
+├ ƒ /etat-systeme
+├ ƒ /facturation
+├ ƒ /facturation/assurance
+├ ƒ /facturation/paiements-externes
+├ ƒ /factures/[id]
+├ ƒ /file-attente
+├ ƒ /hospitalisations
+├ ƒ /journal-audit
+├ ƒ /journal-audit/[id]
+├ ƒ /laboratoire
+├ ƒ /laboratoire/import
+├ ƒ /mon-compte
+├ ƒ /ordonnances/[id]
+├ ƒ /patients
+├ ƒ /patients/[id]
+├ ƒ /patients/[id]/visite/nouvelle
+├ ƒ /patients/match-review
+├ ƒ /patients/nouveau
+├ ƒ /patients/temporaire
+├ ƒ /pharmacie/ajustements
+├ ƒ /pharmacie/dispensation
+├ ƒ /pharmacie/rapports
+├ ƒ /pharmacie/stock
+├ ƒ /rapports
+├ ƒ /rapports-caisse
+├ ƒ /rapports-caisse/export
+├ ƒ /rapports/export
+├ ƒ /recus/[id]
+├ ƒ /remboursements
+├ ƒ /remboursements/[id]
+├ ƒ /selection-hopital
+└ ƒ /uat
+
+
+ƒ  (Dynamic)  server-rendered on demand
+

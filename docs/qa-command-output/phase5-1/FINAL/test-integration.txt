@@ -1,0 +1,15 @@
+
+> hmis-cameroon@0.1.0 test:integration
+> vitest run --project integration
+
+
+ RUN  v4.1.9 /Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon
+
+(node:89714) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ Test Files  57 passed (57)
+      Tests  348 passed (348)
+   Start at  17:20:23
+   Duration  183.40s (transform 650ms, setup 336ms, import 7.82s, tests 170.47s, environment 3ms)
+

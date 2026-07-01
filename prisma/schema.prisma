@@ -1,0 +1,2215 @@
+// Prisma schema — HMIS Cameroon (SIGH/DME prototype)
+// Build Step 3: the first walking-skeleton data model (05_Logical_Data_Model_v0 §4).
+// Gate 2 (Phase 1): additive data-model foundation per the approved Gate 1 proposal
+// (Planning 19/20) and preflight (21) — Department/ServiceUnit/Setting/DocumentTemplate,
+// PatientContact/PatientIdentifier/PatientDuplicateCandidate, Observation/Diagnosis,
+// Tariff/PriceList (+ optional InvoiceItem→Tariff source). Dev/test + fake data only.
+//
+// Rules embodied here:
+//  - Hospital-scoped operational records carry `hospitalId` (D-011, 05 §7).
+//  - Money is INTEGER FCFA — no floats anywhere (D-009, 05 §9).
+//  - Status stored as neutral codes (enums); French labels live in the UI (05 §5).
+//  - Soft-delete (`deletedAt`) on operational records; AuditLog is append-only.
+//  - Per-hospital human-readable numbers come from the Sequence counter (05 §6).
+//  - Fake data only — no real patient data (A-001/D-008).
+//  - Existing Phase 0 models/fields are PRESERVED (additive only); free-text
+//    Consultation.vitals/.provisionalDiagnosis are kept during the transition;
+//    InvoiceItem keeps its historical snapshot.
+//
+// Still NOT modelled (blocked from this batch): Prescription/Order, Practitioner, a
+// separate Receipt entity, partial-payment workflow, national MPI / merge, and all
+// Phase 2 (lab, pharmacy, hospitalization, …) / Phase 4 modules.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ===================== Enums (neutral codes; FR labels in UI) =====================
+
+enum Sex {
+  male
+  female
+}
+
+enum UserStatus {
+  active
+  disabled
+}
+
+enum EncounterStatus {
+  open
+  closed
+  cancelled
+}
+
+enum ConsultationStatus {
+  draft
+  finalized
+}
+
+enum InvoiceStatus {
+  draft
+  issued
+  partially_paid
+  paid
+  cancelled
+}
+
+enum PaymentStatus {
+  recorded
+  cancelled
+}
+
+enum PaymentMethod {
+  cash
+  mobile_money
+  card
+  bank_transfer
+}
+
+enum SequenceType {
+  patient
+  encounter
+  invoice
+  receipt
+  // Phase 2C — refund voucher ("avoir") and cashier shift / Brouillard de Caisse numbers.
+  refund_voucher
+  cashier_shift
+  // Phase 2D-2 — prescription ("ordonnance") number.
+  prescription
+  // Phase 2D-5 — dispense record number.
+  dispense
+  // Phase 2G — hospitalization admission number.
+  admission
+  // Phase 2I — lab / radiology diagnostic order number (examen).
+  diagnostic
+}
+
+/// Phase 2D-2 — structured prescription lifecycle. Dispensing transitions (partially_dispensed /
+/// dispensed) are driven later by 2D-5; 2D-2 itself produces draft → finalized → sent_to_pharmacy.
+enum PrescriptionStatus {
+  draft
+  finalized
+  sent_to_pharmacy
+  partially_dispensed
+  dispensed
+  cancelled
+}
+
+/// Phase 2D-4 — stock reservation lifecycle: `active` holds `quantityReserved` on a batch; `released`
+/// (48h non-collection or prescription cancellation) returns it; `consumed` (dispensing, 2D-5)
+/// fulfils it (the on-hand was deducted).
+enum ReservationStatus {
+  active
+  released
+  consumed
+}
+
+/// Phase 2D-7 — a stock adjustment kind. `increase` corrects a count up; `decrease` corrects it down;
+/// `loss` writes off damaged/lost units; `expiry` removes expired stock. All but `increase` reduce
+/// on-hand. The magnitude is the (positive) `quantity` on the adjustment.
+enum StockAdjustmentType {
+  increase
+  decrease
+  loss
+  expiry
+}
+
+/// Phase 2D-7 — dual-validation lifecycle: a pharmacist REQUESTS, the Pharmacist-in-Charge decides.
+enum StockAdjustmentStatus {
+  requested
+  approved
+  rejected
+}
+
+/// Phase 2F — per-service queue ticket lifecycle. `waiting → in_service → completed`, or
+/// `waiting → cancelled`. (`in_service` covers in-consultation / in-lab / at-the-counter.)
+enum QueueStatus {
+  waiting
+  in_service
+  completed
+  cancelled
+}
+
+/// Phase 2H — emergency-debt ledger entry lifecycle. `outstanding → settled` (paid later at the
+/// cashier) or `outstanding → waived` (formally waived by the Hospital Director with a reason).
+enum EmergencyDebtStatus {
+  outstanding
+  settled
+  waived
+}
+
+// ===================== Phase 2C — cashier/billing strengthening =====================
+
+/// Invoice cancellation request lifecycle: a cashier requests, a Hospital Administrator decides.
+enum CancellationRequestStatus {
+  requested
+  approved
+  rejected
+}
+
+/// Refund voucher lifecycle for a cancelled PAID invoice: requested → approved → paid (+ cancelled).
+enum RefundVoucherStatus {
+  requested
+  approved
+  paid
+  cancelled
+}
+
+/// Cashier shift / Brouillard de Caisse lifecycle: opened, then closed (figures frozen), and — only
+/// through the controlled correction workflow — corrected. The frozen figures are never mutated.
+enum CashierShiftStatus {
+  open
+  closed
+  corrected
+}
+
+/// Phase 2A — service/department catalogue classification (neutral codes; Fr/En labels in UI).
+enum ServiceType {
+  OUTPATIENT
+  INPATIENT_WARD
+  SUPPORT
+  CASHIER
+  PHARMACY
+  LABORATORY
+  IMAGING
+  EMERGENCY
+  ADMINISTRATION
+}
+
+// ===================== Organization =====================
+
+/// One of the regional hospitals; the tenant root. Not itself hospital-scoped.
+model Hospital {
+  id        String   @id
+  code      String   @unique
+  name      String
+  city      String
+  region    String
+  isActive  Boolean  @default(false)
+  isDemo    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userRoles     UserRole[]
+  patients      Patient[]
+  encounters    Encounter[]
+  consultations Consultation[]
+  invoices      Invoice[]
+  invoiceItems  InvoiceItem[]
+  payments      Payment[]
+  auditLogs     AuditLog[]
+  sequences     Sequence[]
+
+  // Phase 2C additive relations.
+  cancellationRequests    InvoiceCancellationRequest[]
+  refundVouchers          RefundVoucher[]
+  cashierShifts           CashierShift[]
+  cashierShiftCorrections CashierShiftCorrection[]
+
+  // Phase 2D additive relations.
+  medications              Medication[]
+  prescriptions            Prescription[]
+  prescriptionItems        PrescriptionItem[]
+  medicationStockBatches   MedicationStockBatch[]
+  stockReservations        StockReservation[]
+  dispenseRecords          DispenseRecord[]
+  dispenseRecordItems      DispenseRecordItem[]
+  stockAdjustments         StockAdjustment[]
+  reportExports            ReportExport[]
+  queueTickets             QueueTicket[]
+  emergencyDebts           EmergencyDebt[]
+  admissions               Admission[]
+  admissionDailyCharges    AdmissionDailyCharge[]
+  diagnosticCatalogueItems DiagnosticCatalogueItem[]
+  diagnosticOrders         DiagnosticOrder[]
+
+  // Phase 1 (Gate 2) additive relations.
+  departments                Department[]
+  serviceUnits               ServiceUnit[]
+  settings                   Setting[]
+  documentTemplates          DocumentTemplate[]
+  priceLists                 PriceList[]
+  tariffs                    Tariff[]
+  patientContacts            PatientContact[]
+  patientIdentifiers         PatientIdentifier[]
+  patientDuplicateCandidates PatientDuplicateCandidate[]
+  observations               Observation[]
+  diagnoses                  Diagnosis[]
+
+  // Phase 3A (multi-hospital configuration foundation) — guarded template-apply records
+  // belonging to this hospital instance (additive; config only, never patient/transaction).
+  configurationTemplateApplications ConfigurationTemplateApplication[]
+
+  // Phase 3C (site-readiness checklist) — per-hospital readiness status items (additive).
+  siteReadinessItems SiteReadinessItem[]
+
+  // Phase 3D (central aggregate oversight) — per-hospital aggregate snapshots the central viewer
+  // reads instead of operational tables (additive; aggregate-only, no patient-level data).
+  hospitalAggregateSnapshots HospitalAggregateSnapshot[]
+
+  // Phase 3E (UAT evidence + Gate 7 readiness) — per-hospital UAT + readiness records (additive).
+  uatScenarios        UatScenario[]
+  uatExecutions       UatExecution[]
+  gate7ReadinessItems Gate7ReadinessItem[]
+
+  // Phase 4A (integration framework) — external-system registry + integration jobs (additive;
+  // mock/sandbox-first, no live calls; configuration + job metadata only, never patient data).
+  externalSystems ExternalSystem[]
+  integrationJobs IntegrationJob[]
+
+  // Phase 4B (DHIS2 export readiness) — per-hospital DHIS2 mapping sets (additive; placeholders only,
+  // aggregate-only export, no patient data, no real Ministry codes).
+  dhis2MappingSets Dhis2MappingSet[]
+
+  // Phase 4C (external result import) — per-hospital STAGING records for imported lab/radiology results
+  // (additive; NEVER the clinical record — promoted only by an authorized reviewer ≠ importer).
+  externalResultImports ExternalResultImport[]
+
+  // Phase 4D (payment provider abstraction) — per-hospital mock payment providers + external payment
+  // transactions (additive; mock only, no real API; reconciliation goes through the existing billing rule).
+  externalPaymentProviders    ExternalPaymentProvider[]
+  externalPaymentTransactions ExternalPaymentTransaction[]
+
+  // Phase 4E (insurance / mutuelle foundation) — per-hospital payers + patient coverage (additive;
+  // manual review only, no insurer API/auto-submission; billing-linked).
+  payers           Payer[]
+  patientCoverages PatientCoverage[]
+
+  // Phase 4F (advanced reporting / analytics foundation) — per-hospital saved report definitions +
+  // runs (aggregate-only; no AI; no patient-level central disclosure).
+  reportDefinitions ReportDefinition[]
+  reportRuns        ReportRun[]
+
+  // Phase 4G (patient-matching / MPI readiness) — per-hospital duplicate-candidate review (additive;
+  // local + warning-only + manual review; NO auto-merge; NO cross-hospital pairs).
+  patientMatchCandidates PatientMatchCandidate[]
+}
+
+// ===================== Users / RBAC =====================
+
+/// Named role (global definition); assigned to a user within a hospital via UserRole.
+model Role {
+  id        String   @id
+  code      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userRoles UserRole[]
+}
+
+/// Authenticated account (Auth.js identity). Identity is global; access is contextual.
+model User {
+  id                    String     @id
+  displayName           String
+  email                 String     @unique
+  /// bcrypt hash of the demo password (verification logic arrives at Step 4).
+  passwordHash          String
+  status                UserStatus @default(active)
+  // Phase 5.1 (F-02) — persisted failed-login lockout (additive). Enforced in the credentials authorize
+  // path: N consecutive failures lock the account until `lockedUntil`; a successful login resets it.
+  // Synthetic only; no SSO / production secrets management.
+  failedLoginCount      Int        @default(0)
+  lastFailedLoginAt     DateTime?
+  lockedUntil           DateTime?
+  lastSuccessfulLoginAt DateTime?
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+
+  userRoles          UserRole[]
+  auditLogs          AuditLog[]     @relation("AuditActor")
+  consultations      Consultation[] @relation("ConsultationPerformedBy")
+  encountersAssigned Encounter[]    @relation("EncounterAssignedTo")
+  payments           Payment[]      @relation("PaymentCashier")
+
+  // Phase 2C additive relations (cancellation / refund / shift actors).
+  cancellationRequestsMade    InvoiceCancellationRequest[] @relation("CancellationRequestedBy")
+  cancellationRequestsDecided InvoiceCancellationRequest[] @relation("CancellationDecidedBy")
+  refundVouchersRequested     RefundVoucher[]              @relation("RefundRequestedBy")
+  refundVouchersApproved      RefundVoucher[]              @relation("RefundApprovedBy")
+  refundVouchersExecuted      RefundVoucher[]              @relation("RefundExecutedBy")
+  refundVouchersCancelled     RefundVoucher[]              @relation("RefundCancelledBy")
+  cashierShifts               CashierShift[]               @relation("ShiftCashier")
+  cashierShiftsClosed         CashierShift[]               @relation("ShiftClosedBy")
+  cashierShiftCorrections     CashierShiftCorrection[]     @relation("ShiftCorrectedBy")
+
+  // Phase 2D-2 additive relation.
+  stockAdjustmentsRequested StockAdjustment[] @relation("StockAdjustmentRequestedBy")
+  stockAdjustmentsDecided   StockAdjustment[] @relation("StockAdjustmentDecidedBy")
+  reportExports             ReportExport[]    @relation("ReportExportedBy")
+  prescriptionsPrescribed   Prescription[]    @relation("PrescriptionPrescribedBy")
+  // Phase 2D-5 additive relations.
+  prescriptionsPaid         Prescription[]    @relation("PrescriptionPaidBy")
+  dispensesPerformed        DispenseRecord[]  @relation("DispensePerformedBy")
+}
+
+/// Assignment of a Role to a User, scoped to a Hospital (minimal RBAC, 05 §4).
+model UserRole {
+  id         String   @id @default(cuid())
+  userId     String
+  roleId     String
+  hospitalId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id])
+  role     Role     @relation(fields: [roleId], references: [id])
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+
+  @@unique([userId, roleId, hospitalId])
+  @@index([hospitalId])
+}
+
+// ===================== Patient identity =====================
+
+/// A person receiving care. Minimal identity (05 §4): name, sex, DOB, number, 1 phone.
+model Patient {
+  id            String    @id @default(cuid())
+  hospitalId    String
+  patientNumber String
+  familyName    String
+  givenName     String
+  sex           Sex
+  dateOfBirth   DateTime  @db.Date
+  phone         String?
+  residence     String?
+  createdById   String?
+  updatedById   String?
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Phase 2B — patient identity enhancements (additive). When the DOB is unknown, an
+  // estimated age derives an approximate birth year stored in `dateOfBirth` (Jan 1) with
+  // `isEstimatedAge = true`. Temporary/unidentified patients carry an immutable original
+  // `temporaryIdentifier` (`Inconnu_YYMMDD_NN`) that is also retained in the audit log.
+  guardianPhone       String?
+  estimatedAge        Int?
+  isEstimatedAge      Boolean @default(false)
+  isTemporaryIdentity Boolean @default(false)
+  temporaryIdentifier String?
+
+  hospital         Hospital          @relation(fields: [hospitalId], references: [id])
+  encounters       Encounter[]
+  prescriptions    Prescription[]
+  queueTickets     QueueTicket[]
+  emergencyDebts   EmergencyDebt[]
+  admissions       Admission[]
+  diagnosticOrders DiagnosticOrder[]
+
+  // Phase 1 (Gate 2) additive relations.
+  contacts            PatientContact[]
+  identifiers         PatientIdentifier[]
+  duplicateCandidates PatientDuplicateCandidate[] @relation("DuplicatePatient")
+  duplicateMatches    PatientDuplicateCandidate[] @relation("DuplicateCandidatePatient")
+
+  // Phase 4G (patient-matching / MPI readiness) — additive; local, warning-only, no auto-merge.
+  matchSourceCandidates    PatientMatchCandidate[] @relation("MatchSource")
+  matchCandidateCandidates PatientMatchCandidate[] @relation("MatchCandidate")
+
+  @@unique([hospitalId, patientNumber])
+  @@index([hospitalId, familyName, givenName])
+}
+
+// ===================== Encounter / visit =====================
+
+/// A visit bringing a patient into the hospital.
+model Encounter {
+  id                   String          @id @default(cuid())
+  hospitalId           String
+  patientId            String
+  encounterNumber      String
+  serviceLabel         String
+  // Phase 2B — optional link to the configured service catalogue (ServiceUnit). `serviceLabel`
+  // (free text) is kept for back-compat; new visits also record the picked service id.
+  serviceUnitId        String?
+  reason               String
+  status               EncounterStatus @default(open)
+  assignedToId         String?
+  openedAt             DateTime        @default(now())
+  closedAt             DateTime?
+  createdById          String?
+  updatedById          String?
+  deletedAt            DateTime?
+  // Phase 2H — emergency ("treat first, pay later") exception. A triage nurse/doctor flags the
+  // encounter as emergency, which lets dispensing bypass the cashier paid-check and lets charges
+  // accrue as auditable Emergency Debt to be settled or waived (by the Director) before discharge.
+  isEmergency          Boolean         @default(false)
+  emergencyFlaggedById String?
+  emergencyFlaggedAt   DateTime?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  hospital         Hospital          @relation(fields: [hospitalId], references: [id])
+  patient          Patient           @relation(fields: [patientId], references: [id])
+  serviceUnit      ServiceUnit?      @relation(fields: [serviceUnitId], references: [id])
+  assignedTo       User?             @relation("EncounterAssignedTo", fields: [assignedToId], references: [id])
+  consultations    Consultation[]
+  invoices         Invoice[]
+  prescriptions    Prescription[]
+  emergencyDebts   EmergencyDebt[]
+  admissions       Admission[]
+  diagnosticOrders DiagnosticOrder[]
+
+  @@unique([hospitalId, encounterNumber])
+  @@index([hospitalId, patientId])
+}
+
+// ===================== Clinical =====================
+
+/// A clinical contact during an encounter. Minimal: reason + free-text fields (05 §4).
+model Consultation {
+  id                   String             @id @default(cuid())
+  hospitalId           String
+  encounterId          String
+  status               ConsultationStatus @default(draft)
+  reason               String
+  clinicalNote         String?
+  vitals               String?
+  provisionalDiagnosis String?
+  recommendation       String?
+  performedById        String?
+  createdById          String?
+  updatedById          String?
+  deletedAt            DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  hospital    Hospital  @relation(fields: [hospitalId], references: [id])
+  encounter   Encounter @relation(fields: [encounterId], references: [id])
+  performedBy User?     @relation("ConsultationPerformedBy", fields: [performedById], references: [id])
+
+  // Phase 1 (Gate 2) additive relations (free-text fields above are kept).
+  observations Observation[]
+  diagnoses    Diagnosis[]
+
+  @@index([hospitalId, encounterId])
+}
+
+// ===================== Billing (integer FCFA) =====================
+
+/// A bill for an encounter. Total = sum of line totals (05 §9).
+model Invoice {
+  id            String        @id @default(cuid())
+  hospitalId    String
+  encounterId   String
+  invoiceNumber String
+  status        InvoiceStatus @default(draft)
+  totalAmount   Int           @default(0)
+  createdById   String?
+  updatedById   String?
+  deletedAt     DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  hospital  Hospital      @relation(fields: [hospitalId], references: [id])
+  encounter Encounter     @relation(fields: [encounterId], references: [id])
+  items     InvoiceItem[]
+  payments  Payment[]
+
+  // Phase 2C additive relations.
+  cancellationRequests InvoiceCancellationRequest[]
+  refundVouchers       RefundVoucher[]
+
+  // Phase 2G additive relation — a hospitalization invoice belongs to at most one admission.
+  admission Admission?
+
+  @@unique([hospitalId, invoiceNumber])
+  @@index([hospitalId, encounterId])
+}
+
+/// One billed line. label/quantity/unitAmount/lineTotal are a HISTORICAL SNAPSHOT
+/// (integer FCFA) — never rewritten by later Tariff changes. `tariffId` is an OPTIONAL
+/// source reference only (Phase 1, Gate 2); the snapshot remains the source of truth.
+model InvoiceItem {
+  id         String   @id @default(cuid())
+  hospitalId String
+  invoiceId  String
+  tariffId   String?
+  label      String
+  quantity   Int      @default(1)
+  unitAmount Int
+  lineTotal  Int
+  createdAt  DateTime @default(now())
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+  invoice  Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  tariff   Tariff?  @relation(fields: [tariffId], references: [id])
+
+  @@index([invoiceId])
+  @@index([tariffId])
+}
+
+/// Money received against an invoice. amount is integer FCFA. Partial payments allowed.
+model Payment {
+  id            String        @id @default(cuid())
+  hospitalId    String
+  invoiceId     String
+  receiptNumber String
+  amount        Int
+  method        PaymentMethod @default(cash)
+  status        PaymentStatus @default(recorded)
+  paidAt        DateTime      @default(now())
+  cashierId     String?
+  printedAt     DateTime?
+  createdById   String?
+  deletedAt     DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+  invoice  Invoice  @relation(fields: [invoiceId], references: [id])
+  cashier  User?    @relation("PaymentCashier", fields: [cashierId], references: [id])
+
+  @@unique([hospitalId, receiptNumber])
+  @@index([hospitalId, invoiceId])
+}
+
+// ===================== System =====================
+
+/// Immutable record of significant actions (append-only, 05 §8). hospitalId is
+/// nullable so pre-selection events (e.g. auth.login) can still be logged.
+model AuditLog {
+  id         String   @id @default(cuid())
+  hospitalId String?
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String?
+  summary    String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  hospital Hospital? @relation(fields: [hospitalId], references: [id])
+  actor    User?     @relation("AuditActor", fields: [actorId], references: [id])
+
+  @@index([hospitalId, createdAt])
+}
+
+/// Per-hospital, per-type, per-year counter for human-readable numbers (05 §6).
+model Sequence {
+  id         String       @id @default(cuid())
+  hospitalId String
+  type       SequenceType
+  year       Int
+  current    Int          @default(0)
+  updatedAt  DateTime     @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+
+  @@unique([hospitalId, type, year])
+}
+
+// ============ Phase 1 (Gate 2) — Configuration / master data (additive) ============
+// Hospital-scoped config; soft-delete; configuration-before-customization (19/20 §A).
+
+/// Organizational unit within a hospital. Hospital-scoped config.
+model Department {
+  id         String    @id @default(cuid())
+  hospitalId String
+  code       String
+  name       String
+  isActive   Boolean   @default(true)
+  deletedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  hospital     Hospital      @relation(fields: [hospitalId], references: [id])
+  serviceUnits ServiceUnit[]
+
+  @@unique([hospitalId, code])
+  @@index([hospitalId])
+}
+
+/// A configurable service/department in the hospital catalogue (Phase 2A) — the foundation
+/// every later module routes through. Existing Phase 1 fields (name, kind, departmentId)
+/// are KEPT; Phase 2A adds bilingual labels, a typed classification, ordering, and
+/// eligibility flags additively (no removals/renames; Phase 1A flows untouched).
+model ServiceUnit {
+  id           String    @id @default(cuid())
+  hospitalId   String
+  departmentId String?
+  code         String
+  name         String
+  kind         String?
+  isActive     Boolean   @default(true)
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Phase 2A — service-catalogue foundation (additive). nameFr/nameEn backfilled from `name`.
+  nameFr              String?
+  nameEn              String?
+  type                ServiceType @default(SUPPORT)
+  displayOrder        Int         @default(0)
+  acceptsQueue        Boolean     @default(false)
+  acceptsConsultation Boolean     @default(false)
+  supportsBilling     Boolean     @default(false)
+  supportsPharmacy    Boolean     @default(false)
+  supportsLab         Boolean     @default(false)
+  supportsImaging     Boolean     @default(false)
+  isInpatientWard     Boolean     @default(false)
+  isEmergency         Boolean     @default(false)
+
+  hospital       Hospital      @relation(fields: [hospitalId], references: [id])
+  department     Department?   @relation(fields: [departmentId], references: [id])
+  encounters     Encounter[]
+  queueTickets   QueueTicket[]
+  wardAdmissions Admission[]
+
+  @@unique([hospitalId, code])
+  @@index([hospitalId, departmentId])
+  @@index([hospitalId, type])
+}
+
+/// Configurable key/value setting; per-hospital (hospitalId set) or global (null). Config.
+model Setting {
+  id         String    @id @default(cuid())
+  hospitalId String?
+  key        String
+  value      String
+  deletedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  hospital Hospital? @relation(fields: [hospitalId], references: [id])
+
+  @@unique([hospitalId, key])
+  @@index([hospitalId])
+}
+
+/// Printed-document wording/header (e.g. receipt header); per-hospital or global. Config.
+model DocumentTemplate {
+  id         String    @id @default(cuid())
+  hospitalId String?
+  type       String
+  name       String
+  header     String?
+  body       String?
+  isActive   Boolean   @default(true)
+  deletedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  hospital Hospital? @relation(fields: [hospitalId], references: [id])
+
+  @@unique([hospitalId, type, name])
+  @@index([hospitalId])
+}
+
+// ============ Phase 3A — Multi-hospital configuration foundation (additive) ============
+// Templates separate REUSABLE, hospital-agnostic configuration (a blueprint) from a
+// hospital INSTANCE's own config rows (Department/ServiceUnit/Setting/DocumentTemplate,
+// already hospital-scoped). A template is a shared artifact — NOT hospital-scoped, and
+// NEVER a hard-coded global default (Bertoua is snapshotted into one, like any other).
+// Templates carry NO patient/transaction data and NO hospital identity (name/city stays
+// per-instance, so two hospitals built from the same template still differ by data alone).
+
+/// A reusable, hospital-agnostic configuration blueprint. `content` is a structured JSON
+/// payload (departments, services + eligibility flags, settings, document templates).
+/// `sourceHospitalId` is provenance only (e.g. Bertoua) — NOT a scoping key.
+model ConfigurationTemplate {
+  id               String   @id @default(cuid())
+  code             String   @unique
+  name             String
+  description      String?
+  version          Int      @default(1)
+  sourceHospitalId String?
+  content          Json
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  applications ConfigurationTemplateApplication[]
+
+  @@index([sourceHospitalId])
+}
+
+/// Audit-grade record of a guarded, hospital-scoped template apply. Records which template
+/// (+version) was applied to which hospital instance, by whom, and how many config rows were
+/// created / updated / skipped. Hospital-scoped; carries no patient data.
+model ConfigurationTemplateApplication {
+  id              String   @id @default(cuid())
+  hospitalId      String
+  templateId      String
+  templateCode    String
+  templateVersion Int
+  appliedById     String
+  createdCount    Int      @default(0)
+  updatedCount    Int      @default(0)
+  skippedCount    Int      @default(0)
+  summary         String
+  createdAt       DateTime @default(now())
+
+  hospital Hospital              @relation(fields: [hospitalId], references: [id])
+  template ConfigurationTemplate @relation(fields: [templateId], references: [id])
+
+  @@index([hospitalId])
+  @@index([templateId])
+}
+
+// ============ Phase 3C — Site readiness & deployment checklist (additive) ============
+// App-level STATUS TRACKING only — the software team performs no hardware/LAN/cyber work.
+// Supplier-dependent items (hardware/LAN/UPS/cybersecurity) cannot be self-claimed READY.
+
+enum SiteReadinessStatus {
+  not_started
+  in_progress
+  ready
+  blocked
+  not_applicable
+  needs_validation
+}
+
+/// One readiness checklist item for a hospital (per category). Status-tracking only — never
+/// performs infrastructure work. Hospital-scoped; one row per (hospital, category).
+model SiteReadinessItem {
+  id           String              @id @default(cuid())
+  hospitalId   String
+  category     String
+  status       SiteReadinessStatus @default(not_started)
+  owner        String?
+  evidenceNote String?
+  verifier     String?
+  statusDate   DateTime?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+
+  @@unique([hospitalId, category])
+  @@index([hospitalId])
+}
+
+// ============ Phase 3D — Central aggregate oversight snapshot (additive) ============
+// The ONLY source the central (national) viewer reads. AGGREGATE-ONLY: `indicators` holds
+// per-hospital counts/totals (consultations, revenue, top-ICD-diagnoses counts, pharmacy alert
+// counts, emergency-debt total, …) — NEVER a name/number/DOB/diagnosis-at-patient-level. Generated
+// hospital-scoped; central never queries operational patient/encounter/invoice/lab/pharmacy tables.
+
+/// A precomputed, aggregate-only summary of one hospital for one period (`YYYY-MM`). No patient data.
+model HospitalAggregateSnapshot {
+  id            String   @id @default(cuid())
+  hospitalId    String
+  period        String
+  indicators    Json
+  generatedById String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+
+  @@unique([hospitalId, period])
+  @@index([hospitalId])
+}
+
+// ============ Phase 3E — UAT evidence & Gate 7 readiness package (additive) ============
+// EVIDENCE ONLY. Software never authorizes Gate 7 (administrative, co-signed Director + MINSANTE);
+// the sign-off fields are PLACEHOLDERS (no legal e-signature). All records hospital-scoped.
+
+enum UatStatus {
+  not_run
+  pass
+  fail
+  blocker
+}
+
+/// A UAT scenario in a hospital's library (synthetic). Templates are seeded per hospital.
+model UatScenario {
+  id             String   @id @default(cuid())
+  hospitalId     String
+  code           String
+  category       String
+  titleFr        String
+  titleEn        String?
+  expectedResult String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  hospital   Hospital       @relation(fields: [hospitalId], references: [id])
+  executions UatExecution[]
+
+  @@unique([hospitalId, code])
+  @@index([hospitalId])
+}
+
+/// The latest UAT execution result for a scenario (pass / fail / blocker). Synthetic UAT only.
+model UatExecution {
+  id           String    @id @default(cuid())
+  hospitalId   String
+  scenarioId   String
+  status       UatStatus @default(not_run)
+  notes        String?
+  executedById String
+  executedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  hospital Hospital    @relation(fields: [hospitalId], references: [id])
+  scenario UatScenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+
+  @@unique([hospitalId, scenarioId])
+  @@index([hospitalId])
+}
+
+/// One Gate 7 readiness criterion for a hospital, with Director / MINSANTE sign-off PLACEHOLDERS
+/// (no legal e-signature). Status reuses SiteReadinessStatus. Evidence only — never authorization.
+model Gate7ReadinessItem {
+  id                         String              @id @default(cuid())
+  hospitalId                 String
+  criterion                  String
+  status                     SiteReadinessStatus @default(not_started)
+  note                       String?
+  directorSignoffPlaceholder String?
+  minsanteSignoffPlaceholder String?
+  createdAt                  DateTime            @default(now())
+  updatedAt                  DateTime            @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+
+  @@unique([hospitalId, criterion])
+  @@index([hospitalId])
+}
+
+// ============ Phase 1 (Gate 2) — Patient identity / contact (additive) ============
+// Phase 0 Patient fields (phone/residence) KEPT. No MPI, no merge, no survivorship,
+// no global de-duplication (19/20 §B).
+
+/// Optional contact datum for a patient (phone/address/next-of-kin). Hospital-scoped.
+model PatientContact {
+  id          String    @id @default(cuid())
+  hospitalId  String
+  patientId   String
+  contactType String
+  value       String
+  label       String?
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+  patient  Patient  @relation(fields: [patientId], references: [id])
+
+  @@index([hospitalId, patientId])
+}
+
+/// Optional administrative identifier. Uniqueness is HOSPITAL-LOCAL (not national; no
+/// MPI / no global de-duplication). Hospital-scoped.
+model PatientIdentifier {
+  id               String    @id @default(cuid())
+  hospitalId       String
+  patientId        String
+  identifierType   String
+  value            String
+  issuingAuthority String?
+  isActive         Boolean   @default(true)
+  deletedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+  patient  Patient  @relation(fields: [patientId], references: [id])
+
+  @@unique([hospitalId, identifierType, value])
+  @@index([hospitalId, patientId])
+}
+
+/// Possible-duplicate hint between two patients in one hospital. WARNING/REVIEW ONLY —
+/// no merge, no survivorship, no MPI. Hospital-scoped.
+model PatientDuplicateCandidate {
+  id                 String   @id @default(cuid())
+  hospitalId         String
+  patientId          String
+  candidatePatientId String
+  matchBasis         String
+  status             String   @default("open")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  hospital         Hospital @relation(fields: [hospitalId], references: [id])
+  patient          Patient  @relation("DuplicatePatient", fields: [patientId], references: [id])
+  candidatePatient Patient  @relation("DuplicateCandidatePatient", fields: [candidatePatientId], references: [id])
+
+  @@unique([hospitalId, patientId, candidatePatientId])
+  @@index([hospitalId, status])
+}
+
+// ============ Phase 1 (Gate 2) — Clinical structure (additive) ============
+// Consultation free-text `vitals` / `provisionalDiagnosis` are KEPT (transition).
+// Clinical actions still reference User; no Practitioner; no legal-EMR finalization
+// beyond current scope (19/20 §C).
+
+/// Structured measured value within a consultation (over the free-text `vitals`).
+model Observation {
+  id             String    @id @default(cuid())
+  hospitalId     String
+  consultationId String
+  type           String
+  value          String
+  unit           String?
+  deletedAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  hospital     Hospital     @relation(fields: [hospitalId], references: [id])
+  consultation Consultation @relation(fields: [consultationId], references: [id])
+
+  @@index([hospitalId, consultationId])
+}
+
+/// Structured/coded diagnosis within a consultation (over `provisionalDiagnosis`).
+model Diagnosis {
+  id             String    @id @default(cuid())
+  hospitalId     String
+  consultationId String
+  code           String?
+  label          String
+  isPrimary      Boolean   @default(false)
+  deletedAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  hospital     Hospital     @relation(fields: [hospitalId], references: [id])
+  consultation Consultation @relation(fields: [consultationId], references: [id])
+
+  @@index([hospitalId, consultationId])
+}
+
+// ============ Phase 1 (Gate 2) — Tariff / price list (additive, integer FCFA) ============
+// InvoiceItem keeps its snapshot; later Tariff changes never alter past invoices/
+// receipts. Integer FCFA only — no floats (19/20 §D).
+
+/// A set of tariffs effective for a hospital/period. Hospital-scoped config.
+model PriceList {
+  id            String    @id @default(cuid())
+  hospitalId    String
+  code          String
+  name          String
+  effectiveFrom DateTime?
+  effectiveTo   DateTime?
+  isActive      Boolean   @default(true)
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+  tariffs  Tariff[]
+
+  @@unique([hospitalId, code])
+  @@index([hospitalId])
+}
+
+/// A priced billable item (integer FCFA). An OPTIONAL source for InvoiceItem; the
+/// InvoiceItem keeps its own snapshot so billing history is never rewritten.
+model Tariff {
+  id            String    @id @default(cuid())
+  hospitalId    String
+  priceListId   String?
+  code          String
+  label         String
+  amount        Int
+  isActive      Boolean   @default(true)
+  // Phase 2C — OPTIONAL effective dates (additive). Purely informational for pricing validity;
+  // they never alter existing InvoiceItem snapshots (billing history is immutable).
+  effectiveFrom DateTime?
+  effectiveTo   DateTime?
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  hospital     Hospital      @relation(fields: [hospitalId], references: [id])
+  priceList    PriceList?    @relation(fields: [priceListId], references: [id])
+  invoiceItems InvoiceItem[]
+
+  @@unique([hospitalId, code])
+  @@index([hospitalId, priceListId])
+}
+
+// ============ Phase 2B — Diagnosis code reference (ICD-10 subset, GLOBAL) ============
+
+/// Configurable ICD-10 diagnosis-code reference subset (GLOBAL standard data, not
+/// hospital-scoped). Seeded with a small subset for UAT; importing the full ICD-10
+/// catalogue is a documented extension path, NOT done here. The per-consultation
+/// `Diagnosis` rows record a `code` + `label` chosen from this reference.
+model DiagnosisCode {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  labelFr      String
+  labelEn      String
+  category     String?
+  isActive     Boolean  @default(true)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([isActive, displayOrder])
+}
+
+// ============ Phase 2C — cancellation, refund voucher, Brouillard de Caisse ============
+
+/// A cashier's request to cancel an invoice, decided by a Hospital Administrator. The cashier may
+/// NOT approve their own request (requester ≠ approver, enforced at the service layer). Two distinct
+/// events: the request, then the decision. On approval the invoice (and its recorded payments) are
+/// cancelled and — when the invoice had recorded payments — a linked RefundVoucher is generated.
+model InvoiceCancellationRequest {
+  id             String                    @id @default(cuid())
+  hospitalId     String
+  invoiceId      String
+  status         CancellationRequestStatus @default(requested)
+  reason         String
+  requestedById  String
+  decidedById    String?
+  decisionReason String?
+  decidedAt      DateTime?
+  createdAt      DateTime                  @default(now())
+  updatedAt      DateTime                  @updatedAt
+
+  hospital      Hospital       @relation(fields: [hospitalId], references: [id])
+  invoice       Invoice        @relation(fields: [invoiceId], references: [id])
+  requestedBy   User           @relation("CancellationRequestedBy", fields: [requestedById], references: [id])
+  decidedBy     User?          @relation("CancellationDecidedBy", fields: [decidedById], references: [id])
+  refundVoucher RefundVoucher?
+
+  @@index([hospitalId, status])
+  @@index([invoiceId])
+}
+
+/// Refund voucher ("bon d'avoir") for a cancelled PAID invoice, linked to the originating invoice
+/// and cancellation request. Lifecycle: requested → approved → paid (the physical cash-out is
+/// recorded at "paid"/executed) — or cancelled. Amounts are integer FCFA.
+model RefundVoucher {
+  id                    String              @id @default(cuid())
+  hospitalId            String
+  voucherNumber         String
+  invoiceId             String
+  cancellationRequestId String              @unique
+  amount                Int
+  status                RefundVoucherStatus @default(requested)
+  reason                String
+  requestedById         String
+  approvedById          String?
+  executedById          String?
+  cancelledById         String?
+  approvedAt            DateTime?
+  executedAt            DateTime?
+  cancelledAt           DateTime?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  hospital            Hospital                   @relation(fields: [hospitalId], references: [id])
+  invoice             Invoice                    @relation(fields: [invoiceId], references: [id])
+  cancellationRequest InvoiceCancellationRequest @relation(fields: [cancellationRequestId], references: [id])
+  requestedBy         User                       @relation("RefundRequestedBy", fields: [requestedById], references: [id])
+  approvedBy          User?                      @relation("RefundApprovedBy", fields: [approvedById], references: [id])
+  executedBy          User?                      @relation("RefundExecutedBy", fields: [executedById], references: [id])
+  cancelledBy         User?                      @relation("RefundCancelledBy", fields: [cancelledById], references: [id])
+
+  @@unique([hospitalId, voucherNumber])
+  @@index([hospitalId, status])
+  @@index([invoiceId])
+}
+
+/// Cashier shift + Brouillard de Caisse. Opened with an opening balance; on close the five
+/// mandatory totals are FROZEN (integer FCFA) and the record becomes immutable. Corrections never
+/// mutate the frozen figures — they are appended as CashierShiftCorrection rows and flip the status
+/// to `corrected`. Shift totals are attributed by the cashier's recorded payments within the shift
+/// window [openedAt, closedAt) (deterministic; no Payment FK to keep the change additive).
+model CashierShift {
+  id                        String             @id @default(cuid())
+  hospitalId                String
+  shiftNumber               String
+  cashierId                 String
+  status                    CashierShiftStatus @default(open)
+  openingBalance            Int                @default(0)
+  totalCashReceived         Int                @default(0)
+  totalMobileCardReceived   Int                @default(0)
+  totalCancellationsRefunds Int                @default(0)
+  expectedClosingBalance    Int                @default(0)
+  receiptCount              Int                @default(0)
+  openedAt                  DateTime           @default(now())
+  closedAt                  DateTime?
+  closedById                String?
+  createdAt                 DateTime           @default(now())
+  updatedAt                 DateTime           @updatedAt
+
+  hospital    Hospital                 @relation(fields: [hospitalId], references: [id])
+  cashier     User                     @relation("ShiftCashier", fields: [cashierId], references: [id])
+  closedBy    User?                    @relation("ShiftClosedBy", fields: [closedById], references: [id])
+  corrections CashierShiftCorrection[]
+
+  @@unique([hospitalId, shiftNumber])
+  @@index([hospitalId, cashierId, status])
+}
+
+/// An append-only correction note against a CLOSED Brouillard. The original frozen totals are never
+/// modified; this records a controlled, audited adjustment (reason + note + who + when).
+model CashierShiftCorrection {
+  id             String   @id @default(cuid())
+  hospitalId     String
+  cashierShiftId String
+  reason         String
+  note           String
+  correctedById  String
+  createdAt      DateTime @default(now())
+
+  hospital     Hospital     @relation(fields: [hospitalId], references: [id])
+  cashierShift CashierShift @relation(fields: [cashierShiftId], references: [id])
+  correctedBy  User         @relation("ShiftCorrectedBy", fields: [correctedById], references: [id])
+
+  @@index([cashierShiftId])
+}
+
+// ===================== Phase 2D — pharmacy / medication =====================
+
+/// Hospital-scoped medication catalogue (Phase 2D-1). Fr/En names, galenic form, dispensing unit,
+/// optional strength, active flag, display order. Integer quantities live on the stock ledger
+/// (2D-3) and prescriptions (2D-2) — the catalogue itself carries no quantities or prices.
+model Medication {
+  id           String    @id @default(cuid())
+  hospitalId   String
+  code         String
+  nameFr       String
+  nameEn       String
+  form         String
+  unit         String
+  strength     String?
+  isActive     Boolean   @default(true)
+  displayOrder Int       @default(0)
+  deletedAt    DateTime?
+  createdById  String?
+  updatedById  String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  hospital          Hospital               @relation(fields: [hospitalId], references: [id])
+  prescriptionItems PrescriptionItem[]
+  stockBatches      MedicationStockBatch[]
+  stockAdjustments  StockAdjustment[]
+
+  @@unique([hospitalId, code])
+  @@index([hospitalId, isActive, displayOrder])
+}
+
+/// Phase 2D-3 — a received batch/lot of a medication, with mandatory batch number + expiry date and
+/// integer quantities. `quantityOnHand` is the physical available stock; `quantityReserved` (Phase
+/// 2D-4) is held by finalized prescriptions; available-to-reserve = onHand − reserved. Dispensing
+/// (2D-5) deducts from `quantityOnHand`. FEFO (2D-6) selects the earliest `expiryDate` first.
+model MedicationStockBatch {
+  id               String   @id @default(cuid())
+  hospitalId       String
+  medicationId     String
+  batchNumber      String
+  expiryDate       DateTime @db.Date
+  quantityReceived Int
+  quantityOnHand   Int
+  quantityReserved Int      @default(0)
+  receivedById     String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  hospital            Hospital             @relation(fields: [hospitalId], references: [id])
+  medication          Medication           @relation(fields: [medicationId], references: [id])
+  reservations        StockReservation[]
+  dispenseRecordItems DispenseRecordItem[]
+  adjustments         StockAdjustment[]
+
+  @@index([hospitalId, medicationId, expiryDate])
+}
+
+/// Phase 2D-4 — a FEFO reservation of stock held by a finalized/sent prescription line against a
+/// specific batch. While `active` it adds to the batch's `quantityReserved` (no on-hand deduction).
+/// Releasing (48h non-collection / cancellation) returns the reserved units; dispensing (2D-5)
+/// consumes the reservation and deducts on-hand.
+model StockReservation {
+  id                 String            @id @default(cuid())
+  hospitalId         String
+  prescriptionId     String
+  prescriptionItemId String
+  medicationId       String
+  batchId            String
+  quantity           Int
+  status             ReservationStatus @default(active)
+  releasedAt         DateTime?
+  consumedAt         DateTime?
+  createdById        String?
+  // Phase 2D-6 — FEFO override: set when the Pharmacist-in-Charge re-points this reservation off its
+  // earliest-expiry (FEFO) batch onto a deliberately chosen batch, with a mandatory reason. Audited as
+  // `fefo.override`. Default (FEFO) reservations leave these false/null.
+  isFefoOverride     Boolean           @default(false)
+  overrideReason     String?
+  overrideById       String?
+  overrideAt         DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  hospital         Hospital             @relation(fields: [hospitalId], references: [id])
+  prescription     Prescription         @relation(fields: [prescriptionId], references: [id])
+  prescriptionItem PrescriptionItem     @relation(fields: [prescriptionItemId], references: [id])
+  batch            MedicationStockBatch @relation(fields: [batchId], references: [id])
+
+  @@index([hospitalId, status, createdAt])
+  @@index([prescriptionId])
+  @@index([batchId])
+}
+
+/// Phase 2D-7 — a dual-validated stock adjustment against a batch. A `pharmacien` REQUESTS (kind +
+/// positive magnitude + mandatory reason); the `pharmacien_chef` APPROVES (on-hand is changed) or
+/// REJECTS (mandatory decision reason). Requester ≠ approver. The on-hand mutation happens ONLY on
+/// approval; the InvoiceItem-style history is preserved (the request row is never rewritten).
+model StockAdjustment {
+  id             String                @id @default(cuid())
+  hospitalId     String
+  batchId        String
+  medicationId   String
+  type           StockAdjustmentType
+  quantity       Int // positive magnitude; the on-hand delta is signed by `type`
+  reason         String
+  status         StockAdjustmentStatus @default(requested)
+  requestedById  String
+  decidedById    String?
+  decisionReason String?
+  decidedAt      DateTime?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  hospital    Hospital             @relation(fields: [hospitalId], references: [id])
+  batch       MedicationStockBatch @relation(fields: [batchId], references: [id])
+  medication  Medication           @relation(fields: [medicationId], references: [id])
+  requestedBy User                 @relation("StockAdjustmentRequestedBy", fields: [requestedById], references: [id])
+  decidedBy   User?                @relation("StockAdjustmentDecidedBy", fields: [decidedById], references: [id])
+
+  @@index([hospitalId, status, createdAt])
+  @@index([batchId])
+}
+
+/// Phase 2E — an audited record of a manual aggregate export (e.g. the DHIS2-aligned monthly CSV).
+/// History only — it stores WHAT aggregate export was run (kind, period, row count) and BY WHOM, never
+/// any exported patient data (the exports themselves are aggregate-only, no nominative fields).
+model ReportExport {
+  id           String   @id @default(cuid())
+  hospitalId   String
+  kind         String // e.g. "dhis2_monthly"
+  periodLabel  String // e.g. "2026-06"
+  periodStart  DateTime
+  periodEnd    DateTime
+  rowCount     Int
+  exportedById String
+  createdAt    DateTime @default(now())
+
+  hospital   Hospital @relation(fields: [hospitalId], references: [id])
+  exportedBy User     @relation("ReportExportedBy", fields: [exportedById], references: [id])
+
+  @@index([hospitalId, createdAt])
+}
+
+/// Phase 2F — a simple per-service digital queue ticket (replaces the physical arrival register). A
+/// registered patient is queued for a service on a given day; `ticketNumber` is sequential per
+/// hospital + service + day (resets daily). `isUrgent` lets a triage override jump the line (audited).
+model QueueTicket {
+  id            String      @id @default(cuid())
+  hospitalId    String
+  serviceUnitId String
+  patientId     String
+  queueDate     DateTime    @db.Date
+  ticketNumber  Int
+  status        QueueStatus @default(waiting)
+  isUrgent      Boolean     @default(false)
+  calledAt      DateTime?
+  completedAt   DateTime?
+  cancelledAt   DateTime?
+  createdById   String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  hospital    Hospital    @relation(fields: [hospitalId], references: [id])
+  serviceUnit ServiceUnit @relation(fields: [serviceUnitId], references: [id])
+  patient     Patient     @relation(fields: [patientId], references: [id])
+
+  @@unique([hospitalId, serviceUnitId, queueDate, ticketNumber])
+  @@index([hospitalId, serviceUnitId, queueDate, status])
+}
+
+/// Phase 2H — an auditable Emergency Debt ledger entry. Each entry is an amount the patient owes for
+/// emergency ("treat first, pay later") care on an encounter; it can only move from `outstanding` to
+/// `settled` (paid later) or `waived` (Hospital Director). Entries are never deleted — the ledger is
+/// append-and-transition only, so emergency debt can never silently disappear.
+model EmergencyDebt {
+  id             String              @id @default(cuid())
+  hospitalId     String
+  encounterId    String
+  patientId      String
+  amount         Int // integer FCFA
+  source         String // what the debt is for, e.g. "Consultation", "Soins d'urgence"
+  status         EmergencyDebtStatus @default(outstanding)
+  createdById    String?
+  decidedById    String?
+  decisionReason String?
+  decidedAt      DateTime?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  hospital  Hospital  @relation(fields: [hospitalId], references: [id])
+  encounter Encounter @relation(fields: [encounterId], references: [id])
+  patient   Patient   @relation(fields: [patientId], references: [id])
+
+  @@index([hospitalId, encounterId, status])
+}
+
+/// Phase 2G — simple ward-level hospitalization lifecycle. A doctor REQUESTS admission; the admission
+/// desk / head nurse ASSIGNS a ward (an INPATIENT_WARD service) which starts the daily ward fee; the
+/// doctor REQUESTS then AUTHORISES discharge (the latter is blocked while invoices are unpaid or
+/// emergency debt is outstanding). `requested → admitted → discharge_requested → discharged`, plus
+/// `requested → cancelled` (before a ward is assigned). No bed/room-level tracking.
+enum AdmissionStatus {
+  requested
+  admitted
+  discharge_requested
+  discharged
+  cancelled
+}
+
+/// Phase 2I — diagnostic modality (manual workflows only; radiology is text-only, no PACS/DICOM).
+enum DiagnosticModality {
+  lab
+  radiology
+}
+
+/// Phase 2I — manual lab/radiology order lifecycle. `requested → payment_confirmed → in_progress →
+/// result_entered → validated` (+ `cancelled` before validation). The doctor cannot see the result
+/// until `validated`. Payment is bypassed for emergency (2H) encounters.
+enum DiagnosticOrderStatus {
+  requested
+  payment_confirmed
+  in_progress
+  result_entered
+  validated
+  cancelled
+}
+
+/// Phase 2G — a ward-level hospitalization tied to an encounter. Bed/room-level tracking is out of
+/// scope. The daily ward fee is resolved from the ward's active Tariff and SNAPSHOT here at assignment
+/// (deterministic + auditable); daily charges accrue onto a single hospitalization Invoice.
+model Admission {
+  id                   String          @id @default(cuid())
+  hospitalId           String
+  encounterId          String
+  patientId            String
+  admissionNumber      String
+  status               AdmissionStatus @default(requested)
+  reason               String
+  // Ward assignment (set when status → admitted). The daily ward fee is snapshot from the ward tariff.
+  wardServiceUnitId    String?
+  dailyWardFee         Int             @default(0) // integer FCFA, snapshot at assignment
+  dailyFeeTariffId     String?
+  // The single hospitalization invoice the daily ward fees accrue onto (created lazily on first charge).
+  invoiceId            String?         @unique
+  cancelReason         String?
+  requestedById        String?
+  admittedById         String?
+  dischargedById       String?
+  cancelledById        String?
+  requestedAt          DateTime        @default(now())
+  admittedAt           DateTime?
+  dischargeRequestedAt DateTime?
+  dischargedAt         DateTime?
+  cancelledAt          DateTime?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  hospital     Hospital               @relation(fields: [hospitalId], references: [id])
+  encounter    Encounter              @relation(fields: [encounterId], references: [id])
+  patient      Patient                @relation(fields: [patientId], references: [id])
+  wardService  ServiceUnit?           @relation(fields: [wardServiceUnitId], references: [id])
+  invoice      Invoice?               @relation(fields: [invoiceId], references: [id])
+  dailyCharges AdmissionDailyCharge[]
+
+  @@unique([hospitalId, admissionNumber])
+  @@index([hospitalId, status])
+  @@index([hospitalId, encounterId])
+}
+
+/// Phase 2G — one auditable daily ward-fee charge for an admission. The `@@unique` on (admission, day)
+/// makes fee generation idempotent: charging the same day twice never double-bills. Each charge maps to
+/// one InvoiceItem (`invoiceItemId`) appended to the admission's hospitalization invoice.
+model AdmissionDailyCharge {
+  id            String   @id @default(cuid())
+  hospitalId    String
+  admissionId   String
+  chargeDate    DateTime @db.Date
+  amount        Int // integer FCFA — the snapshot daily ward fee
+  invoiceItemId String?
+  createdById   String?
+  createdAt     DateTime @default(now())
+
+  hospital  Hospital  @relation(fields: [hospitalId], references: [id])
+  admission Admission @relation(fields: [admissionId], references: [id], onDelete: Cascade)
+
+  @@unique([hospitalId, admissionId, chargeDate])
+  @@index([hospitalId, admissionId])
+}
+
+/// Phase 2I — the orderable lab/radiology catalogue, maintained at hospital level by the Admin (or
+/// Lead Tech). `price` is integer FCFA (snapshot onto the order at request time). No analyzer/PACS.
+model DiagnosticCatalogueItem {
+  id           String             @id @default(cuid())
+  hospitalId   String
+  code         String
+  nameFr       String
+  nameEn       String?
+  modality     DiagnosticModality
+  price        Int                @default(0) // integer FCFA
+  isActive     Boolean            @default(true)
+  displayOrder Int                @default(0)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  hospital Hospital          @relation(fields: [hospitalId], references: [id])
+  orders   DiagnosticOrder[]
+
+  @@unique([hospitalId, code])
+  @@index([hospitalId, modality])
+}
+
+/// Phase 2I — a manual lab/radiology order. Doctor requests → cashier confirms payment (or emergency
+/// bypass, 2H) → technician enters a TEXT result → validator validates → PDF. The `resultText` is
+/// hidden from the requesting doctor (service-enforced) until `status = validated`. Modality/label/
+/// price are SNAPSHOT from the catalogue item at request time. Append-and-transition; never deleted.
+model DiagnosticOrder {
+  id                String                @id @default(cuid())
+  hospitalId        String
+  encounterId       String
+  patientId         String
+  catalogueItemId   String?
+  orderNumber       String
+  modality          DiagnosticModality
+  itemLabel         String // snapshot of the catalogue item name
+  price             Int                   @default(0) // integer FCFA, snapshot
+  status            DiagnosticOrderStatus @default(requested)
+  isPaid            Boolean               @default(false)
+  paidAt            DateTime?
+  paidById          String?
+  resultText        String?
+  resultEnteredById String?
+  resultEnteredAt   DateTime?
+  validatedById     String?
+  validatedAt       DateTime?
+  cancelReason      String?
+  requestedById     String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  hospital      Hospital                 @relation(fields: [hospitalId], references: [id])
+  encounter     Encounter                @relation(fields: [encounterId], references: [id])
+  patient       Patient                  @relation(fields: [patientId], references: [id])
+  catalogueItem DiagnosticCatalogueItem? @relation(fields: [catalogueItemId], references: [id])
+
+  @@unique([hospitalId, orderNumber])
+  @@index([hospitalId, status])
+  @@index([hospitalId, encounterId])
+  @@index([hospitalId, modality, status])
+}
+
+/// Phase 2D-2 — a structured prescription ("ordonnance") raised by a doctor during an encounter.
+/// Lifecycle draft → finalized → sent_to_pharmacy (dispensing transitions are added by 2D-5). A
+/// prescription has NO stock effect — it may later create a reservation (2D-4); dispensing (2D-5)
+/// deducts stock. The printable PDF carries the hospital header + tracking number + doctor name +
+/// signature space (e-signature deferred) + synthetic-data marker.
+model Prescription {
+  id                 String             @id @default(cuid())
+  hospitalId         String
+  prescriptionNumber String
+  patientId          String
+  encounterId        String
+  prescribedById     String
+  status             PrescriptionStatus @default(draft)
+  notes              String?
+  finalizedAt        DateTime?
+  sentAt             DateTime?
+  cancelledAt        DateTime?
+  // Phase 2D-5 — collection payment confirmation (the patient paid at the cashier). Dispensing
+  // requires `isPaid` (the paid check; emergency exception is Phase 2H, not built).
+  isPaid             Boolean            @default(false)
+  paidAt             DateTime?
+  paidById           String?
+  createdById        String?
+  deletedAt          DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  hospital        Hospital           @relation(fields: [hospitalId], references: [id])
+  patient         Patient            @relation(fields: [patientId], references: [id])
+  encounter       Encounter          @relation(fields: [encounterId], references: [id])
+  prescribedBy    User               @relation("PrescriptionPrescribedBy", fields: [prescribedById], references: [id])
+  paidBy          User?              @relation("PrescriptionPaidBy", fields: [paidById], references: [id])
+  items           PrescriptionItem[]
+  reservations    StockReservation[]
+  dispenseRecords DispenseRecord[]
+
+  @@unique([hospitalId, prescriptionNumber])
+  @@index([hospitalId, status])
+  @@index([encounterId])
+}
+
+/// One prescribed line. `medicationLabel`/`unit` are a SNAPSHOT at prescribe time (the printed
+/// prescription is stable even if the catalogue later changes); `medicationId` is the source link.
+/// `quantity` is an integer (dispensing unit). No price here.
+model PrescriptionItem {
+  id              String   @id @default(cuid())
+  hospitalId      String
+  prescriptionId  String
+  medicationId    String
+  medicationLabel String
+  unit            String
+  dosage          String
+  frequency       String?
+  duration        String
+  quantity        Int
+  instructions    String?
+  createdAt       DateTime @default(now())
+
+  hospital            Hospital             @relation(fields: [hospitalId], references: [id])
+  prescription        Prescription         @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  medication          Medication           @relation(fields: [medicationId], references: [id])
+  reservations        StockReservation[]
+  dispenseRecordItems DispenseRecordItem[]
+
+  @@index([prescriptionId])
+  @@index([medicationId])
+}
+
+/// Phase 2D-5 — a dispense event for a prescription. Records WHO dispensed WHAT from WHICH batch
+/// (snapshot label) and HOW MUCH. Dispensing deducts batch `quantityOnHand` and consumes the
+/// matching reservations. Printable with a tracking number. Integer quantities.
+model DispenseRecord {
+  id             String   @id @default(cuid())
+  hospitalId     String
+  dispenseNumber String
+  prescriptionId String
+  dispensedById  String
+  createdAt      DateTime @default(now())
+
+  hospital     Hospital             @relation(fields: [hospitalId], references: [id])
+  prescription Prescription         @relation(fields: [prescriptionId], references: [id])
+  dispensedBy  User                 @relation("DispensePerformedBy", fields: [dispensedById], references: [id])
+  items        DispenseRecordItem[]
+
+  @@unique([hospitalId, dispenseNumber])
+  @@index([prescriptionId])
+}
+
+/// One dispensed line: which prescription line, which batch, how much (integer). `medicationLabel`
+/// is a snapshot. FEFO-override (2D-6) records the override on this batch choice.
+model DispenseRecordItem {
+  id                 String   @id @default(cuid())
+  hospitalId         String
+  dispenseRecordId   String
+  prescriptionItemId String
+  batchId            String
+  medicationLabel    String
+  unit               String
+  quantity           Int
+  createdAt          DateTime @default(now())
+
+  hospital         Hospital             @relation(fields: [hospitalId], references: [id])
+  dispenseRecord   DispenseRecord       @relation(fields: [dispenseRecordId], references: [id], onDelete: Cascade)
+  prescriptionItem PrescriptionItem     @relation(fields: [prescriptionItemId], references: [id])
+  batch            MedicationStockBatch @relation(fields: [batchId], references: [id])
+
+  @@index([dispenseRecordId])
+  @@index([batchId])
+}
+
+// ===================================================================================================
+// Phase 4A — Integration framework & external-system registry (ADDITIVE; mock/sandbox-first).
+// Generic foundation every later Phase 4 batch builds on: a hospital-scoped registry of external
+// systems, connector configuration with an environment that is MOCK / SANDBOX / PRODUCTION_DISABLED
+// (never an enabled "production"), credential REFERENCES only (never secrets), and an idempotent,
+// audited import/export job framework with status / attempts / last-error tracking. NO live calls by
+// default — a "PRODUCTION_DISABLED" connector cannot run, and no model stores patient data.
+// ===================================================================================================
+
+enum IntegrationEnvironment {
+  MOCK
+  SANDBOX
+  PRODUCTION_DISABLED
+}
+
+enum ExternalSystemStatus {
+  ACTIVE
+  INACTIVE
+  NEEDS_CONFIGURATION
+}
+
+enum IntegrationJobStatus {
+  PENDING
+  RUNNING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+}
+
+enum IntegrationJobEventType {
+  CREATED
+  STARTED
+  SUCCEEDED
+  FAILED
+  RETRIED
+  CANCELLED
+}
+
+model ExternalSystem {
+  id          String               @id @default(cuid())
+  hospitalId  String
+  code        String
+  name        String
+  // Free-form classifier set by later batches (e.g. DHIS2 | PAYMENT | LAB | INSURANCE | REPORTING | GENERIC).
+  kind        String
+  status      ExternalSystemStatus @default(NEEDS_CONFIGURATION)
+  description String?
+  createdById String?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  hospital             Hospital                         @relation(fields: [hospitalId], references: [id])
+  configs              ExternalSystemConfig[]
+  connectors           IntegrationConnector[]
+  credentialReferences IntegrationCredentialReference[]
+  jobs                 IntegrationJob[]
+
+  @@unique([hospitalId, code])
+  @@index([hospitalId])
+}
+
+// Non-secret configuration placeholders (endpoint placeholders, codes). Secrets are never stored here.
+model ExternalSystemConfig {
+  id               String   @id @default(cuid())
+  hospitalId       String
+  externalSystemId String
+  key              String
+  value            String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  externalSystem ExternalSystem @relation(fields: [externalSystemId], references: [id], onDelete: Cascade)
+
+  @@unique([externalSystemId, key])
+  @@index([hospitalId])
+}
+
+model IntegrationConnector {
+  id               String                 @id @default(cuid())
+  hospitalId       String
+  externalSystemId String
+  name             String
+  environment      IntegrationEnvironment @default(MOCK)
+  isActive         Boolean                @default(true)
+  lastError        String?
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+
+  externalSystem ExternalSystem   @relation(fields: [externalSystemId], references: [id], onDelete: Cascade)
+  jobs           IntegrationJob[]
+
+  @@unique([externalSystemId, name])
+  @@index([hospitalId])
+}
+
+// REFERENCE ONLY — never a secret. `referenceValue` is a pointer (e.g. an env-var NAME or a vault
+// path) resolved out-of-band at a future live-integration stage; the secret itself is never stored
+// in the database or the repository.
+model IntegrationCredentialReference {
+  id               String   @id @default(cuid())
+  hospitalId       String
+  externalSystemId String
+  name             String
+  // ENV_VAR | VAULT_PATH | DESCRIPTION — the KIND of reference, not a secret.
+  referenceKind    String
+  // The reference itself (e.g. the env-var NAME "DHIS2_API_TOKEN"), NEVER the secret value.
+  referenceValue   String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  externalSystem ExternalSystem @relation(fields: [externalSystemId], references: [id], onDelete: Cascade)
+
+  @@unique([externalSystemId, name])
+  @@index([hospitalId])
+}
+
+model IntegrationJob {
+  id               String               @id @default(cuid())
+  hospitalId       String
+  externalSystemId String
+  connectorId      String?
+  // Free-form per batch (e.g. EXPORT | IMPORT | HEALTHCHECK | MOCK_RUN).
+  kind             String
+  status           IntegrationJobStatus @default(PENDING)
+  // Idempotency key: a repeated create with the same key returns the existing job (no duplicate effect).
+  idempotencyKey   String
+  attempts         Int                  @default(0)
+  maxAttempts      Int                  @default(3)
+  lastError        String?
+  payload          Json?
+  result           Json?
+  createdById      String?
+  startedAt        DateTime?
+  finishedAt       DateTime?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  hospital       Hospital              @relation(fields: [hospitalId], references: [id])
+  externalSystem ExternalSystem        @relation(fields: [externalSystemId], references: [id], onDelete: Cascade)
+  connector      IntegrationConnector? @relation(fields: [connectorId], references: [id])
+  events         IntegrationJobEvent[]
+
+  @@unique([hospitalId, idempotencyKey])
+  @@index([hospitalId, status])
+}
+
+model IntegrationJobEvent {
+  id         String                  @id @default(cuid())
+  hospitalId String
+  jobId      String
+  type       IntegrationJobEventType
+  message    String?
+  createdAt  DateTime                @default(now())
+
+  job IntegrationJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([hospitalId, jobId])
+}
+
+// ===================================================================================================
+// Phase 4B — DHIS2 configurable export / API-readiness (ADDITIVE; aggregate-only, mock API).
+// A hospital-scoped DHIS2 mapping SET (org-unit placeholder) + per-local-element mappings to DHIS2
+// data-element / category-option-combo PLACEHOLDERS. Placeholders are non-secret, non-final (real
+// Ministry codes are configured later). The manual CSV export (Phase 2E) is preserved; an optional
+// mock API export runs through the 4A mock connector (no network). No patient data.
+// ===================================================================================================
+
+model Dhis2MappingSet {
+  id                 String   @id @default(cuid())
+  hospitalId         String
+  code               String
+  name               String
+  // The DHIS2 org-unit UID PLACEHOLDER for this hospital (non-final; configured later).
+  orgUnitPlaceholder String   @default("")
+  isActive           Boolean  @default(true)
+  createdById        String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  hospital Hospital       @relation(fields: [hospitalId], references: [id])
+  mappings Dhis2Mapping[]
+
+  @@unique([hospitalId, code])
+  @@index([hospitalId])
+}
+
+model Dhis2Mapping {
+  id                             String   @id @default(cuid())
+  hospitalId                     String
+  mappingSetId                   String
+  // The local aggregate data element, e.g. "CONSULTATIONS" or "DIAG:B50" (or a wildcard "DIAG:*").
+  localElement                   String
+  // DHIS2 data-element UID PLACEHOLDER (non-secret, non-final).
+  dataElementPlaceholder         String
+  // Optional DHIS2 category-option-combo UID PLACEHOLDER.
+  categoryOptionComboPlaceholder String?
+  createdAt                      DateTime @default(now())
+  updatedAt                      DateTime @updatedAt
+
+  mappingSet Dhis2MappingSet @relation(fields: [mappingSetId], references: [id], onDelete: Cascade)
+
+  @@unique([mappingSetId, localElement])
+  @@index([hospitalId])
+}
+
+// ===================================================================================================
+// Phase 4C — external lab/radiology result import framework (ADDITIVE; staging only, NEVER clinical).
+// An imported result is a STAGING record: it is matched (warnings only) + routed to a review queue,
+// and only an authorized REVIEWER (≠ the importer) may promote it into the clinical record — through
+// the EXISTING Phase 2I/3 path (so it is still hidden from the doctor until separately validated).
+// No analyzer/PACS/DICOM; no image storage; nothing here writes the clinical result automatically.
+// ===================================================================================================
+
+enum ExternalResultStatus {
+  NEEDS_REVIEW
+  PROMOTED
+  REJECTED
+  DUPLICATE
+}
+
+model ExternalResultImport {
+  id               String               @id @default(cuid())
+  hospitalId       String
+  // Where it came from, e.g. "CSV" | "MOCK_LIS" (an adapter kind; no live connection).
+  source           String
+  // The external system's own result id (for dedupe).
+  externalRef      String
+  // The external system's patient reference (e.g. a patient number) — matched, warning-only.
+  patientRef       String
+  // The external system's order reference (e.g. an order number) — matched, warning-only.
+  orderRef         String?
+  modality         String
+  testCode         String
+  // The imported result text — STAGED, never the clinical record until promoted + validated.
+  resultText       String
+  status           ExternalResultStatus @default(NEEDS_REVIEW)
+  // Candidate matches (warning-only; a human resolves before promotion).
+  matchedPatientId String?
+  matchedOrderId   String?
+  matchWarning     String?
+  importedById     String?
+  reviewedById     String?
+  reviewReason     String?
+  // The diagnostic order the promoted result was entered onto (via the existing Phase 2I path).
+  promotedOrderId  String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+
+  @@unique([hospitalId, source, externalRef])
+  @@index([hospitalId, status])
+}
+
+// ===================================================================================================
+// Phase 4D — payment provider abstraction (ADDITIVE; mock only, no real API, no production payment).
+// A hospital-scoped registry of MOCK payment providers + external payment transactions with a status
+// machine. A confirmation NEVER silently marks an invoice paid or rewrites invoice history —
+// RECONCILIATION records a controlled Payment through the EXISTING billing rule (recordPayment),
+// preserving invoice snapshots + audit. Integer FCFA. No real Mobile Money execution.
+// ===================================================================================================
+
+enum ExternalPaymentStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  CANCELLED
+  NEEDS_REVIEW
+}
+
+model ExternalPaymentProvider {
+  id          String   @id @default(cuid())
+  hospitalId  String
+  code        String
+  name        String
+  // The payment channel, e.g. MOBILE_MONEY | CARD | BANK (free-form; mock only).
+  channel     String
+  isActive    Boolean  @default(true)
+  // Always a mock in Phase 4 — there is no real provider API.
+  isMock      Boolean  @default(true)
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  hospital     Hospital                     @relation(fields: [hospitalId], references: [id])
+  transactions ExternalPaymentTransaction[]
+
+  @@unique([hospitalId, code])
+  @@index([hospitalId])
+}
+
+model ExternalPaymentTransaction {
+  id                  String                @id @default(cuid())
+  hospitalId          String
+  providerId          String
+  // The provider's own transaction reference (unique per hospital — idempotent, no duplicate).
+  externalReference   String
+  amount              Int // integer FCFA
+  status              ExternalPaymentStatus @default(PENDING)
+  // The invoice this payment is intended for (validated + scoped in the service; paid only via recordPayment).
+  invoiceId           String?
+  // The CONTROLLED Payment created at reconciliation (through the existing billing rule). Never a direct write.
+  reconciledPaymentId String?
+  payerRef            String?
+  lastError           String?
+  createdById         String?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  hospital Hospital                @relation(fields: [hospitalId], references: [id])
+  provider ExternalPaymentProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([hospitalId, externalReference])
+  @@index([hospitalId, status])
+}
+
+// ===================================================================================================
+// Phase 4E — insurance / mutuelle workflow foundation (ADDITIVE; manual review only, no insurer API).
+// Payer registry + coverage profiles + patient coverage link + eligibility PLACEHOLDER + pre-auth +
+// claim draft — all manual statuses. No real insurer connectivity, no auto-adjudication, no automatic
+// claim submission. Billing-linked (a claim may reference an invoice). Integer FCFA.
+// ===================================================================================================
+
+enum PatientCoverageStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum EligibilityStatus {
+  UNKNOWN
+  ELIGIBLE_PLACEHOLDER
+  INELIGIBLE_PLACEHOLDER
+}
+
+enum PreAuthStatus {
+  DRAFT
+  REQUESTED
+  APPROVED
+  REJECTED
+}
+
+enum ClaimStatus {
+  DRAFT
+  SUBMITTED_PLACEHOLDER
+  UNDER_REVIEW
+  ACCEPTED
+  REJECTED
+}
+
+model Payer {
+  id          String   @id @default(cuid())
+  hospitalId  String
+  code        String
+  name        String
+  // MUTUELLE | ASSURANCE | STATE (free-form; no real payer connectivity).
+  kind        String
+  isActive    Boolean  @default(true)
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  hospital  Hospital          @relation(fields: [hospitalId], references: [id])
+  profiles  CoverageProfile[]
+  coverages PatientCoverage[]
+
+  @@unique([hospitalId, code])
+  @@index([hospitalId])
+}
+
+model CoverageProfile {
+  id              String   @id @default(cuid())
+  hospitalId      String
+  payerId         String
+  code            String
+  name            String
+  // Nominal coverage percentage PLACEHOLDER (0–100; no real adjudication).
+  coveragePercent Int      @default(0)
+  notes           String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  payer Payer @relation(fields: [payerId], references: [id], onDelete: Cascade)
+
+  @@unique([hospitalId, code])
+  @@index([hospitalId])
+}
+
+model PatientCoverage {
+  id                String                @id @default(cuid())
+  hospitalId        String
+  patientId         String
+  payerId           String
+  coverageProfileId String?
+  memberNumber      String
+  status            PatientCoverageStatus @default(ACTIVE)
+  // Eligibility is a PLACEHOLDER — never a real insurer check.
+  eligibilityStatus EligibilityStatus     @default(UNKNOWN)
+  validFrom         DateTime?
+  validTo           DateTime?
+  createdById       String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  hospital Hospital                  @relation(fields: [hospitalId], references: [id])
+  payer    Payer                     @relation(fields: [payerId], references: [id])
+  preAuths PreAuthorizationRequest[]
+  claims   ClaimDraft[]
+
+  @@index([hospitalId, patientId])
+}
+
+model PreAuthorizationRequest {
+  id                String        @id @default(cuid())
+  hospitalId        String
+  patientCoverageId String
+  encounterId       String?
+  description       String
+  status            PreAuthStatus @default(REQUESTED)
+  decisionReason    String?
+  requestedById     String?
+  decidedById       String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  patientCoverage PatientCoverage @relation(fields: [patientCoverageId], references: [id], onDelete: Cascade)
+
+  @@index([hospitalId, status])
+}
+
+model ClaimDraft {
+  id                String      @id @default(cuid())
+  hospitalId        String
+  patientCoverageId String
+  invoiceId         String?
+  claimNumber       String
+  amountClaimed     Int // integer FCFA
+  status            ClaimStatus @default(DRAFT)
+  notes             String?
+  createdById       String?
+  decidedById       String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  patientCoverage PatientCoverage @relation(fields: [patientCoverageId], references: [id], onDelete: Cascade)
+
+  @@unique([hospitalId, claimNumber])
+  @@index([hospitalId, status])
+}
+
+// ===================== Phase 4F — advanced reporting / analytics foundation =====================
+// Configurable saved report definitions + on-demand / scheduled-PLACEHOLDER runs + an export
+// registry. AGGREGATE-ONLY: every run reuses the existing Phase 2E aggregate operational report
+// (which carries no nominative field) and stores only aggregate rows. No AI/ML. No patient-level
+// central disclosure — 4F is hospital-scoped and never reads cross-hospital operational data.
+
+/// The aggregate report a definition produces. All derive from the aggregate operational report.
+enum ReportKind {
+  OPERATIONAL_SUMMARY
+  REVENUE_BY_METHOD
+  TOP_DIAGNOSES
+  AGE_GENDER
+}
+
+/// How a run was triggered. SCHEDULED_PLACEHOLDER is a manual run tagged as if scheduled — there is
+/// NO live scheduler / background job (mock-first). The definition's cron is documentary only.
+enum ReportRunTrigger {
+  ON_DEMAND
+  SCHEDULED_PLACEHOLDER
+}
+
+enum ReportRunStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum ReportExportFormat {
+  CSV
+  JSON
+}
+
+model ReportDefinition {
+  id                  String     @id @default(cuid())
+  hospitalId          String
+  code                String
+  name                String
+  description         String?
+  kind                ReportKind
+  // Aggregate parameters only (e.g. { "topN": 10 }); never patient selectors.
+  paramsJson          Json?
+  // Documentary cron for a would-be schedule — NEVER executed (no live scheduler).
+  schedulePlaceholder String?
+  isActive            Boolean    @default(true)
+  createdById         String?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  hospital Hospital    @relation(fields: [hospitalId], references: [id])
+  runs     ReportRun[]
+
+  @@unique([hospitalId, code])
+  @@index([hospitalId])
+}
+
+model ReportRun {
+  id                 String           @id @default(cuid())
+  hospitalId         String
+  reportDefinitionId String
+  periodLabel        String
+  periodStart        DateTime
+  periodEnd          DateTime
+  trigger            ReportRunTrigger @default(ON_DEMAND)
+  status             ReportRunStatus  @default(PENDING)
+  rowCount           Int              @default(0)
+  // Aggregate result rows only (section/dimension/label/value); asserted non-nominative before store.
+  resultJson         Json?
+  errorMessage       String?
+  runById            String?
+  createdAt          DateTime         @default(now())
+  completedAt        DateTime?
+
+  hospital   Hospital          @relation(fields: [hospitalId], references: [id])
+  definition ReportDefinition  @relation(fields: [reportDefinitionId], references: [id], onDelete: Cascade)
+  exports    ReportRunExport[]
+
+  @@index([hospitalId, reportDefinitionId])
+  @@index([hospitalId, status])
+}
+
+model ReportRunExport {
+  id           String             @id @default(cuid())
+  hospitalId   String
+  reportRunId  String
+  format       ReportExportFormat
+  rowCount     Int                @default(0)
+  exportedById String?
+  createdAt    DateTime           @default(now())
+
+  run ReportRun @relation(fields: [reportRunId], references: [id], onDelete: Cascade)
+
+  @@index([hospitalId, reportRunId])
+}
+
+// ===================== Phase 4G — patient-matching / MPI readiness =====================
+// Local, hospital-scoped, WARNING-ONLY duplicate-candidate detection + a manual review queue. A
+// candidate pairs two patients OF THE SAME HOSPITAL; the pair is canonicalized (A→B ≡ B→A) so at most
+// one ACTIVE candidate exists per (hospital, canonical pair) — enforced by a partial unique index
+// (raw SQL, both DB paths). Self-pairs (source == candidate) are rejected by a CHECK constraint.
+// Recording a review decision captures the reviewer's JUDGMENT ONLY — it never merges, overwrites,
+// corrects, or modifies either patient record. No live national MPI; the MPI adapter is mock-only
+// (lib-level, no network) and disabled by default — no `MpiConnectorConfig` table (kept minimal).
+
+enum PatientMatchStatus {
+  CANDIDATE
+  UNDER_REVIEW
+  MARKED_DUPLICATE
+  MARKED_NOT_DUPLICATE
+  NEEDS_MORE_INFORMATION
+  DISMISSED
+}
+
+model PatientMatchCandidate {
+  id                 String             @id @default(cuid())
+  hospitalId         String
+  sourcePatientId    String
+  candidatePatientId String
+  // Deterministically ordered pair key ("minId::maxId") so A→B and B→A resolve to one pair.
+  canonicalPairKey   String
+  score              Int                @default(0)
+  // Explainable fired signals (types + weights) — never nominative patient detail.
+  signals            Json
+  status             PatientMatchStatus @default(CANDIDATE)
+  createdById        String?
+  reviewedById       String?
+  reviewReason       String?
+  reviewedAt         DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  hospital         Hospital @relation(fields: [hospitalId], references: [id])
+  sourcePatient    Patient  @relation("MatchSource", fields: [sourcePatientId], references: [id])
+  candidatePatient Patient  @relation("MatchCandidate", fields: [candidatePatientId], references: [id])
+
+  // The active-pair uniqueness (partial, status-dependent) and the self-pair CHECK are added via raw
+  // SQL in the migration + scripts/setup-test-db.ts (not expressible in schema.prisma).
+  @@index([hospitalId, status])
+  @@index([hospitalId, canonicalPairKey])
+}

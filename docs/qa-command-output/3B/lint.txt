@@ -1,0 +1,11 @@
+
+> hmis-cameroon@0.1.0 lint
+> eslint
+
+
+/Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/tests/integration/phase3b-cross-hospital-denial.test.ts
+  12:30  warning  'loginAndSelect' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 1 problem (0 errors, 1 warning)
+
+exit=0

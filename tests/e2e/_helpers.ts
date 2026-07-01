@@ -1,0 +1,56 @@
+import { type Page, expect } from "@playwright/test";
+
+/**
+ * Phase 6.1 — the synthetic demo password is env-controlled (HMIS_DEMO_SHARED_PASSWORD),
+ * set for the e2e run by playwright.config.ts (same value seeds the test DB). The fallback
+ * matches the config default so a worker resolves the same value even if the env is not
+ * inherited. Never a real credential.
+ */
+export const DEMO_PW =
+  process.env.HMIS_DEMO_SHARED_PASSWORD ?? "synthetic-demo-shared-pw";
+
+export const ACCOUNTS = {
+  reception: "brigitte.mbarga@hrb-demo.cm",
+  doctor: "jeanpaul.etoa@hrb-demo.cm",
+  cashier: "solange.abena@hrb-demo.cm",
+  director: "emmanuel.tchoua@hrb-demo.cm",
+  admin: "awa.njoya@hrb-demo.cm",
+  // Phase 2D — pharmacy demo accounts.
+  pharmacist: "georges.mballa@hrb-demo.cm",
+  pharmacistChief: "claire.fotso@hrb-demo.cm",
+  // Phase 2I — diagnostics demo accounts (enter ≠ validate).
+  labTech: "paul.ngono@hrb-demo.cm",
+  labValidator: "marie.eyenga@hrb-demo.cm",
+};
+
+/** Log in (fresh context) and select HRB-DEMO, landing on the dashboard. */
+export async function login(page: Page, email: string) {
+  await page.goto("/connexion");
+  await page.getByLabel("Identifiant").fill(email);
+  await page.getByLabel("Mot de passe").fill(DEMO_PW);
+  await page.getByRole("button", { name: "Se connecter" }).click();
+
+  // A fresh session has no active hospital → the selection screen appears.
+  const selection = page.getByRole("heading", {
+    name: "Sélection de l'hôpital",
+  });
+  try {
+    await selection.waitFor({ timeout: 15_000 });
+    await page.getByRole("button", { name: /Bertoua/ }).click();
+  } catch {
+    // already had an active hospital — no selection step
+  }
+
+  await expect(
+    page.getByRole("heading", { name: "Tableau de bord" }),
+  ).toBeVisible({
+    timeout: 30_000,
+  });
+}
+
+/** Open the BELLO patient detail from the patient list. */
+export async function openBelloPatient(page: Page) {
+  await page.goto("/patients");
+  await page.getByRole("link", { name: "Ouvrir" }).first().click();
+  await page.waitForURL(/\/patients\/[^/]+$/);
+}

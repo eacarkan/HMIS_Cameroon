@@ -1,0 +1,5 @@
+$ npm run typecheck
+
+> hmis-cameroon@0.1.0 typecheck
+> tsc --noEmit
+

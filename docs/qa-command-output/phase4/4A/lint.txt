@@ -1,0 +1,11 @@
+$ npm run lint
+
+> hmis-cameroon@0.1.0 lint
+> eslint
+
+
+/Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon/tests/integration/phase3f1-financial-hardening.test.ts
+  113:13  warning  'cashier' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+✖ 1 problem (0 errors, 1 warning)
+

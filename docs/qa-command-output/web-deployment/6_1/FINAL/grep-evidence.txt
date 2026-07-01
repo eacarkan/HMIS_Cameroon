@@ -1,0 +1,13 @@
+# Phase 6.1 — search evidence (no committed demo password; audit renamed)
+
+## 1. CODE TREE — former literal password (app components features lib server prisma scripts tests messages + root configs)
+(none — no hard-coded password literal in code)
+
+## 2. CODE TREE — old DEMO_PASSWORD constant (excluding env-var names)
+(none — old DEMO_PASSWORD constant removed from code)
+
+## 3. Whole-repo former-literal mentions (should be none; docs describe the fix without the literal)
+(if nothing listed above → whole repo is clean of the literal)
+
+## 4. Acceptable env-var names only: HMIS_DEMO_SHARED_PASSWORD (server) · NEXT_PUBLIC_DEMO_PASSWORD_HINT (public display)
+## 5. check:privacy: no secrets found; .env gitignored; .env.example placeholders only.

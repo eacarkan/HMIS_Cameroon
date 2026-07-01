@@ -1,0 +1,14 @@
+
+> hmis-cameroon@0.1.0 test
+> vitest run --project unit --project component
+
+
+ RUN  v4.1.9 /Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon
+
+
+ Test Files  64 passed (64)
+      Tests  338 passed (338)
+   Start at  19:31:27
+   Duration  4.99s (transform 2.73s, setup 4.83s, import 10.89s, tests 3.59s, environment 17.02s)
+
+exit=0

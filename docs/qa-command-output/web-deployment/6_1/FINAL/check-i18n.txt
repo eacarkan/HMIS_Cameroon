@@ -1,0 +1,13 @@
+
+> hmis-cameroon@0.1.0 check:i18n
+> vitest run tests/unit/i18n-parity.test.ts
+
+
+ RUN  v4.1.9 /Users/erdem/Temp Files/MinSANTE Project/03_Software/HMIS_Cameroon
+
+
+ Test Files  1 passed (1)
+      Tests  27 passed (27)
+   Start at  22:36:32
+   Duration  163ms (transform 39ms, setup 0ms, import 53ms, tests 9ms, environment 0ms)
+
