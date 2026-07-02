@@ -6,6 +6,15 @@ import { getActiveHospitalContext, getCurrentActor } from "@/server/auth";
 import { getAccessibleHospitals } from "@/server/services";
 
 /**
+ * Phase 6.2C — the authenticated app is always rendered dynamically, per request. These
+ * pages already read the auth + `locale` cookies (so they are dynamic), but declaring it
+ * explicitly guarantees the dashboard and every authenticated screen can never be served
+ * from a stale full-route / edge-cached render with the wrong language: they are re-rendered
+ * with the current request's `locale` cookie every time.
+ */
+export const dynamic = "force-dynamic";
+
+/**
  * Authenticated app layout (09 §5, §6). Two guards: no session → login; no active
  * hospital → hospital selector. The actor + hospital context are resolved server-side
  * and handed to the shell. This is convenience routing; real per-action authorization

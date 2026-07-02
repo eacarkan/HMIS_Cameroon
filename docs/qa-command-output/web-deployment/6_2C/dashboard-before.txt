@@ -1,0 +1,90 @@
+# Phase 6.2C dashboard evidence (before) — English-first ONE-CLICK user flow
+html lang=en
+
+--- SIDEBAR / NAV (shell) ---
+SantéGrid — HMIS/EMR
+Ministry of Public Health
+
+MAIN
+
+Dashboard
+Patients
+
+CLINICAL
+
+Consultations
+Queue
+Hospitalizations
+Laboratory & imaging
+
+PHARMACY
+
+Pharmacy stock
+Stock adjustments
+Pharmacy reports
+
+BILLING
+
+Billing
+Cashier report
+Cancellations
+Refunds
+External payments
+Insurance / Mutuelle
+
+REPORTS & OVERSIGHT
+
+Operational reports
+Analytics
+
+ADMINISTRATION & INTEGRATIONS
+
+Administration
+Integrations
+DHIS2 export
+Patient matching
+UAT / Gate 7
+Audit log
+System status
+
+ACCOUNT
+
+My account
+Integrated hospital management platform
+
+--- MAIN (dashboard body) ---
+Dashboard
+
+Overview of the active hospital's activity
+
+Hôpital Régional de Bertoua — Démo
+
+Est · HRB-DEMO
+
+TODAY'S ACTIVITY
+Patients registered today
+0
+Open visits
+0
+Visits opened today
+0
+Visits closed today
+0
+CLINICAL ACTIVITY
+Consultations today
+0
+BILLING & CASHIERING
+Invoices today
+0
+Collections today
+0 FCFA
+Recent activity
+Hospital selection
+Awa NJOYA
+03/07/2026 00:39
+Sign-in
+Awa NJOYA
+03/07/2026 00:39
+Demonstration session (one-click) requested
+Awa NJOYA
+03/07/2026 00:39
