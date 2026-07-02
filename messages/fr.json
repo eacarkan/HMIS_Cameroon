@@ -1,9 +1,11 @@
 {
   "app": {
-    "name": "SIGH · DME",
-    "longName": "Système d'Information de Gestion Hospitalière",
+    "name": "SantéGrid — SIGH/DME",
+    "longName": "Plateforme intégrée de gestion hospitalière",
     "ministry": "Ministère de la Santé Publique",
     "prototypeLabel": "Prototype de démonstration fonctionnelle — non destiné à la production",
+    "reviewEnvironmentBadge": "Environnement de revue — données synthétiques",
+    "reviewEnvironmentNote": "Cet environnement utilise uniquement des données synthétiques de démonstration. Il n'est connecté à aucun système hospitalier réel.",
     "languageShort": "FR",
     "languageLabel": "Français"
   },
@@ -1009,7 +1011,7 @@
     "create": "Créer",
     "tempPassword": "Mot de passe temporaire",
     "tempPasswordPlaceholder": "Saisir un mot de passe",
-    "tempPasswordHint": "Mot de passe temporaire de démonstration — non destiné à la production ; à changer hors de ce prototype.",
+    "tempPasswordHint": "Mot de passe temporaire de démonstration — environnement de revue à données synthétiques ; à modifier après la première connexion.",
     "noUsers": "Aucun utilisateur pour cet hôpital."
   },
   "configAdmin": {

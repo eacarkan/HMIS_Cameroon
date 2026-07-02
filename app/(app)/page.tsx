@@ -16,7 +16,18 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <PageHeader title={t("title")} description={t("subtitle")} />
+      <PageHeader
+        title={t("title")}
+        description={t("subtitle")}
+        actions={
+          <div className="text-right">
+            <p className="text-foreground text-sm font-medium">{hospital.name}</p>
+            <p className="text-muted-foreground text-xs">
+              {hospital.region} · {hospital.code}
+            </p>
+          </div>
+        }
+      />
       <DashboardOverview summary={summary} />
     </>
   );

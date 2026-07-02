@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { LoginForm } from "@/components/auth/login-form";
+import { LanguageToggle } from "@/components/layout/language-toggle";
 import { PrototypeBanner } from "@/components/layout/prototype-banner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DEMO_ACCOUNTS, OFFICIAL_HEADER } from "@/lib/constants";
@@ -32,6 +33,11 @@ export default async function ConnexionPage() {
   return (
     <div className="bg-background flex min-h-screen flex-col">
       <PrototypeBanner />
+      {/* Locale can be chosen before signing in; the choice persists onto the
+          authenticated app shell (fr default, en overlay). */}
+      <div className="flex justify-end px-4 py-3">
+        <LanguageToggle />
+      </div>
       <main className="flex flex-1 items-center justify-center p-4">
         <div className="w-full max-w-md space-y-6">
           <div className="space-y-3 text-center">

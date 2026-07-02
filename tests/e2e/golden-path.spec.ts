@@ -15,7 +15,7 @@ test.describe.serial("golden path", () => {
     await login(page, ACCOUNTS.reception);
 
     await expect(
-      page.getByText("non destiné à la production", { exact: false }).first(),
+      page.getByText("Environnement de revue", { exact: false }).first(),
     ).toBeVisible();
     await expect(
       page.getByText("Hôpital actif", { exact: true }),
@@ -122,8 +122,10 @@ test.describe.serial("golden path", () => {
     await expect(
       page.getByText("République du Cameroun").first(),
     ).toBeVisible();
+    // The receipt document keeps the full formal marker; the app shell shows the
+    // discreet review-environment badge (Phase 6.2).
     await expect(
-      page.getByText("non destiné à la production", { exact: false }).first(),
+      page.getByText("Environnement de revue", { exact: false }).first(),
     ).toBeVisible();
   });
 

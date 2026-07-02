@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 export const metadata: Metadata = {
   title: "SantéGrid — Plateforme synthétique de démonstration SIGH / DME",
   description:
-    "SantéGrid — plateforme synthétique de démonstration d'un système d'information hospitalière (SIGH) et d'un dossier médical électronique (DME). Données fictives ; non destiné à la production.",
+    "SantéGrid — plateforme intégrée de gestion hospitalière (SIGH / DME) présentée dans un environnement de revue à données synthétiques. Huit hôpitaux régionaux, démonstration contrôlée.",
 };
 
 /**

@@ -1,20 +1,29 @@
-import { TriangleAlert } from "lucide-react";
+"use client";
+
+import { useTranslations } from "next-intl";
 
 import { PROTOTYPE_LABEL } from "@/lib/constants";
 
 /**
- * Persistent prototype label (01, 06 §5, R-001). A slim, calm notice band shown at
- * the very top of every screen so the demo can never be mistaken for production.
- * The exact same wording appears on printed documents (from Step 10).
+ * Discreet synthetic-review indicator (Phase 6.2). A slim, professional band shown at the
+ * top of every screen so the environment can never be mistaken for real operational data —
+ * without the alarming "prototype / non-production" wording. The visible label is the
+ * neutral "Environnement de revue — données synthétiques" (localized); the fuller note is a
+ * hover tooltip. The formal archival marker (`PROTOTYPE_LABEL`) is retained for screen
+ * readers + printed documents (which keep it in full) so the safeguard stays intact.
  */
 export function PrototypeBanner() {
+  const t = useTranslations("app");
   return (
     <div
       role="note"
-      className="flex items-center justify-center gap-2 border-b border-amber-200 bg-amber-50 px-4 py-1.5 text-center text-xs font-medium text-amber-900"
+      title={t("reviewEnvironmentNote")}
+      className="text-muted-foreground bg-muted/50 flex items-center justify-center gap-2 border-b px-4 py-1 text-center text-[11px] font-medium tracking-wide"
     >
-      <TriangleAlert className="size-3.5 shrink-0" aria-hidden />
-      <span>{PROTOTYPE_LABEL}</span>
+      <span className="bg-primary/60 size-1.5 shrink-0 rounded-full" aria-hidden />
+      <span>{t("reviewEnvironmentBadge")}</span>
+      {/* Formal marker retained (screen readers + guardrail); not visually dominant. */}
+      <span className="sr-only">{PROTOTYPE_LABEL}</span>
     </div>
   );
 }

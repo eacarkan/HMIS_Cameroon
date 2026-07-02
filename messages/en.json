@@ -1,4 +1,60 @@
 {
+  "app": {
+    "name": "SantéGrid — HMIS/EMR",
+    "longName": "Integrated hospital management platform",
+    "ministry": "Ministry of Public Health",
+    "prototypeLabel": "Functional demonstration prototype — not for production",
+    "reviewEnvironmentBadge": "Review environment — synthetic data",
+    "reviewEnvironmentNote": "This environment uses synthetic demonstration data only. It is not connected to real hospital systems.",
+    "languageShort": "EN",
+    "languageLabel": "English"
+  },
+  "auth": {
+    "title": "Sign in",
+    "subtitle": "Integrated hospital management platform",
+    "identifier": "Username",
+    "identifierPlaceholder": "firstname.lastname@hrb-demo.cm",
+    "password": "Password",
+    "submit": "Sign in",
+    "signingIn": "Signing in…",
+    "demoTitle": "Demonstration accounts",
+    "demoPasswordLabel": "Password (all accounts)"
+  },
+  "topbar": {
+    "hospitalLabel": "Active hospital",
+    "selectHospital": "Select a hospital",
+    "hospitalSelectorPending": "Hospital selector — available at step 5",
+    "searchPlaceholder": "Search…",
+    "userFallbackName": "User",
+    "rolePending": "To be connected",
+    "authPending": "Authentication — step 4",
+    "signOut": "Sign out"
+  },
+  "hospital": {
+    "selectTitle": "Hospital selection",
+    "selectSubtitle": "Choose the hospital you are working in.",
+    "switchLabel": "Switch hospital",
+    "signedInAs": "Signed in as {name}"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Overview of the active hospital's activity",
+    "sectionActivity": "Today's activity",
+    "sectionClinical": "Clinical activity",
+    "sectionBilling": "Billing & cashiering",
+    "kpi": {
+      "patientsToday": "Patients registered today",
+      "openEncounters": "Open visits",
+      "encountersOpenedToday": "Visits opened today",
+      "encountersClosedToday": "Visits closed today",
+      "consultationsToday": "Consultations today",
+      "invoicesToday": "Invoices today",
+      "collectionsToday": "Collections today",
+      "recentActivity": "Recent activity"
+    },
+    "noData": "No data",
+    "placeholder": "Indicators will appear once the demonstration journey is completed (patient → visit → consultation → invoice → payment)."
+  },
   "language": {
     "label": "Language",
     "fr": "FR",

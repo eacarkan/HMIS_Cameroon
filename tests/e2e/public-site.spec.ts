@@ -12,9 +12,9 @@ test.describe("public SantéGrid site", () => {
   }) => {
     await page.goto("/accueil");
 
-    // Mandatory prototype banner.
+    // Discreet review-environment banner (Phase 6.2).
     await expect(
-      page.getByText(/non destiné à la production/i).first(),
+      page.getByText(/Environnement de revue/i).first(),
     ).toBeVisible();
 
     // SantéGrid brand + verbatim positioning line.
