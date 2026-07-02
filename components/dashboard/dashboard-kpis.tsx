@@ -22,6 +22,7 @@ import type { DashboardSummary } from "@/server/services";
  */
 export function DashboardKpis({ summary }: { summary: DashboardSummary }) {
   const t = useTranslations("dashboard");
+  const tMethod = useTranslations("paymentMethod");
   const s = summary.sections;
 
   return (
@@ -41,7 +42,12 @@ export function DashboardKpis({ summary }: { summary: DashboardSummary }) {
         <Kpi label={t("kpi.invoicesToday")} value={String(summary.invoicesToday)} icon={ReceiptText} />
         <Kpi label={t("kpi.collectionsToday")} value={formatFcfa(summary.collectionsToday)} icon={Banknote} />
         {summary.byMethod.map((m) => (
-          <Kpi key={m.method} label={m.methodLabel} value={formatFcfa(m.total)} icon={Banknote} />
+          <Kpi
+            key={m.method}
+            label={tMethod.has(m.method) ? tMethod(m.method) : m.methodLabel}
+            value={formatFcfa(m.total)}
+            icon={Banknote}
+          />
         ))}
       </Section>
     </div>

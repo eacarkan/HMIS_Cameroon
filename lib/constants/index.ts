@@ -226,6 +226,161 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
 };
 
 /**
+ * English overlay for the audit action-code labels (Phase 6.2B). Same keys as
+ * `AUDIT_ACTION_LABELS`; used by the dashboard recent-activity feed so it reads in the
+ * selected language. Free-form audit *summaries* (stored per event) stay in the language
+ * they were recorded in — this is the localized action label, not the stored summary.
+ * A unit test asserts key parity with the French map so the two never drift.
+ */
+export const AUDIT_ACTION_LABELS_EN: Record<string, string> = {
+  "auth.login": "Sign-in",
+  "demo.session_requested": "Demonstration session (one-click) requested",
+  "hospital.select": "Hospital selection",
+  "patient.create": "Patient created",
+  "encounter.create": "Visit opened",
+  "encounter.status_change": "Visit status change",
+  "encounter.assign": "Visit assignment",
+  "consultation.create": "Consultation",
+  "consultation.update": "Consultation updated",
+  "consultation.finalize": "Consultation finalized",
+  "consultation.amend": "Consultation amended",
+  "invoice.create": "Invoice created",
+  "payment.record": "Payment",
+  "receipt.print": "Receipt printed",
+  "invoice.void": "Invoice voided",
+  "receipt.reprint": "Receipt reprinted",
+  "cashier.shift_close": "Cashier close",
+  "auth.password_change": "Password change",
+  "auth.password_reset": "Password reset",
+  "sensitive.read": "Sensitive read",
+  "authz.denied": "Action denied",
+  // Phase 1 (Gate 3/4) — configuration / master data.
+  "department.create": "Department created",
+  "department.update": "Department updated",
+  "department.deactivate": "Department deactivated",
+  "service_unit.create": "Service unit created",
+  "service_unit.update": "Service unit updated",
+  "service_unit.deactivate": "Service unit deactivated",
+  "setting.update": "Setting updated",
+  "document_template.create": "Document template created",
+  "document_template.update": "Document template updated",
+  "document_template.deactivate": "Document template deactivated",
+  // Phase 1 (Gate 3/4) — patient identity / contact.
+  "patient_contact.create": "Patient contact added",
+  "patient_contact.update": "Patient contact updated",
+  "patient_contact.deactivate": "Patient contact deactivated",
+  "patient_identifier.create": "Patient identifier added",
+  "patient_identifier.update": "Patient identifier updated",
+  "patient_identifier.deactivate": "Patient identifier deactivated",
+  "patient_duplicate.warning": "Potential duplicate flagged",
+  "patient_duplicate.review": "Duplicate reviewed",
+  // Phase 1 (Gate 3/4) — clinical structure.
+  "observation.create": "Vital sign recorded",
+  "observation.update": "Vital sign updated",
+  "diagnosis.create": "Diagnosis recorded",
+  "diagnosis.update": "Diagnosis updated",
+  // Phase 1 (Gate 3/4) — tariff / price list.
+  "price_list.create": "Price list created",
+  "price_list.update": "Price list updated",
+  "price_list.deactivate": "Price list deactivated",
+  "tariff.create": "Tariff created",
+  "tariff.update": "Tariff updated",
+  "tariff.deactivate": "Tariff deactivated",
+  "invoice_item.tariff_source_used": "Tariff used (invoice source)",
+  // Phase 1 (Gate 5B) — cashier reporting, user lifecycle, logout.
+  "auth.logout": "Sign-out",
+  "cashier.daily_report.generate": "Cashier report (export)",
+  "user.create": "User created",
+  "user.activate": "User activated",
+  "user.deactivate": "User deactivated",
+  "role.assign": "Role assigned",
+  "role.remove": "Role removed",
+  // Phase 2A — service / department catalogue configuration.
+  "service.created": "Service created",
+  "service.updated": "Service updated",
+  "service.deactivated": "Service deactivated",
+  "service.reactivated": "Service reactivated",
+  "service.reordered": "Services reordered",
+  "service.eligibility_changed": "Service eligibility changed",
+  // Phase 2B — patient identity.
+  "patient.temporary_created": "Temporary patient created",
+  "patient.identity_updated": "Patient identity updated",
+  // Phase 2C — cancellation workflow, refund voucher, Brouillard de Caisse.
+  "invoice.cancellation_requested": "Invoice cancellation requested",
+  "invoice.cancellation_approved": "Invoice cancellation approved",
+  "invoice.cancellation_rejected": "Cancellation request rejected",
+  "refund_voucher.created": "Refund voucher created",
+  "refund_voucher.approved": "Refund voucher approved",
+  "refund_voucher.executed": "Refund voucher paid",
+  "refund_voucher.cancelled": "Refund voucher cancelled",
+  "cashier.shift_opened": "Cashier session opened",
+  "cashier.shift_closed": "Cashier session closed (day-book)",
+  "cashier.closing_corrected": "Cashier day-book correction",
+  // Phase 2D-1 — medication catalogue.
+  "medication.created": "Medication created",
+  "medication.updated": "Medication updated",
+  "medication.deactivated": "Medication deactivated",
+  "medication.reactivated": "Medication reactivated",
+  // Phase 2D-2 — prescription lifecycle.
+  "prescription.created": "Prescription created",
+  "prescription.finalized": "Prescription finalized",
+  "prescription.sent_to_pharmacy": "Prescription sent to pharmacy",
+  "prescription.cancelled": "Prescription cancelled",
+  // Phase 2D-3 — stock batches.
+  "stock.batch_received": "Stock batch received",
+  // Phase 2D-4 — stock reservations.
+  "reservation.created": "Stock reservation",
+  "reservation.released": "Reservation released",
+  // Phase 2D-5 — collection payment + dispensing.
+  "prescription.payment_confirmed": "Prescription payment confirmed",
+  "dispense.completed": "Medication dispensing",
+  // Phase 2D-6 — Pharmacist-in-Charge FEFO override.
+  "fefo.override": "FEFO override (non-priority batch)",
+  // Phase 2D-7 — dual-validated stock adjustments.
+  "stock.adjustment_requested": "Stock adjustment requested",
+  "stock.adjustment_approved": "Stock adjustment approved",
+  "stock.adjustment_rejected": "Stock adjustment rejected",
+  // Phase 2E — aggregate DHIS2 CSV export.
+  "report.exported_csv": "Aggregate CSV export (DHIS2)",
+  // Phase 2F — per-service digital queue.
+  "queue.ticket_created": "Added to the queue",
+  "queue.status_changed": "Queue status change",
+  "queue.marked_urgent": "Queue — urgent priority",
+  // Phase 2H — emergency exception + emergency debt.
+  "emergency.flagged": "Encounter flagged as emergency",
+  "emergency.debt_accrued": "Emergency debt recorded",
+  "emergency.debt_settled": "Emergency debt settled",
+  "emergency.debt_waived": "Emergency debt waived (Director)",
+  // Phase 2G — ward-level hospitalization.
+  "admission.requested": "Admission requested",
+  "admission.ward_assigned": "Ward assigned",
+  "admission.cancelled": "Admission request cancelled",
+  "admission.discharge_requested": "Discharge requested",
+  "admission.discharged": "Discharge authorized",
+  "admission.daily_fee_charged": "Daily inpatient fee charged",
+  // Phase 2I — manual lab & radiology.
+  "diagnostic.catalogue_changed": "Exam catalogue changed",
+  "diagnostic.requested": "Exam requested",
+  "diagnostic.payment_confirmed": "Exam payment confirmed",
+  "diagnostic.started": "Exam started",
+  "diagnostic.result_entered": "Exam result entered",
+  "diagnostic.validated": "Exam result validated",
+  "diagnostic.cancelled": "Exam cancelled",
+  "diagnostic.pdf_generated": "Exam report printed",
+};
+
+/**
+ * Locale-aware label for an audit action code (Phase 6.2B). Returns the English label for
+ * `en`, otherwise the French label, falling back to the raw code when a code is unmapped.
+ */
+export function auditActionLabel(code: string, locale: string): string {
+  if (locale === "en") {
+    return AUDIT_ACTION_LABELS_EN[code] ?? AUDIT_ACTION_LABELS[code] ?? code;
+  }
+  return AUDIT_ACTION_LABELS[code] ?? code;
+}
+
+/**
  * French labels for the Phase 2A `ServiceType` codes — used in server-side audit summaries.
  * The UI uses bilingual next-intl keys (`serviceType.*`); this is the French fallback.
  */

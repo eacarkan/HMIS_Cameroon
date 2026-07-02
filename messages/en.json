@@ -60,6 +60,12 @@
     "fr": "FR",
     "en": "EN"
   },
+  "paymentMethod": {
+    "cash": "Cash",
+    "mobile_money": "Mobile money",
+    "card": "Card",
+    "bank_transfer": "Bank transfer"
+  },
   "roles": {
     "administrateur": "Administrator",
     "agent_accueil": "Reception agent",
@@ -704,7 +710,7 @@
   "landing": {
     "hero": {
       "eyebrow": "Hospital Information System · Electronic Medical Record",
-      "description": "SantéGrid showcases a complete Hospital Information Management System (HMIS) and Electronic Medical Record (EMR) — from patient reception to billing, pharmacy, laboratory, emergency, hospitalization, reporting and regional oversight — on entirely synthetic data.",
+      "description": "SantéGrid showcases a complete Hospital Information Management System (HMIS) and Electronic Medical Record (EMR) — from patient reception through billing, pharmacy, laboratory, emergency care, inpatient hospitalization, reporting and regional oversight — all on entirely synthetic demonstration data.",
       "ctaFeatures": "Explore the features",
       "ctaDemo": "Open the demo",
       "ctaSignIn": "Sign in"

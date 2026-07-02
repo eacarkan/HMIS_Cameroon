@@ -36,10 +36,14 @@ export default async function AccueilPage() {
         <p className="text-primary text-xs font-medium tracking-wide uppercase">
           {t("hero.eyebrow")}
         </p>
-        <h1 className="font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
+        {/* Reserve the taller (longer-language) title height at every breakpoint so switching
+            FR/EN never changes the block height and shifts the content below (Phase 6.2B). */}
+        <h1 className="font-heading min-h-[9rem] text-3xl font-semibold tracking-tight sm:min-h-[5.5rem] sm:text-4xl lg:min-h-[2.75rem]">
           {tPublic("tagline")}
         </h1>
-        <p className="text-muted-foreground max-w-3xl text-base leading-relaxed">
+        {/* Reserve the taller (French, 4-line at desktop) height so switching language keeps
+            the hero — and everything below it — vertically stable. */}
+        <p className="text-muted-foreground min-h-[13rem] max-w-3xl text-base leading-relaxed sm:min-h-[8.5rem] lg:min-h-[6.5rem]">
           {t("hero.description")}
         </p>
         <div className="flex flex-wrap gap-3">

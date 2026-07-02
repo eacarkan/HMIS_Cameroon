@@ -1,8 +1,9 @@
 import { Activity } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { DashboardKpis } from "@/components/dashboard/dashboard-kpis";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { auditActionLabel } from "@/lib/constants";
 import { formatDateTimeFr } from "@/lib/dates";
 import type { DashboardSummary } from "@/server/services";
 
@@ -16,6 +17,7 @@ export async function DashboardOverview({
   summary: DashboardSummary;
 }) {
   const t = await getTranslations("dashboard");
+  const locale = await getLocale();
 
   return (
     <div className="space-y-6">
@@ -37,7 +39,9 @@ export async function DashboardOverview({
                 {summary.recent.map((entry) => (
                   <li key={entry.id} className="flex items-center justify-between gap-3 py-2">
                     <span className="min-w-0">
-                      <span className="block truncate font-medium">{entry.summary}</span>
+                      <span className="block truncate font-medium">
+                        {auditActionLabel(entry.action, locale)}
+                      </span>
                       {entry.actorName ? (
                         <span className="text-muted-foreground block text-xs">
                           {entry.actorName}
