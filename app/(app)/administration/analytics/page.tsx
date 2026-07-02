@@ -15,6 +15,16 @@ import { requireActorAndHospital } from "@/server/auth";
 import { getAnalyticsAdmin } from "@/server/services";
 
 /**
+ * Element types for the analytics-admin view, derived from the service's own return type.
+ * This keeps the `.map()` callbacks explicitly typed (no implicit `any`) without importing
+ * a Prisma type into the UI layer — robust to how the build resolves the inferred types.
+ */
+type AnalyticsAdmin = Awaited<ReturnType<typeof getAnalyticsAdmin>>;
+type DefinitionView = AnalyticsAdmin["definitions"][number];
+type RunView = AnalyticsAdmin["runs"][number];
+type ExportView = AnalyticsAdmin["exports"][number];
+
+/**
  * Phase 4F — advanced reporting / analytics foundation. Configurable saved report definitions +
  * on-demand / scheduled-PLACEHOLDER runs + an export registry. AGGREGATE-ONLY: reports are built from
  * the Phase 2E aggregate operational report (no nominative field). No AI/ML. No patient-level central
@@ -40,7 +50,7 @@ export default async function AnalyticsPage() {
         <CardContent className="grid gap-3">
           {canManage ? <CreateDefinitionForm /> : null}
           {definitions.length === 0 ? <p className="text-muted-foreground text-sm">{t("noDefinitions")}</p> : null}
-          {definitions.map((d) => (
+          {definitions.map((d: DefinitionView) => (
             <div key={d.id} className="rounded-md border p-3 text-sm">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-medium">
@@ -63,7 +73,7 @@ export default async function AnalyticsPage() {
         <CardHeader><CardTitle className="text-base">{t("runs")}</CardTitle></CardHeader>
         <CardContent className="grid gap-2 text-sm">
           {runs.length === 0 ? <p className="text-muted-foreground text-sm">{t("noRuns")}</p> : null}
-          {runs.map((r) => (
+          {runs.map((r: RunView) => (
             <div key={r.id} className="flex flex-wrap items-center justify-between gap-2 border-b py-2">
               <span>
                 <span className="font-medium">{r.definition.code}</span>{" "}
@@ -82,7 +92,7 @@ export default async function AnalyticsPage() {
         <CardHeader><CardTitle className="text-base">{t("exportRegistry")}</CardTitle></CardHeader>
         <CardContent className="grid gap-2 text-sm">
           {exports.length === 0 ? <p className="text-muted-foreground text-sm">{t("noExports")}</p> : null}
-          {exports.map((e) => (
+          {exports.map((e: ExportView) => (
             <div key={e.id} className="flex flex-wrap items-center justify-between gap-2 border-b py-2">
               <span><Badge variant="outline">{e.format}</Badge> {e.rowCount} {t("rows")}</span>
               <span className="text-muted-foreground text-xs">{e.createdAt.toISOString().slice(0, 10)}</span>
