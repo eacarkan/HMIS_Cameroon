@@ -1,7 +1,9 @@
 import "dotenv/config";
 
+import { forceGuardError, syntheticContact } from "@/lib/demo-seed-safety";
+
 /**
- * Phase 6.3 · S1 — synthetic, date-relative demo seed (additive + idempotent).
+ * Phase 6.3 · S1 — synthetic, date-relative demo seed (additive; sentinel-based idempotency).
  *
  * Builds a modest synthetic caseload for the flagship demo hospital (HRB-DEMO) through the
  * SERVICE layer (correct numbering / audit / financial integrity), then backdates the KPI date
@@ -9,23 +11,37 @@ import "dotenv/config";
  * and upserts one aggregate snapshot per hospital so `/central` shows all 8 regional hospitals.
  *
  * Safety / rules:
- *  - 100% SYNTHETIC (fictional names, `@hrb-demo.cm` actors). No real patient data.
+ *  - 100% SYNTHETIC (fictional names, `@hrb-demo.cm` actors, `DEMO-CONTACT-…` placeholder
+ *    contacts — never a real-looking phone number). No real patient data.
  *  - ADDITIVE only — never deletes or rewrites pre-existing rows.
- *  - IDEMPOTENT — a global `Setting` sentinel (`demo.seed.phase63`) makes a re-run a no-op.
+ *  - SENTINEL-BASED (single-success) IDEMPOTENCY — a `Setting` sentinel (`demo.seed.phase63`) is
+ *    written LAST, so after ONE completed successful run a re-run is a safe no-op. This is NOT
+ *    strict row-level idempotency: a partial failure BEFORE the sentinel is written can leave
+ *    partial data, so a re-run would then top it up rather than no-op. On a failed run, do not
+ *    re-run blindly — inspect the sanitized before/after counts first (operator review).
  *  - Actor is built directly from the DB (no password) so it works on the demo/Neon database
  *    regardless of the local `HMIS_DEMO_SHARED_PASSWORD` value.
  *  - Snapshots are aggregate-only synthetic numbers (no patient-level data), consistent with the
  *    central view's privacy invariant.
  *
  * Usage:
- *   npm run db:seed:demo               # targets DATABASE_URL (the demo/Neon database)
+ *   npm run db:seed:demo               # targets DATABASE_URL (the demo/Neon database) — run ONCE
  *   npm run db:seed:demo -- --test     # targets TEST_DATABASE_URL (must contain "test")
- *   npm run db:seed:demo -- --force    # bypass the sentinel (re-add data; test DB only)
+ *   npm run db:seed:demo -- --test --force   # TEST ONLY: bypass the sentinel to re-add data
+ *   # `--force` WITHOUT `--test` is refused (see the guard below) so it can never touch Neon.
  */
 
 const ARGV = process.argv.slice(2);
 const USE_TEST = ARGV.includes("--test");
 const FORCE = ARGV.includes("--force");
+
+// Safety gate (Phase 6.3 S1A): `--force` is TEST-ONLY. Refuse it on the default target BEFORE any
+// database work (no connection, no import of the client) so it can never duplicate data on Neon.
+const guardError = forceGuardError(FORCE, USE_TEST);
+if (guardError) {
+  console.error(guardError);
+  process.exit(1);
+}
 
 if (USE_TEST) {
   const testUrl = process.env.TEST_DATABASE_URL;
@@ -106,7 +122,7 @@ async function main() {
     where: { hospitalId_key: { hospitalId: HRB, key: SENTINEL_KEY } },
   }).catch(() => null);
   if (existing && !FORCE) {
-    console.log(`✓ demo data already seeded (sentinel ${SENTINEL_KEY}=${existing.value}); skipping. Use --force to re-add.`);
+    console.log(`✓ demo data already seeded (sentinel ${SENTINEL_KEY}=${existing.value}); no-op. To re-add on the TEST DB only, use: npm run db:seed:demo -- --test --force`);
     await prisma.$disconnect();
     return;
   }
@@ -201,7 +217,8 @@ async function main() {
       const patient = await createPatientForActor(reception, ctxR, {
         familyName: family, givenName: given, sex,
         dateOfBirth: dob,
-        phone: `+237 6 ${String(90 + (g % 9))} ${String(100000 + g).slice(-6)}`,
+        // Clearly-synthetic placeholder — never a real-looking phone number (Phase 6.3 S1A).
+        phone: syntheticContact(g),
         residence: RESIDENCES[g % RESIDENCES.length],
       });
       await prisma.patient.update({ where: { id: patient.id }, data: { createdAt: when } });
@@ -305,7 +322,8 @@ async function main() {
     snapshots++;
   }
 
-  // Sentinel last (so a partial failure re-tops-up rather than silently skipping).
+  // Sentinel written LAST (single-success idempotency): after a completed run a re-run no-ops;
+  // a partial failure before this point leaves partial data → operator review, not a blind re-run.
   await prisma.setting.upsert({
     where: { hospitalId_key: { hospitalId: HRB, key: SENTINEL_KEY } },
     create: { hospitalId: HRB, key: SENTINEL_KEY, value: SENTINEL_VALUE },
