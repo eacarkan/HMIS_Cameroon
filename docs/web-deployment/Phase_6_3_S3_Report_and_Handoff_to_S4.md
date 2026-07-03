@@ -2,6 +2,7 @@
 
 **Scope:** mentor-required wording remediation (A–D) → full QA gate → ff-merge → push → live verify.
 **Model:** Opus 4.8 (QA / correctness step following the Fable S2 public-UI work).
+**Closure (2026‑07‑04):** **S3 ACCEPTED** · live production verification **ACCEPTED** · **Phase 6.3 Part 1 COMPLETE** · **ready for S4**. Full mentor verdict + operational notes in **§10**.
 
 ---
 
@@ -167,11 +168,67 @@ No functional defects found. No known failing tests.
 
 ## 9. Handoff to S4 (Fable)
 
-- Deploy branch `deploy/santegrid-webdemo` @ `573ee973`, live on www.santegrid.com.
-- Public-facing wording is now sober / review-environment framed; the four mentor items A–D are closed
-  and evidenced.
-- If S4 continues the design pass, the two authenticated-shell items above are the natural next targets;
-  keep the guardrails green (`check:release` forbids the word "production"; `check:i18n` requires FR/EN
-  parity) and re-run the QA gate + `scripts/capture-6_3-public.mjs` before any further merge.
-- Constraints still in force: ff-merge only into `deploy/santegrid-webdemo`; push only that branch;
-  do not change Vercel / Neon / env / domain settings; item-D behavior must stay code-side.
+### 9.1 Production vs. deploy-branch tip — read this first
+- **Production app code currently verified live: `573ee973`** (operator-promoted to Production; hard‑refresh verified on www.santegrid.com).
+- **Latest deploy-branch tip: `5e05a369`** — this is **docs/evidence only** (report §7 + `6_3/live/` PNGs + a capture‑script tweak); it changes **no app behaviour** and was intentionally left **unpromoted**.
+- **S4 instruction:** start S4 from **`deploy/santegrid-webdemo` latest tip**. **Do NOT assume the production commit equals the latest deploy-branch commit** — `5e05a369` (docs) sits on top of the live app code `573ee973`. Starting from the latest tip is safe and correct.
+
+### 9.2 Authenticated-shell wording cleanup (S4 must address)
+The two post-login surfaces below still use official-Ministry framing and should be **softened unless MINSANTE has authorized official framing in writing**:
+1. **Post-login sidebar** (`components/layout/sidebar.tsx`) still renders "Ministère de la Santé Publique" (`app.ministry`) + `app.longName`.
+2. **`/selection-hopital`** (`app/selection-hopital/page.tsx`) still shows the official country/ministry header wording (`OFFICIAL_HEADER`).
+
+**Recommended replacement style** (same as the public pages):
+- FR — "SantéGrid — SIGH/DME" / "Environnement de revue pour hôpitaux régionaux"
+- EN — "SantéGrid — HMIS/EMR" / "Review environment for regional hospitals"
+
+Do **not** use official Ministry framing unless MINSANTE has authorized it in writing. **Print documents** (receipt, prescription, etc.) intentionally keep the official header **with the prototype label** — leave as-is unless the mentor decides otherwise.
+
+### 9.3 Process reminders
+- Keep the guardrails green (`check:release` forbids the word "production"; `check:i18n` requires FR/EN parity); re-run the full QA gate + `scripts/capture-6_3-public.mjs` before any further merge.
+- Constraints still in force: ff-merge only into `deploy/santegrid-webdemo`; push only that branch; **going live requires a MANUAL Vercel Promote-to-Production** (a push only creates a Preview — see the deploy-promotion note); do not change Vercel / Neon / env / domain settings; item-D behavior must stay code-side.
+
+---
+
+## 10. Mentor final verdict & closure (recorded 2026‑07‑04)
+
+**S3 final mentor verdict**
+
+> **S3: accepted.**
+> **Live production verification: accepted.**
+> **Phase 6.3 Part 1: complete.**
+> **Ready for S4.**
+
+**Accepted items**
+
+| # | Item | Verdict |
+|---|---|---|
+| 1 | `/connexion` Ministry-header removal | **accepted** |
+| 2 | `/vitrine` wording correction | **accepted** |
+| 3 | Footer release-label correction | **accepted** |
+| 4 | `/acces-demo` password-placeholder fallback | **accepted** |
+| 5 | Public screenshots from live site | **accepted** |
+| 6 | Full QA gate | **accepted** |
+| 7 | Vercel production promotion | **accepted** |
+| 8 | `/api/health` safeguard | **accepted** |
+
+**One-click login — operational note (not an S3 defect)**
+
+Claude verified that one-click login is currently **disabled** on the live site. This is **not an S3 defect** — S3 did not change environment variables; the flag `HMIS_PUBLIC_DEMO_LOGIN_ENABLED` is an operator/env decision.
+
+Mentor recommendation:
+- For internal/private demonstrations with **trusted** stakeholders, one-click login **may be enabled temporarily**.
+- For a **public URL that could be shared widely**, keeping one-click **disabled** is safer.
+- **Recommended default: keep one-click disabled publicly** unless the demo audience is controlled.
+- Before an actual Ministry presentation, the operator may enable one-click temporarily in Vercel, run the demo, then disable it again.
+
+(The env flag was **not** changed by this closure task.)
+
+**Closure statements**
+1. S3 is **accepted**.
+2. Phase 6.3 **Part 1 is live and complete**.
+3. Commit **`573ee973`** was **manually promoted to Production** and **verified on www.santegrid.com**.
+4. Latest deploy-branch tip **`5e05a369`** is **docs/evidence only**.
+5. One-click login is disabled live — an **operational/env decision, not an S3 defect**.
+6. **S4 starts from `deploy/santegrid-webdemo` latest tip.**
+7. S4 must include the **authenticated-shell wording cleanup** (§9.2).
