@@ -147,14 +147,16 @@ async function connectCdp() {
   };
 }
 
+const COOKIE_DOMAIN = new URL(BASE).hostname; // localhost for dev, www.santegrid.com for live
+
 async function gotoAndText(send, url, locale, vw, vh) {
   await send("Network.clearBrowserCookies");
   await send("Network.setCookie", {
     name: "locale",
     value: locale,
-    domain: "localhost",
+    domain: COOKIE_DOMAIN,
     path: "/",
-    secure: false,
+    secure: BASE.startsWith("https"),
   });
   await send("Emulation.setDeviceMetricsOverride", {
     width: vw,
