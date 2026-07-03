@@ -696,7 +696,7 @@
     "footer": {
       "tagline": "SantéGrid — Synthetic HMIS / EMR Demonstration Platform",
       "synthetic": "Synthetic data only · no real patient data.",
-      "notProduction": "Not for production · outside Gate 7 · no live integrations.",
+      "notProduction": "Review environment · outside Gate 7 · no live integrations.",
       "notGovernment": "Demonstration platform — not an official government website."
     },
     "disclaimer": {
@@ -704,16 +704,58 @@
       "syntheticBody": "This platform shows entirely fictional data for demonstration and stakeholder review only. No real patient data is used.",
       "notGovernmentTitle": "This is not an official government website",
       "notGovernmentBody": "SantéGrid is an independent demonstration platform. It is not an official Ministry of Public Health website, and it is neither an authorization (Gate 7) nor a production deployment.",
-      "notProduction": "Not for production · outside Gate 7 · no real data · no live integrations."
+      "notProduction": "Review environment · outside Gate 7 · no real data · no live integrations."
+    },
+    "guided": {
+      "title": "Guided demo",
+      "body": "The recommended path to explore SantéGrid in a few steps — from the platform overview to multi-site oversight.",
+      "steps": {
+        "overview": "Platform overview",
+        "role": "Choose a demo role",
+        "patients": "Patient administration",
+        "billing": "Billing & cashiering",
+        "pharmacy": "Pharmacy & dispensing",
+        "oversight": "Multi-site oversight"
+      }
     }
   },
   "landing": {
     "hero": {
       "eyebrow": "Hospital Information System · Electronic Medical Record",
+      "title": "SantéGrid — Integrated Hospital Management Platform",
       "description": "SantéGrid showcases a complete Hospital Information Management System (HMIS) and Electronic Medical Record (EMR) — from patient reception through billing, pharmacy, laboratory, emergency care, inpatient hospitalization, reporting and regional oversight — all on entirely synthetic demonstration data.",
-      "ctaFeatures": "Explore the features",
-      "ctaDemo": "Open the demo",
+      "ctaFeatures": "Explore the platform",
+      "ctaDemo": "Access the demonstration",
       "ctaSignIn": "Sign in"
+    },
+    "stats": {
+      "hospitals": "regional hospitals",
+      "roles": "business roles",
+      "synthetic": "synthetic data"
+    },
+    "network": {
+      "title": "Regional hospital network",
+      "subtitle": "Eight regional hospitals prepared for multi-site review. Status: controlled demonstration — no real operational deployment.",
+      "count": "08 facilities · demonstration environment",
+      "statusActive": "Review active",
+      "statusPrepared": "Prepared"
+    },
+    "journey": {
+      "title": "The patient journey, end to end",
+      "subtitle": "One record follows the patient through every stage — every act is traced, billed and audited.",
+      "steps": {
+        "registration": "Registration",
+        "consultation": "Consultation",
+        "billing": "Billing",
+        "diagnostics": "Lab / Radiology",
+        "pharmacy": "Pharmacy",
+        "discharge": "Hospitalization / Discharge"
+      }
+    },
+    "modules": {
+      "title": "Platform modules",
+      "subtitle": "The essential functions of a regional hospital, integrated in one system.",
+      "cta": "See all features"
     },
     "intro": {
       "title": "A complete hospital platform, in demonstration",
@@ -791,7 +833,34 @@
     }
   },
   "demoAccess": {
-    "title": "Demo access",
+    "title": "Stakeholder demo access",
+    "groupsTitle": "Demonstration roles",
+    "groups": {
+      "oversight": {
+        "title": "Central oversight",
+        "desc": "Aggregate view across the eight regional hospitals — consolidated indicators, no patient data."
+      },
+      "administration": {
+        "title": "Hospital administration",
+        "desc": "Configuration, users and roles, tariffs, audit log and facility management."
+      },
+      "clinical": {
+        "title": "Clinical care",
+        "desc": "Patient reception, visit opening, consultation and clinical documentation."
+      },
+      "billing": {
+        "title": "Cashier & billing",
+        "desc": "Invoices, multi-method collections, official receipts and cashier closing."
+      },
+      "pharmacy": {
+        "title": "Pharmacy",
+        "desc": "Prescriptions, batch stock, FEFO and traced medication dispensing."
+      },
+      "diagnostics": {
+        "title": "Diagnostics",
+        "desc": "Laboratory and radiology requests, result entry and separated validation."
+      }
+    },
     "subtitle": "Explore SantéGrid with entirely synthetic accounts.",
     "intro": "Sign in with one of the demo accounts below. All accounts and data are fictional.",
     "warning": "Demonstration environment: use fictional data only. Do not enter any real patient data.",

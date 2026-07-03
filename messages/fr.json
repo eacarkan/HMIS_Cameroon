@@ -1383,7 +1383,7 @@
     "footer": {
       "tagline": "SantéGrid — Plateforme synthétique de démonstration SIGH / DME",
       "synthetic": "Données synthétiques uniquement · aucune donnée réelle de patient.",
-      "notProduction": "Non destiné à la production · hors Gate 7 · aucune intégration en direct.",
+      "notProduction": "Environnement de revue · hors Gate 7 · aucune intégration en direct.",
       "notGovernment": "Plateforme de démonstration — pas un site officiel du gouvernement."
     },
     "disclaimer": {
@@ -1391,16 +1391,58 @@
       "syntheticBody": "Cette plateforme présente uniquement des données fictives, à des fins de démonstration et de revue par les parties prenantes. Aucune donnée réelle de patient n'est utilisée.",
       "notGovernmentTitle": "Ce n'est pas un site officiel du gouvernement",
       "notGovernmentBody": "SantéGrid est une plateforme de démonstration indépendante. Ce n'est pas un site officiel du Ministère de la Santé Publique ; elle ne constitue ni une autorisation (Gate 7) ni une mise en production.",
-      "notProduction": "Non destiné à la production · hors Gate 7 · aucune donnée réelle · aucune intégration en direct."
+      "notProduction": "Environnement de revue · hors Gate 7 · aucune donnée réelle · aucune intégration en direct."
+    },
+    "guided": {
+      "title": "Parcours de démonstration",
+      "body": "Le chemin recommandé pour découvrir SantéGrid en quelques étapes — de la vue d'ensemble à la supervision multi-sites.",
+      "steps": {
+        "overview": "Vue d'ensemble de la plateforme",
+        "role": "Choisir un rôle de démonstration",
+        "patients": "Administration des patients",
+        "billing": "Facturation & caisse",
+        "pharmacy": "Pharmacie & dispensation",
+        "oversight": "Supervision multi-sites"
+      }
     }
   },
   "landing": {
     "hero": {
       "eyebrow": "Système d'information hospitalière · Dossier médical électronique",
+      "title": "SantéGrid — Plateforme intégrée de gestion hospitalière",
       "description": "SantéGrid présente un système d'information de gestion hospitalière (SIGH) et un dossier médical électronique (DME) complets — de l'accueil du patient à la facturation, la pharmacie, le laboratoire, les urgences, l'hospitalisation, le reporting et la supervision régionale — sur des données entièrement synthétiques.",
-      "ctaFeatures": "Découvrir les fonctionnalités",
-      "ctaDemo": "Accéder à la démo",
+      "ctaFeatures": "Découvrir la plateforme",
+      "ctaDemo": "Accéder à la démonstration",
       "ctaSignIn": "Se connecter"
+    },
+    "stats": {
+      "hospitals": "hôpitaux régionaux",
+      "roles": "rôles métiers",
+      "synthetic": "données synthétiques"
+    },
+    "network": {
+      "title": "Réseau hospitalier régional",
+      "subtitle": "Huit hôpitaux régionaux préparés pour la revue multi-sites. Statut : démonstration contrôlée — aucun déploiement opérationnel réel.",
+      "count": "08 établissements · environnement de démonstration",
+      "statusActive": "Revue active",
+      "statusPrepared": "Préparé"
+    },
+    "journey": {
+      "title": "Le parcours patient, de bout en bout",
+      "subtitle": "Un même dossier suit le patient à chaque étape — chaque acte est tracé, facturé et audité.",
+      "steps": {
+        "registration": "Admission / Enregistrement",
+        "consultation": "Consultation",
+        "billing": "Facturation",
+        "diagnostics": "Laboratoire / Radiologie",
+        "pharmacy": "Pharmacie",
+        "discharge": "Hospitalisation / Sortie"
+      }
+    },
+    "modules": {
+      "title": "Modules de la plateforme",
+      "subtitle": "Les fonctions essentielles d'un hôpital régional, intégrées dans un même système.",
+      "cta": "Voir toutes les fonctionnalités"
     },
     "intro": {
       "title": "Une plateforme hospitalière complète, en démonstration",
@@ -1478,8 +1520,35 @@
     }
   },
   "demoAccess": {
-    "title": "Accès démo",
+    "title": "Accès à l'environnement de revue",
     "subtitle": "Explorez SantéGrid avec des comptes entièrement synthétiques.",
+    "groupsTitle": "Rôles de démonstration",
+    "groups": {
+      "oversight": {
+        "title": "Supervision centrale",
+        "desc": "Vue agrégée des huit hôpitaux régionaux — indicateurs consolidés, sans données patient."
+      },
+      "administration": {
+        "title": "Administration hospitalière",
+        "desc": "Configuration, utilisateurs et rôles, tarifs, journal d'audit et pilotage de l'établissement."
+      },
+      "clinical": {
+        "title": "Soins cliniques",
+        "desc": "Accueil du patient, ouverture de visite, consultation et documentation clinique."
+      },
+      "billing": {
+        "title": "Caisse & facturation",
+        "desc": "Factures, encaissements multi-modes, reçus officiels et clôture de caisse."
+      },
+      "pharmacy": {
+        "title": "Pharmacie",
+        "desc": "Ordonnances, stock par lots, FEFO et dispensation tracée des médicaments."
+      },
+      "diagnostics": {
+        "title": "Diagnostics",
+        "desc": "Demandes de laboratoire et de radiologie, saisie des résultats et validation séparée."
+      }
+    },
     "intro": "Connectez-vous avec l'un des comptes de démonstration ci-dessous. Tous les comptes et toutes les données sont fictifs.",
     "warning": "Environnement de démonstration : utilisez uniquement des données fictives. Ne saisissez aucune donnée réelle de patient.",
     "directoryTitle": "Comptes de démonstration",

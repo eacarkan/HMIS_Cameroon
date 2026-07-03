@@ -17,13 +17,13 @@ test.describe("public SantéGrid site", () => {
       page.getByText(/Environnement de revue/i).first(),
     ).toBeVisible();
 
-    // SantéGrid brand + verbatim positioning line.
+    // SantéGrid brand + hero positioning line (Phase 6.3 executive title).
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
       "SantéGrid",
     );
     await expect(
       page
-        .getByText("SantéGrid — Plateforme synthétique de démonstration SIGH / DME")
+        .getByText("SantéGrid — Plateforme intégrée de gestion hospitalière")
         .first(),
     ).toBeVisible();
 
@@ -37,10 +37,10 @@ test.describe("public SantéGrid site", () => {
 
     // Calls-to-action to the showcase + demo access.
     await expect(
-      page.getByRole("link", { name: "Découvrir les fonctionnalités" }),
+      page.getByRole("link", { name: "Découvrir la plateforme" }),
     ).toBeVisible();
     await expect(
-      page.getByRole("link", { name: "Accéder à la démo" }),
+      page.getByRole("link", { name: "Accéder à la démonstration" }),
     ).toBeVisible();
   });
 
@@ -71,7 +71,7 @@ test.describe("public SantéGrid site", () => {
   }) => {
     await page.goto("/acces-demo");
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "Accès démo",
+      "Accès à l'environnement de revue",
     );
     // Public synthetic account directory.
     await expect(page.getByText("solange.abena@hrb-demo.cm")).toBeVisible();

@@ -21,9 +21,11 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import type { LucideIcon } from "lucide-react";
 
+import type { ReactNode } from "react";
+
+import { ModuleCapabilityCard } from "@/components/public/module-capability-card";
 import { PublicDisclaimers } from "@/components/public/public-disclaimers";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 
 const MODULES: { key: string; icon: LucideIcon }[] = [
   { key: "patient", icon: UserRound },
@@ -53,38 +55,43 @@ const PROOF: { key: string; icon: LucideIcon }[] = [
  * data, NO write actions and NO source/architecture exposure. i18n-driven (`showcase.*`)
  * so it renders under next-intl and is unit-testable with `renderWithIntl`.
  */
-export function PublicShowcase() {
+export function PublicShowcase({
+  journey,
+  guided,
+}: {
+  /** Server-rendered patient-journey section (RSC slot from the page). */
+  journey?: ReactNode;
+  /** Server-rendered guided-demo pathway (RSC slot from the page). */
+  guided?: ReactNode;
+}) {
   const t = useTranslations("showcase");
   return (
-    <div className="mx-auto w-full max-w-screen-xl px-4 py-12 lg:px-8">
-      <header className="max-w-3xl space-y-3">
-        <h1 className="font-heading text-3xl font-semibold tracking-tight">
+    <div className="mx-auto w-full max-w-screen-xl px-4 py-14 lg:px-8">
+      <header className="max-w-3xl">
+        <div className="bg-primary mb-5 h-0.75 w-14" aria-hidden />
+        <h1 className="font-heading text-3xl font-bold tracking-tight text-balance sm:text-4xl">
           {t("title")}
         </h1>
-        <p className="text-foreground/80 text-lg">{t("subtitle")}</p>
-        <p className="text-muted-foreground leading-relaxed">{t("intro")}</p>
+        <p className="text-foreground/80 mt-3 text-lg">{t("subtitle")}</p>
+        <p className="text-muted-foreground mt-2 leading-relaxed">{t("intro")}</p>
       </header>
 
-      {/* Module preview cards */}
-      <section className="mt-10">
-        <h2 className="font-heading mb-5 text-lg font-semibold">
+      {/* Patient journey (server slot) */}
+      {journey}
+
+      {/* Module preview cards — flat « Registre » capability cards */}
+      <section className="mt-14">
+        <h2 className="font-heading mb-5 text-2xl font-bold tracking-tight">
           {t("modulesTitle")}
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {MODULES.map((m) => (
-            <Card key={m.key}>
-              <CardContent className="space-y-2 py-5">
-                <span className="bg-primary/10 text-primary grid size-9 place-items-center rounded-lg">
-                  <m.icon className="size-5" aria-hidden />
-                </span>
-                <p className="font-heading font-medium">
-                  {t(`modules.${m.key}Title`)}
-                </p>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  {t(`modules.${m.key}Body`)}
-                </p>
-              </CardContent>
-            </Card>
+            <ModuleCapabilityCard
+              key={m.key}
+              icon={m.icon}
+              title={t(`modules.${m.key}Title`)}
+              body={t(`modules.${m.key}Body`)}
+            />
           ))}
         </div>
       </section>
@@ -128,6 +135,9 @@ export function PublicShowcase() {
       <section className="mt-10">
         <PublicDisclaimers />
       </section>
+
+      {/* Guided demo pathway (server slot) */}
+      {guided}
 
       {/* Demo CTA */}
       <section className="border-primary/20 bg-primary/5 mt-14 rounded-xl border p-8 text-center">

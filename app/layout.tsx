@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Archivo, Inter } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 
@@ -11,6 +11,15 @@ import "./globals.css";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
+  display: "swap",
+});
+
+// Archivo — institutional grotesque used for headings only (Phase 6.3, direction
+// « Réseau »). Self-hosted at build time by next/font (no runtime request), exposed
+// as `--font-display` and mapped to the Tailwind `font-heading` family.
+const archivo = Archivo({
+  subsets: ["latin"],
+  variable: "--font-display",
   display: "swap",
 });
 
@@ -31,7 +40,7 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={`${inter.variable} h-full`}>
+    <html lang={locale} className={`${inter.variable} ${archivo.variable} h-full`}>
       <body className="bg-background text-foreground min-h-full antialiased">
         <NextIntlClientProvider messages={messages}>
           {children}
