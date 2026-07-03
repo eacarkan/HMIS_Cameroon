@@ -113,7 +113,33 @@
       "recentActivity": "Activité récente"
     },
     "noData": "Aucune donnée",
-    "placeholder": "Les indicateurs s'afficheront une fois le parcours de démonstration réalisé (patient → visite → consultation → facture → paiement)."
+    "placeholder": "Les indicateurs s'afficheront une fois le parcours de démonstration réalisé (patient → visite → consultation → facture → paiement).",
+    "exec": {
+      "overview": "Vue d'ensemble du jour — données synthétiques de démonstration",
+      "lastActivity": "Dernière activité synthétique",
+      "noActivity": "aucune activité enregistrée",
+      "openedClosed": "{opened} ouvertes · {closed} clôturées aujourd'hui",
+      "invoicesCount": "{count, plural, =0 {aucune facture aujourd'hui} one {# facture aujourd'hui} other {# factures aujourd'hui}}"
+    },
+    "charts": {
+      "registrationsTitle": "Flux patients — 30 jours",
+      "registrationsCaption": "Enregistrements par jour · données synthétiques",
+      "registrationsEmpty": "Aucun enregistrement sur la période — les indicateurs s'alimentent au fil de la démonstration.",
+      "billingTitle": "Encaissements par mode",
+      "billingCaption": "Aujourd'hui · FCFA · données synthétiques",
+      "billingEmpty": "Aucun encaissement aujourd'hui.",
+      "operationsTitle": "Pharmacie & diagnostics",
+      "syntheticTag": "Données synthétiques",
+      "stockAlerts": "Alertes stock / péremption",
+      "labRequests": "Demandes laboratoire (jour)",
+      "radiologyRequests": "Demandes imagerie (jour)",
+      "pendingDiagnostics": "Examens en cours"
+    },
+    "quickAccess": {
+      "title": "Espaces de travail",
+      "subtitle": "Accès direct aux modules de votre rôle"
+    },
+    "journeyTitle": "Le parcours patient, de bout en bout"
   },
   "sex": {
     "male": "Masculin",
@@ -1071,8 +1097,8 @@
     }
   },
   "central": {
-    "title": "Supervision centrale (agrégats)",
-    "subtitle": "Indicateurs agrégés par hôpital — lecture seule",
+    "title": "Supervision multi-sites — environnement de revue",
+    "subtitle": "Indicateurs agrégés par hôpital, alimentés par instantanés — lecture seule, données synthétiques",
     "noPatientNotice": "Agrégats uniquement — aucune donnée patient (ni nom, ni identifiant, ni dossier). Alimenté par des instantanés ; aucun accès direct aux tables opérationnelles.",
     "noData": "Aucun instantané disponible. Un hôpital doit générer son instantané agrégé.",
     "consultations": "Consultations",
@@ -1085,7 +1111,21 @@
     "pharmacyAlerts": "Pharmacie (bas / péremption)",
     "topDiagnoses": "Principaux diagnostics (CIM-10)",
     "generateSnapshot": "Générer l'instantané central",
-    "snapshotGenerated": "Instantané généré."
+    "snapshotGenerated": "Instantané généré.",
+    "statusActive": "Revue active",
+    "statusPrepared": "Préparé",
+    "lastActivity": "Dernière activité synthétique",
+    "comparisonTitle": "Activité comparée des hôpitaux",
+    "comparisonCaption": "Consultations sur la période · instantanés synthétiques",
+    "revenueByMethod": "Recettes par mode",
+    "modules": {
+      "consultations": "Consultations",
+      "billing": "Facturation",
+      "queue": "File d'attente",
+      "hospitalization": "Hospitalisation",
+      "diagnostics": "Labo / imagerie",
+      "pharmacy": "Pharmacie"
+    }
   },
   "uat": {
     "title": "Recette (UAT) + préparation Gate 7",

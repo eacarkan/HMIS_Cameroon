@@ -38,8 +38,10 @@ export function Sidebar({ roles }: { roles: string[] }) {
           <span className="block text-sm font-semibold text-white">
             {tApp("name")}
           </span>
+          {/* 6.3 S4 (mentor closure item 1) — review-environment framing; no official
+              Ministry header without written MINSANTE authorization. */}
           <span className="text-sidebar-foreground/75 block text-xs">
-            {tApp("ministry")}
+            {tApp("reviewScope")}
           </span>
         </span>
       </div>
@@ -66,8 +68,9 @@ export function Sidebar({ roles }: { roles: string[] }) {
                       className={cn(
                         "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
                         "focus-visible:ring-sidebar-ring focus-visible:ring-2 focus-visible:outline-none",
+                        // 6.3H — refined active state: filled row + inset accent bar.
                         isActive
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-[inset_3px_0_0_0_var(--sidebar-primary)]"
                           : "text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
                       )}
                     >

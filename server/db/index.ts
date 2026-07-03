@@ -91,6 +91,10 @@ export {
   countInvoicesSince,
   findPaymentsSince,
   recentAuditEntries,
+  findPatientRegistrationDatesSince,
+  countExpiringStockLots,
+  countDiagnosticOrdersSince,
+  countPendingDiagnosticOrders,
 } from "./dashboard";
 
 // Phase 1 (Gate 2 + Gate 3) — additive hospital-scoped data-access for the new models.

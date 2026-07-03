@@ -18,7 +18,9 @@ test.describe("Phase 3D — central aggregate oversight", () => {
   test("the central supervisor sees per-hospital AGGREGATES only (no patient data)", async ({ page }) => {
     await login(page, CENTRAL);
     await page.goto("/central");
-    await expect(page.getByRole("heading", { name: "Supervision centrale (agrégats)" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Supervision multi-sites — environnement de revue" }),
+    ).toBeVisible();
     // The aggregate-only notice + a per-hospital card (Bertoua, from the generated snapshot).
     await expect(page.getByText(/Agrégats uniquement/)).toBeVisible();
     await expect(page.getByText(/Bertoua/).first()).toBeVisible();
@@ -29,6 +31,8 @@ test.describe("Phase 3D — central aggregate oversight", () => {
     await login(page, ACCOUNTS.reception);
     await page.goto("/central");
     await expect(page.getByRole("heading", { name: "Tableau de bord" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Supervision centrale (agrégats)" })).toHaveCount(0);
+    await expect(
+      page.getByRole("heading", { name: "Supervision multi-sites — environnement de revue" }),
+    ).toHaveCount(0);
   });
 });

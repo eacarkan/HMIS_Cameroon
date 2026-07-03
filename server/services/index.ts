@@ -81,7 +81,9 @@ export {
 export { getReceipt, recordReceiptPrint } from "./receipt-service";
 export {
   type DashboardSummary,
+  type DashboardExtras,
   getDashboardSummary,
+  getDashboardExtras,
 } from "./dashboard-service";
 
 // Phase 1 (Gate 3) — service wrappers (RBAC + hospital scoping + audit) over the Gate 2

@@ -54,7 +54,33 @@
       "recentActivity": "Recent activity"
     },
     "noData": "No data",
-    "placeholder": "Indicators will appear once the demonstration journey is completed (patient → visit → consultation → invoice → payment)."
+    "placeholder": "Indicators will appear once the demonstration journey is completed (patient → visit → consultation → invoice → payment).",
+    "exec": {
+      "overview": "Today's overview — synthetic demonstration data",
+      "lastActivity": "Last synthetic activity",
+      "noActivity": "no activity recorded",
+      "openedClosed": "{opened} opened · {closed} closed today",
+      "invoicesCount": "{count, plural, =0 {no invoices today} one {# invoice today} other {# invoices today}}"
+    },
+    "charts": {
+      "registrationsTitle": "Patient flow — 30 days",
+      "registrationsCaption": "Registrations per day · synthetic data",
+      "registrationsEmpty": "No registrations in the period — indicators fill in as the demonstration is used.",
+      "billingTitle": "Collections by method",
+      "billingCaption": "Today · FCFA · synthetic data",
+      "billingEmpty": "No collections today.",
+      "operationsTitle": "Pharmacy & diagnostics",
+      "syntheticTag": "Synthetic data",
+      "stockAlerts": "Stock / expiry alerts",
+      "labRequests": "Lab requests (today)",
+      "radiologyRequests": "Imaging requests (today)",
+      "pendingDiagnostics": "Exams in progress"
+    },
+    "quickAccess": {
+      "title": "Workspaces",
+      "subtitle": "Direct access to your role's modules"
+    },
+    "journeyTitle": "The patient journey, end to end"
   },
   "language": {
     "label": "Language",
@@ -384,8 +410,8 @@
     }
   },
   "central": {
-    "title": "Central oversight (aggregates)",
-    "subtitle": "Per-hospital aggregate indicators — read-only",
+    "title": "Multi-site oversight — review environment",
+    "subtitle": "Per-hospital aggregate indicators, snapshot-fed — read-only, synthetic data",
     "noPatientNotice": "Aggregates only — no patient data (no name, identifier, or record). Snapshot-fed; no direct access to operational tables.",
     "noData": "No snapshot available. A hospital must generate its aggregate snapshot.",
     "consultations": "Consultations",
@@ -398,7 +424,21 @@
     "pharmacyAlerts": "Pharmacy (low / expiring)",
     "topDiagnoses": "Top diagnoses (ICD-10)",
     "generateSnapshot": "Generate central snapshot",
-    "snapshotGenerated": "Snapshot generated."
+    "snapshotGenerated": "Snapshot generated.",
+    "statusActive": "Review active",
+    "statusPrepared": "Prepared",
+    "lastActivity": "Last synthetic activity",
+    "comparisonTitle": "Hospital activity comparison",
+    "comparisonCaption": "Consultations in the period · synthetic snapshots",
+    "revenueByMethod": "Revenue by method",
+    "modules": {
+      "consultations": "Consultations",
+      "billing": "Billing",
+      "queue": "Queue",
+      "hospitalization": "Hospitalization",
+      "diagnostics": "Lab / imaging",
+      "pharmacy": "Pharmacy"
+    }
   },
   "uat": {
     "title": "UAT + Gate 7 readiness",

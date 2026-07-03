@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { PrototypeBanner } from "@/components/layout/prototype-banner";
-import { OFFICIAL_HEADER } from "@/lib/constants";
 import { selectHospitalAction } from "@/server/auth/actions";
 import { getCurrentActor } from "@/server/auth";
 import { getAccessibleHospitals } from "@/server/services";
@@ -26,11 +25,16 @@ export default async function SelectionHopitalPage() {
       <PrototypeBanner />
       <main className="flex flex-1 flex-col items-center justify-center p-4">
         <div className="w-full max-w-2xl space-y-6">
+          {/* 6.3 S4 (mentor closure item 2) — review-environment framing replaces the
+              official country/ministry header (no official framing without written
+              MINSANTE authorization). */}
           <header className="space-y-1 text-center">
             <p className="text-muted-foreground text-xs tracking-wide uppercase">
-              {OFFICIAL_HEADER.country} · {OFFICIAL_HEADER.ministry}
+              {tApp("name")} · {tApp("reviewScope")}
             </p>
-            <h1 className="text-2xl font-semibold">{t("selectTitle")}</h1>
+            <h1 className="font-heading text-2xl font-bold tracking-tight">
+              {t("selectTitle")}
+            </h1>
             <p className="text-muted-foreground text-sm">
               {t("selectSubtitle")}
             </p>

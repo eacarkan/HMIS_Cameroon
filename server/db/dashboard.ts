@@ -69,3 +69,46 @@ export function recentAuditEntries(hospitalId: string, limit: number) {
     include: { actor: true },
   });
 }
+
+// --- Phase 6.3 S4 — executive-dashboard extras (read-only, hospital-scoped, additive). ---
+
+/** Registration timestamps since a moment — bucketed per day by the pure series helper. */
+export function findPatientRegistrationDatesSince(hospitalId: string, since: Date) {
+  return prisma.patient.findMany({
+    where: { hospitalId, deletedAt: null, createdAt: { gte: since } },
+    select: { createdAt: true },
+  });
+}
+
+/** Lots still on hand that expire on/before `before` (pharmacy expiry alert count). */
+export function countExpiringStockLots(hospitalId: string, before: Date) {
+  return prisma.medicationStockBatch.count({
+    where: { hospitalId, quantityOnHand: { gt: 0 }, expiryDate: { lte: before } },
+  });
+}
+
+/** Diagnostic orders of one modality requested since a moment (cancelled excluded). */
+export function countDiagnosticOrdersSince(
+  hospitalId: string,
+  since: Date,
+  modality: "lab" | "radiology",
+) {
+  return prisma.diagnosticOrder.count({
+    where: {
+      hospitalId,
+      modality,
+      status: { not: "cancelled" },
+      createdAt: { gte: since },
+    },
+  });
+}
+
+/** Diagnostic orders still in the pipeline (requested → in progress → result entered). */
+export function countPendingDiagnosticOrders(hospitalId: string) {
+  return prisma.diagnosticOrder.count({
+    where: {
+      hospitalId,
+      status: { in: ["requested", "payment_confirmed", "in_progress", "result_entered"] },
+    },
+  });
+}

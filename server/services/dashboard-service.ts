@@ -4,14 +4,20 @@ import {
   visibleDashboardSections,
   type DashboardSections,
 } from "@/lib/dashboard-metrics";
+import { bucketByDay } from "@/lib/dashboard-series";
 import { startOfToday } from "@/lib/dates";
+import { can } from "@/lib/rbac";
 import {
   countConsultationsSince,
+  countDiagnosticOrdersSince,
   countEncountersClosedSince,
   countEncountersOpenedSince,
+  countExpiringStockLots,
   countInvoicesSince,
   countOpenEncounters,
   countPatientsRegisteredSince,
+  countPendingDiagnosticOrders,
+  findPatientRegistrationDatesSince,
   findPaymentsSince,
   recentAuditEntries,
   sumCollectionsSince,
@@ -99,5 +105,71 @@ export async function getDashboardSummary(
       actorName: entry.actor?.displayName ?? null,
       createdAt: entry.createdAt,
     })),
+  };
+}
+
+// --- Phase 6.3 S4 — executive-dashboard extras (read-only, capability-gated per block). ---
+
+/** How far back the registrations-per-day sparkline looks. */
+const TREND_DAYS = 30;
+/** A lot expiring within this window counts as a pharmacy expiry alert (2D-8 wording). */
+const EXPIRY_ALERT_DAYS = 90;
+
+export type DashboardExtras = {
+  /** Patients registered per day, oldest → today (TREND_DAYS buckets). */
+  registrationsByDay: number[];
+  /** Expiring-lot alerts — null when the role may not read stock. */
+  stockAlerts: number | null;
+  /** Today's lab / radiology requests — null when the role may not read diagnostics. */
+  labRequestsToday: number | null;
+  radiologyRequestsToday: number | null;
+  /** Diagnostic orders still in the pipeline — null when not readable. */
+  pendingDiagnostics: number | null;
+};
+
+/**
+ * Extra executive indicators for the Phase 6.3 dashboard. Same rules as the summary:
+ * read-only, hospital-scoped, current synthetic data only. Each optional block is
+ * gated on the SAME capability that gates its module (stock.read / diagnostic.read),
+ * so a role sees no number it could not see in the module itself.
+ */
+export async function getDashboardExtras(
+  actor: AuthenticatedActor,
+  ctx: HospitalContext,
+): Promise<DashboardExtras> {
+  await requireCapability(actor, ctx, "dashboard.read");
+  const roles = actor.rolesByHospital[ctx.hospitalId] ?? [];
+
+  const today = startOfToday();
+  const trendSince = new Date(today);
+  trendSince.setDate(trendSince.getDate() - (TREND_DAYS - 1));
+  const expiryBefore = new Date(today);
+  expiryBefore.setDate(expiryBefore.getDate() + EXPIRY_ALERT_DAYS);
+
+  const canStock = can(roles, "stock.read");
+  const canDiagnostics = can(roles, "diagnostic.read");
+
+  const [registrations, stockAlerts, labToday, radioToday, pending] = await Promise.all([
+    findPatientRegistrationDatesSince(ctx.hospitalId, trendSince),
+    canStock ? countExpiringStockLots(ctx.hospitalId, expiryBefore) : Promise.resolve(null),
+    canDiagnostics
+      ? countDiagnosticOrdersSince(ctx.hospitalId, today, "lab")
+      : Promise.resolve(null),
+    canDiagnostics
+      ? countDiagnosticOrdersSince(ctx.hospitalId, today, "radiology")
+      : Promise.resolve(null),
+    canDiagnostics ? countPendingDiagnosticOrders(ctx.hospitalId) : Promise.resolve(null),
+  ]);
+
+  return {
+    registrationsByDay: bucketByDay(
+      registrations.map((r) => r.createdAt),
+      TREND_DAYS,
+      today,
+    ),
+    stockAlerts,
+    labRequestsToday: labToday,
+    radiologyRequestsToday: radioToday,
+    pendingDiagnostics: pending,
   };
 }

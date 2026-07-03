@@ -1,34 +1,35 @@
 import { getTranslations } from "next-intl/server";
 
-import { PageHeader } from "@/components/layout/page-header";
+import { ExecutiveHeader } from "@/components/dashboard/executive-header";
 import { DashboardOverview } from "@/features/dashboard/dashboard-overview";
 import { requireActorAndHospital } from "@/server/auth";
-import { getDashboardSummary } from "@/server/services";
+import { getDashboardExtras, getDashboardSummary } from "@/server/services";
 
 /**
- * Tableau de bord (06 §11): KPI tiles + recent activity from real actions, scoped to
- * the active hospital and the current day.
+ * Tableau de bord (06 §11; executive layout 6.3 S4): teal executive band (hospital
+ * identity, role, review badge, hero KPIs) over role-gated ledgers, SVG operation
+ * panels and the workspace/guided-demo rail. Real actions, scoped to the active
+ * hospital; synthetic demonstration data only.
  */
 export default async function DashboardPage() {
   const { actor, hospital } = await requireActorAndHospital();
-  const summary = await getDashboardSummary(actor, hospital);
-  const t = await getTranslations("dashboard");
+  const [summary, extras] = await Promise.all([
+    getDashboardSummary(actor, hospital),
+    getDashboardExtras(actor, hospital),
+  ]);
+  const tRoles = await getTranslations("roles");
+  const roles = actor.rolesByHospital[hospital.hospitalId] ?? [];
+  const roleLabels = roles.map((code) => (tRoles.has(code) ? tRoles(code) : code));
 
   return (
     <>
-      <PageHeader
-        title={t("title")}
-        description={t("subtitle")}
-        actions={
-          <div className="text-right">
-            <p className="text-foreground text-sm font-medium">{hospital.name}</p>
-            <p className="text-muted-foreground text-xs">
-              {hospital.region} · {hospital.code}
-            </p>
-          </div>
-        }
+      <ExecutiveHeader
+        hospital={hospital}
+        userName={actor.displayName}
+        roleLabels={roleLabels}
+        summary={summary}
       />
-      <DashboardOverview summary={summary} />
+      <DashboardOverview summary={summary} extras={extras} roles={roles} />
     </>
   );
 }
