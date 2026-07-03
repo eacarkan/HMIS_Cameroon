@@ -17,6 +17,7 @@ import { GuidedDemoCard } from "@/components/public/guided-demo-card";
 import { PublicDisclaimers } from "@/components/public/public-disclaimers";
 import { Button } from "@/components/ui/button";
 import { canStartOneClickDemo } from "@/lib/deployment-mode";
+import { resolvePublicDemoPasswordHint } from "@/lib/public-demo-hint";
 
 export const metadata: Metadata = {
   title: "SantéGrid — Accès à l'environnement de revue",
@@ -44,8 +45,12 @@ const ROLE_GROUPS = [
 export default async function AccesDemoPage() {
   const t = await getTranslations("demoAccess");
   const oneClickEnabled = canStartOneClickDemo();
-  const passwordHint =
-    process.env.NEXT_PUBLIC_DEMO_PASSWORD_HINT?.trim() || t("passwordPlaceholder");
+  // Phase 6.3 S3 — never render an unset / blank / template-placeholder hint (the deployed env
+  // value may literally be `<optional-public-demo-password-or-hint>`); show a controlled fallback.
+  const passwordHint = resolvePublicDemoPasswordHint(
+    process.env.NEXT_PUBLIC_DEMO_PASSWORD_HINT,
+    t("passwordHintFallback"),
+  );
 
   return (
     <div className="mx-auto w-full max-w-screen-lg px-4 py-14 lg:px-8">

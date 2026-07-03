@@ -6,6 +6,7 @@
     "prototypeLabel": "Prototype de démonstration fonctionnelle — non destiné à la production",
     "reviewEnvironmentBadge": "Environnement de revue — données synthétiques",
     "reviewEnvironmentNote": "Cet environnement utilise uniquement des données synthétiques de démonstration. Il n'est connecté à aucun système hospitalier réel.",
+    "reviewScope": "Environnement de revue pour hôpitaux régionaux",
     "languageShort": "FR",
     "languageLabel": "Français"
   },
@@ -1384,7 +1385,8 @@
       "tagline": "SantéGrid — Plateforme synthétique de démonstration SIGH / DME",
       "synthetic": "Données synthétiques uniquement · aucune donnée réelle de patient.",
       "notProduction": "Environnement de revue · hors Gate 7 · aucune intégration en direct.",
-      "notGovernment": "Plateforme de démonstration — pas un site officiel du gouvernement."
+      "notGovernment": "Plateforme de démonstration — pas un site officiel du gouvernement.",
+      "release": "Environnement de revue — données synthétiques · hors Gate 7 · aucune intégration directe"
     },
     "disclaimer": {
       "syntheticTitle": "Démonstration synthétique",
@@ -1496,7 +1498,7 @@
       "networkBody": "Configuration multi-hôpitaux et supervision régionale agrégée uniquement — sans accès aux données patient au niveau central."
     },
     "proof": {
-      "title": "Une plateforme réelle, déployée et vérifiée",
+      "title": "Environnement de revue en ligne et vérifié",
       "subtitle": "Pour les partenaires, banques et évaluateurs non techniques : cette application existe, est déployée en ligne et repose sur un socle vérifié — sans exposer le code source ni l'architecture.",
       "testsTitle": "Suite de tests automatisés",
       "testsBody": "Tests unitaires, d'intégration et de bout-en-bout exécutés à chaque évolution.",
@@ -1558,6 +1560,7 @@
     "accessColumn": "Accès",
     "passwordLabel": "Mot de passe de démonstration",
     "passwordPlaceholder": "Mot de passe de démonstration fourni par l'opérateur.",
+    "passwordHintFallback": "Mot de passe communiqué séparément aux participants autorisés.",
     "oneClickBadge": "Un clic",
     "credentialOnly": "Identifiants",
     "signInCta": "Aller à la page de connexion",

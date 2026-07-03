@@ -6,6 +6,7 @@
     "prototypeLabel": "Functional demonstration prototype — not for production",
     "reviewEnvironmentBadge": "Review environment — synthetic data",
     "reviewEnvironmentNote": "This environment uses synthetic demonstration data only. It is not connected to real hospital systems.",
+    "reviewScope": "Review environment for regional hospitals",
     "languageShort": "EN",
     "languageLabel": "English"
   },
@@ -697,7 +698,8 @@
       "tagline": "SantéGrid — Synthetic HMIS / EMR Demonstration Platform",
       "synthetic": "Synthetic data only · no real patient data.",
       "notProduction": "Review environment · outside Gate 7 · no live integrations.",
-      "notGovernment": "Demonstration platform — not an official government website."
+      "notGovernment": "Demonstration platform — not an official government website.",
+      "release": "Review environment — synthetic data · outside Gate 7 · no live integrations"
     },
     "disclaimer": {
       "syntheticTitle": "Synthetic demonstration",
@@ -809,7 +811,7 @@
       "networkBody": "Multi-hospital configuration and aggregate-only regional oversight — with no patient-level access at the central level."
     },
     "proof": {
-      "title": "A real, deployed and verified platform",
+      "title": "Verified online review environment",
       "subtitle": "For partners, banks and non-technical reviewers: this application exists, is deployed online and rests on a verified foundation — without exposing source code or architecture.",
       "testsTitle": "Automated test suite",
       "testsBody": "Unit, integration and end-to-end tests run on every change.",
@@ -871,6 +873,7 @@
     "accessColumn": "Access",
     "passwordLabel": "Demo password",
     "passwordPlaceholder": "Demo password provided by the operator.",
+    "passwordHintFallback": "Password shared separately with authorized reviewers.",
     "oneClickBadge": "One-click",
     "credentialOnly": "Credentials",
     "signInCta": "Go to the sign-in page",

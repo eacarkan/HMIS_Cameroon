@@ -13,11 +13,19 @@ const problems: string[] = [];
 if (!/^v\d+\.\d+\.\d+-rc\.\d+$/.test(RELEASE_CANDIDATE)) {
   problems.push(`RELEASE_CANDIDATE "${RELEASE_CANDIDATE}" is not a release-candidate version (vX.Y.Z-rc.N)`);
 }
-if (!/synth[ée]tiques/i.test(RELEASE_LABEL) || !/non production/i.test(RELEASE_LABEL)) {
-  problems.push(`RELEASE_LABEL must state synthetic + non-production: "${RELEASE_LABEL}"`);
+// Phase 6.3 S3 (mentor-approved wording): the label must state the review environment +
+// synthetic data + the Gate-7 boundary, and must never use the word "production".
+if (
+  !/environnement de revue/i.test(RELEASE_LABEL) ||
+  !/synth[ée]tiques/i.test(RELEASE_LABEL) ||
+  !/hors Gate 7/i.test(RELEASE_LABEL)
+) {
+  problems.push(
+    `RELEASE_LABEL must state review-environment + synthetic + outside-Gate-7: "${RELEASE_LABEL}"`,
+  );
 }
-if (/\bproduction\b/i.test(RELEASE_LABEL) && !/non production/i.test(RELEASE_LABEL)) {
-  problems.push("RELEASE_LABEL must not claim production");
+if (/\bproduction\b/i.test(RELEASE_LABEL)) {
+  problems.push("RELEASE_LABEL must not use the word production");
 }
 
 // 2. The release docs must ship.

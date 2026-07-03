@@ -32,8 +32,11 @@ export const PROTOTYPE_LABEL =
  * UAT review only. It is explicitly NOT a production release, NOT Gate 7, and carries no authorization.
  */
 export const RELEASE_CANDIDATE = "v0.5.0-rc.1" as const;
+// Phase 6.3 S3 (mentor-approved governance wording): the visible label states the review
+// environment + synthetic data + Gate-7/integration boundaries WITHOUT the softened-away
+// "non production" phrasing. Still explicitly a synthetic review build, never production.
 export const RELEASE_LABEL =
-  "Candidat de version (RC) — données synthétiques · non production · hors Gate 7" as const;
+  "Environnement de revue — données synthétiques · hors Gate 7 · aucune intégration directe" as const;
 
 /** Official header lines for printed documents (used from Step 10 onward, 06 §13). */
 export const OFFICIAL_HEADER = {

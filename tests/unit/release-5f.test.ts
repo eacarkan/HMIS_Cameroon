@@ -11,12 +11,14 @@ describe("unit: Phase 5F release-candidate marker", () => {
     expect(RELEASE_CANDIDATE).toMatch(/^v\d+\.\d+\.\d+-rc\.\d+$/);
   });
 
-  it("labels the build synthetic + non-production, with no Gate-7 authorization claim", () => {
+  it("labels the build a synthetic review environment, with no production / Gate-7 claim", () => {
+    // Phase 6.3 S3 (mentor-approved wording): review-environment + synthetic + outside-Gate-7.
+    expect(RELEASE_LABEL).toMatch(/environnement de revue/i);
     expect(RELEASE_LABEL).toMatch(/synth[ée]tiques/i);
-    expect(RELEASE_LABEL).toMatch(/non production/i);
     expect(RELEASE_LABEL).toMatch(/hors Gate 7/i);
-    // Never an authorized-production claim.
-    expect(RELEASE_LABEL.toLowerCase()).not.toMatch(/prêt pour la production|production ready|autoris/);
+    // Never a production claim (the word "production" must not appear at all).
+    expect(RELEASE_LABEL.toLowerCase()).not.toMatch(/production|autoris/);
+    // The formal archival marker (sr-only banner + print docs) still carries the full wording.
     expect(PROTOTYPE_LABEL).toMatch(/non destiné à la production/i);
   });
 });

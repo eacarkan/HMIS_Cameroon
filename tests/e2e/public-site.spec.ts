@@ -59,7 +59,7 @@ test.describe("public SantéGrid site", () => {
     ).toBeVisible();
     // Banker/accountant proof section.
     await expect(
-      page.getByText("Une plateforme réelle, déployée et vérifiée"),
+      page.getByText("Environnement de revue en ligne et vérifié"),
     ).toBeVisible();
     // No public write action in the showcase content (the header language toggle,
     // outside <main>, is a locale form — not a write action).

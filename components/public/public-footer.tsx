@@ -2,7 +2,6 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { SanteGridLogo } from "@/components/public/santegrid-logo";
-import { RELEASE_LABEL } from "@/lib/constants";
 
 /**
  * Public site footer (Phase 6). Restates the mandatory boundaries in a calm band:
@@ -27,7 +26,7 @@ export async function PublicFooter() {
             {tFeedback("title")}
           </Link>
         </p>
-        <p className="text-muted-foreground/80 pt-1">{RELEASE_LABEL}</p>
+        <p className="text-muted-foreground/80 pt-1">{t("release")}</p>
       </div>
     </footer>
   );

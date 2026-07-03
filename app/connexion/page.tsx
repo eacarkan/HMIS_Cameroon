@@ -7,7 +7,8 @@ import { PrototypeBanner } from "@/components/layout/prototype-banner";
 import { HeroConstellation } from "@/components/public/hero-constellation";
 import { SanteGridLogo } from "@/components/public/santegrid-logo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DEMO_ACCOUNTS, OFFICIAL_HEADER } from "@/lib/constants";
+import { DEMO_ACCOUNTS } from "@/lib/constants";
+import { resolvePublicDemoPasswordHint } from "@/lib/public-demo-hint";
 import { getCurrentActor } from "@/server/auth";
 
 /**
@@ -28,9 +29,12 @@ export default async function ConnexionPage() {
   // with NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS=true. The seeded accounts themselves are unchanged.
   const showDemoAccounts = process.env.NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS === "true";
   // Phase 6.1 — the demo password is no longer committed. Show only the operator-provided
-  // public hint (NEXT_PUBLIC_DEMO_PASSWORD_HINT), or a neutral placeholder if unset.
-  const passwordHint =
-    process.env.NEXT_PUBLIC_DEMO_PASSWORD_HINT?.trim() || "fourni par l'opérateur";
+  // public hint (NEXT_PUBLIC_DEMO_PASSWORD_HINT). Phase 6.3 S3 — never render an unset / blank /
+  // template-placeholder value; fall back to a controlled hint instead.
+  const passwordHint = resolvePublicDemoPasswordHint(
+    process.env.NEXT_PUBLIC_DEMO_PASSWORD_HINT,
+    "fourni par l'opérateur",
+  );
 
   return (
     <div className="bg-background flex min-h-screen flex-col">
@@ -43,14 +47,15 @@ export default async function ConnexionPage() {
         >
           <HeroConstellation className="text-hero-muted pointer-events-none absolute -right-10 bottom-6 w-[300px] opacity-80" />
           <div>
-            <p className="text-xs tracking-[0.18em] text-(--hero-muted) uppercase">
-              {OFFICIAL_HEADER.country} · {OFFICIAL_HEADER.ministry}
+            <p className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.14em] text-(--hero-muted) uppercase">
+              <span className="size-1.5 rounded-full bg-emerald-300" aria-hidden />
+              {tApp("reviewEnvironmentBadge")}
             </p>
             <h1 className="font-heading mt-8 max-w-[16ch] text-3xl font-bold tracking-tight text-balance">
               {tApp("name")}
             </h1>
             <p className="mt-3 max-w-[38ch] text-sm leading-relaxed text-(--hero-muted)">
-              {tApp("longName")}
+              {tApp("reviewScope")}
             </p>
           </div>
           <p className="relative max-w-[44ch] text-xs leading-relaxed text-(--hero-muted)">
@@ -72,7 +77,7 @@ export default async function ConnexionPage() {
                 <SanteGridLogo />
                 <div className="space-y-1">
                   <p className="text-muted-foreground text-xs tracking-wide uppercase lg:hidden">
-                    {OFFICIAL_HEADER.country} · {OFFICIAL_HEADER.ministry}
+                    {tApp("reviewScope")}
                   </p>
                   <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
                   <p className="text-primary inline-flex items-center gap-2 text-xs font-semibold">

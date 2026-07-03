@@ -22,7 +22,7 @@ describe("component: Phase 6B public feature showcase", () => {
   it("renders the banker/accountant proof section and the readiness boundary", () => {
     renderWithIntl(<PublicShowcase />);
     expect(
-      screen.getByText("Une plateforme réelle, déployée et vérifiée"),
+      screen.getByText("Environnement de revue en ligne et vérifié"),
     ).toBeInTheDocument();
     expect(
       screen.getByText(/hors Gate 7 · aucune donnée réelle/i),
