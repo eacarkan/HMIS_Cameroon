@@ -112,3 +112,33 @@ export function countPendingDiagnosticOrders(hospitalId: string) {
     },
   });
 }
+
+// --- Phase 6.3 S4.2 — operational command-strip counts (read-only, hospital-scoped). ---
+
+/** Patients still waiting in today's consultation queue (2F). */
+export function countWaitingQueueTickets(hospitalId: string, since: Date) {
+  return prisma.queueTicket.count({
+    where: { hospitalId, status: "waiting", queueDate: { gte: since } },
+  });
+}
+
+/** Invoices awaiting collection (issued or partially paid — never drafts/cancelled). */
+export function countInvoicesToCollect(hospitalId: string) {
+  return prisma.invoice.count({
+    where: {
+      hospitalId,
+      deletedAt: null,
+      status: { in: ["issued", "partially_paid"] },
+    },
+  });
+}
+
+/** Prescriptions the pharmacy still has to dispense (finalized → partially dispensed). */
+export function countPrescriptionsToDispense(hospitalId: string) {
+  return prisma.prescription.count({
+    where: {
+      hospitalId,
+      status: { in: ["finalized", "sent_to_pharmacy", "partially_dispensed"] },
+    },
+  });
+}

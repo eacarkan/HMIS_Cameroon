@@ -29,7 +29,10 @@
     "userFallbackName": "User",
     "rolePending": "To be connected",
     "authPending": "Authentication — step 4",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "oversightContextLabel": "Oversight context",
+    "oversightContextValue": "Multi-site",
+    "oversightAggregate": "Aggregate"
   },
   "hospital": {
     "selectTitle": "Hospital selection",
@@ -64,23 +67,87 @@
     },
     "charts": {
       "registrationsTitle": "Patient flow — 30 days",
-      "registrationsCaption": "Registrations per day · synthetic data",
-      "registrationsEmpty": "No registrations in the period — indicators fill in as the demonstration is used.",
+      "registrationsCaption": "Simulated patient flow over 30 days · demonstration data",
+      "registrationsEmpty": "No activity in the period in the review data. Open the Patients module to review the workflow.",
       "billingTitle": "Collections by method",
-      "billingCaption": "Today · FCFA · synthetic data",
-      "billingEmpty": "No collections today.",
+      "billingCaption": "Synthetic collections by payment method today · FCFA",
+      "billingEmpty": "No collections today in the review data. Open the cashier module to review the workflow.",
       "operationsTitle": "Pharmacy & diagnostics",
-      "syntheticTag": "Synthetic data",
       "stockAlerts": "Stock / expiry alerts",
       "labRequests": "Lab requests (today)",
       "radiologyRequests": "Imaging requests (today)",
-      "pendingDiagnostics": "Exams in progress"
+      "pendingDiagnostics": "Exams in progress",
+      "operationsCaption": "Requests integrated into the care pathway · demonstration data"
     },
     "quickAccess": {
       "title": "Workspaces",
       "subtitle": "Direct access to your role's modules"
     },
-    "journeyTitle": "The patient journey, end to end"
+    "command": {
+      "title": "Today's operations",
+      "caption": "Active work queues · synthetic review data",
+      "chipClear": "Up to date",
+      "chipTodo": "To process",
+      "chipWatch": "Watch",
+      "items": {
+        "queue": {
+          "label": "Consultation queue",
+          "context": "Patients waiting today"
+        },
+        "openVisits": {
+          "label": "Open visits",
+          "context": "Active visit records"
+        },
+        "invoicesToCollect": {
+          "label": "Invoices to collect",
+          "context": "Issued or partially paid"
+        },
+        "pendingDiagnostics": {
+          "label": "Pending diagnostics",
+          "context": "Lab & imaging in progress"
+        },
+        "prescriptionsToDispense": {
+          "label": "Prescriptions to dispense",
+          "context": "Awaiting pharmacy"
+        },
+        "stockAlerts": {
+          "label": "Stock alerts",
+          "context": "Lots expiring ≤ 90 days"
+        }
+      }
+    },
+    "journey": {
+      "title": "The patient journey, end to end",
+      "caption": "Each stage links to a real module · review data",
+      "reviewWorkflow": "Review the workflow →",
+      "stagePrepared": "Stage prepared",
+      "counts": {
+        "registration": "registered (today)",
+        "consultation": "consultations (today)",
+        "billing": "to collect",
+        "diagnostics": "pending",
+        "pharmacy": "to dispense",
+        "discharge": "closed (today)"
+      }
+    },
+    "freshness": {
+      "synthetic": "Synthetic review data",
+      "period": "Period: last 30 days",
+      "lastActivity": "Last simulated activity: {date}",
+      "recentActivity": "Recent simulated activity",
+      "noIntegrations": "No live integrations"
+    },
+    "traceability": {
+      "title": "Administrative traceability",
+      "subtitle": "Every action is logged and role-controlled",
+      "items": {
+        "audit": "Audit trail",
+        "roles": "Role-based access",
+        "payments": "Payment traceability",
+        "diagnostics": "Diagnostic request tracking",
+        "stock": "Stock movement tracking"
+      }
+    }
   },
   "language": {
     "label": "Language",
@@ -429,7 +496,7 @@
     "statusPrepared": "Prepared",
     "lastActivity": "Last synthetic activity",
     "comparisonTitle": "Hospital activity comparison",
-    "comparisonCaption": "Consultations in the period · synthetic snapshots",
+    "comparisonCaption": "Aggregate comparison of review hospitals · synthetic snapshots",
     "revenueByMethod": "Revenue by method",
     "modules": {
       "consultations": "Consultations",
@@ -438,6 +505,23 @@
       "hospitalization": "Hospitalization",
       "diagnostics": "Lab / imaging",
       "pharmacy": "Pharmacy"
+    },
+    "notFilteredNotice": "This view is not filtered by the active hospital — it aggregates the review snapshots of all 8 hospitals.",
+    "matrixTitle": "Supervision matrix — modules by hospital",
+    "matrix": {
+      "hospital": "Hospital",
+      "patients": "Patient admin",
+      "billing": "Billing",
+      "queue": "Queue",
+      "hospitalization": "Hospitalization",
+      "diagnostics": "Lab / imaging",
+      "pharmacy": "Pharmacy",
+      "snapshot": "Review snapshot"
+    },
+    "chips": {
+      "synthetic": "Synthetic data",
+      "noIntegration": "No live integration",
+      "aggregate": "Aggregate"
     }
   },
   "uat": {
@@ -758,7 +842,8 @@
         "billing": "Billing & cashiering",
         "pharmacy": "Pharmacy & dispensing",
         "oversight": "Multi-site oversight"
-      }
+      },
+      "openFullGuide": "Open the demo guide"
     }
   },
   "landing": {
@@ -956,5 +1041,66 @@
     "includeExpectation": "The expected behavior",
     "processTitle": "How feedback is handled",
     "processBody": "Feedback is received by email and reviewed by the review owner. No online form and no feedback database are used for this demonstration."
+  },
+  "demoGuide": {
+    "title": "Demo guide",
+    "subtitle": "The presenter's script — eight steps through the review environment",
+    "badge": "Review environment",
+    "intro": "Each step states its purpose, what to click, and what the stakeholder should notice. Modules remain controlled by the active demonstration role.",
+    "openModule": "Open the module",
+    "purposeLabel": "Purpose",
+    "actionLabel": "What to click",
+    "noticeLabel": "What to notice",
+    "footerNote": "Synthetic demonstration environment — no real data, no live integrations; this guide implies no operational deployment.",
+    "steps": {
+      "platform": {
+        "title": "Understand the platform",
+        "purpose": "Position SantéGrid: an integrated HMIS/EMR for regional hospitals.",
+        "action": "Walk through the active hospital's executive dashboard.",
+        "notice": "The executive band, the work queues and the review badge."
+      },
+      "role": {
+        "title": "Access a demonstration role",
+        "purpose": "Show that each business profile has its own workspace.",
+        "action": "Open demo access and pick a role.",
+        "notice": "The menu and indicators change with the role."
+      },
+      "patients": {
+        "title": "Review patient administration",
+        "purpose": "Identity, search and duplicate detection.",
+        "action": "Search a synthetic patient and open the record.",
+        "notice": "The HRB-DEMO numbering and the identity banner."
+      },
+      "consultation": {
+        "title": "Follow the consultation workflow",
+        "purpose": "From the open visit to the finalized clinical note.",
+        "action": "Open a consultation from the list.",
+        "notice": "Visit statuses and the audit trace of every act."
+      },
+      "billing": {
+        "title": "Review billing and cashiering",
+        "purpose": "Invoice → payment → receipt, with exact reconciliation.",
+        "action": "Open a paid invoice, then its receipt.",
+        "notice": "Payment methods and the exact reconciliation."
+      },
+      "pharmacy": {
+        "title": "Review pharmacy and stock",
+        "purpose": "Prescription, FEFO dispensing and expiring lots.",
+        "action": "Open the stock and spot the alerts.",
+        "notice": "Expiry alerts drawn from demonstration data."
+      },
+      "diagnostics": {
+        "title": "Review lab and radiology",
+        "purpose": "Requests integrated into the pathway, with separate validation.",
+        "action": "Open the lab/imaging worklist.",
+        "notice": "The requester is never the validator of a result."
+      },
+      "oversight": {
+        "title": "Open multi-site oversight",
+        "purpose": "The aggregate view of the 8 review hospitals.",
+        "action": "Open “Central oversight” from the menu.",
+        "notice": "Aggregates only — no patient-level data centrally."
+      }
+    }
   }
 }

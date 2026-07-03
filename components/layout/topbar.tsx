@@ -1,10 +1,12 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
   Building2,
   Check,
   ChevronDown,
+  Globe2,
   LogOut,
   Search,
   User,
@@ -52,9 +54,32 @@ export function Topbar({
     .join("")
     .toUpperCase();
 
+  // S4.2 (scope 1) — /central is an AGGREGATE multi-site page: showing "Hôpital actif :
+  // Bertoua" there wrongly implies the central figures are filtered to one site. On that
+  // route the selector is replaced by a static multi-site context marker; the selector
+  // itself is unchanged everywhere else.
+  const pathname = usePathname() ?? "";
+  const isCentral = pathname === "/central" || pathname.startsWith("/central/");
+
   return (
     <header className="bg-card flex h-14 shrink-0 items-center gap-3 border-b px-4 lg:px-6">
-      {/* Active hospital — selectable context */}
+      {isCentral ? (
+        <div className="border-primary/25 bg-accent flex items-center gap-2 rounded-md border px-2.5 py-1.5">
+          <Globe2 className="text-primary size-4 shrink-0" aria-hidden />
+          <span className="leading-tight">
+            <span className="text-muted-foreground block text-[11px]">
+              {t("oversightContextLabel")}
+            </span>
+            <span className="text-primary block text-sm font-medium">
+              {t("oversightContextValue")}
+            </span>
+          </span>
+          <Badge variant="secondary" className="ml-1 text-[10px] uppercase">
+            {t("oversightAggregate")}
+          </Badge>
+        </div>
+      ) : (
+      /* Active hospital — selectable context */
       <DropdownMenu>
         <DropdownMenuTrigger className="bg-background hover:bg-accent flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-left transition-colors focus-visible:outline-none">
           <Building2 className="text-primary size-4 shrink-0" aria-hidden />
@@ -98,6 +123,7 @@ export function Topbar({
           })}
         </DropdownMenuContent>
       </DropdownMenu>
+      )}
 
       {/* Global search — placeholder (later) */}
       <div className="relative ml-2 hidden max-w-sm flex-1 lg:block">

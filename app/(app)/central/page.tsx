@@ -2,8 +2,10 @@ import { ShieldCheck } from "lucide-react";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
+import { SyntheticDataNotice } from "@/components/dashboard/synthetic-data-notice";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
+import { StatusChip } from "@/components/ui/status-chip";
 import { formatDateFr } from "@/lib/dates";
 import { formatFcfa } from "@/lib/money";
 import { can } from "@/lib/rbac";
@@ -26,14 +28,27 @@ export default async function CentralOversightPage() {
   const tMethod = await getTranslations("paymentMethod");
   const { hospitals } = await getCentralOversight(actor);
   const maxConsultations = Math.max(...hospitals.map((h) => h.indicators.consultationCount), 1);
+  const lastGenerated = hospitals.length
+    ? hospitals.reduce(
+        (max, h) => (new Date(h.generatedAt) > max ? new Date(h.generatedAt) : max),
+        new Date(hospitals[0].generatedAt),
+      )
+    : null;
 
   return (
     <>
       <PageHeader title={t("title")} description={t("subtitle")} />
-      <p className="text-muted-foreground -mt-2 mb-5 flex items-start gap-1.5 text-xs">
-        <ShieldCheck className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-        {t("noPatientNotice")}
-      </p>
+      <div className="-mt-2 mb-5 space-y-1.5">
+        <p className="text-muted-foreground flex items-start gap-1.5 text-xs">
+          <ShieldCheck className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+          {/* S4.2 scope 1 — the notice now ALSO states the page is not filtered by the
+              active hospital, matching the multi-site context marker in the top bar. */}
+          <span>
+            {t("noPatientNotice")} {t("notFilteredNotice")}
+          </span>
+        </p>
+        <SyntheticDataNotice lastActivityAt={lastGenerated} />
+      </div>
 
       {hospitals.length === 0 ? (
         <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed px-6 py-14 text-center">
@@ -41,6 +56,90 @@ export default async function CentralOversightPage() {
         </div>
       ) : (
         <div className="space-y-5">
+          {/* S4.2 scope 5 — supervision matrix: rollout/readiness across the 8 hospitals,
+              derived ONLY from snapshot aggregates. No drilldown, no patient-level data. */}
+          <section
+            aria-labelledby="central-matrix-title"
+            className="bg-card rounded-xl border shadow-(--shadow-card)"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
+              <h2 id="central-matrix-title" className="text-[13px] font-bold tracking-tight">
+                {t("matrixTitle")}
+              </h2>
+              <div className="flex gap-1.5">
+                <StatusChip tone="muted">{t("chips.synthetic")}</StatusChip>
+                <StatusChip tone="muted">{t("chips.noIntegration")}</StatusChip>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-muted-foreground border-b text-left text-[10.5px] tracking-wide uppercase">
+                    <th scope="col" className="px-4 py-2 font-semibold">
+                      {t("matrix.hospital")}
+                    </th>
+                    <th scope="col" className="px-3 py-2 font-semibold">
+                      {t("matrix.patients")}
+                    </th>
+                    <th scope="col" className="px-3 py-2 font-semibold">
+                      {t("matrix.billing")}
+                    </th>
+                    <th scope="col" className="px-3 py-2 font-semibold">
+                      {t("matrix.queue")}
+                    </th>
+                    <th scope="col" className="px-3 py-2 font-semibold">
+                      {t("matrix.hospitalization")}
+                    </th>
+                    <th scope="col" className="px-3 py-2 font-semibold">
+                      {t("matrix.diagnostics")}
+                    </th>
+                    <th scope="col" className="px-3 py-2 font-semibold">
+                      {t("matrix.pharmacy")}
+                    </th>
+                    <th scope="col" className="px-4 py-2 text-right font-semibold">
+                      {t("matrix.snapshot")}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {hospitals.map((h) => {
+                    const ind = h.indicators;
+                    const cells: { key: string; active: boolean }[] = [
+                      { key: "patients", active: ind.patientCount > 0 },
+                      { key: "billing", active: ind.revenueTotalFcfa > 0 },
+                      { key: "queue", active: ind.queueTicketCount > 0 },
+                      { key: "hospitalization", active: ind.admissionCount > 0 },
+                      { key: "diagnostics", active: ind.diagnosticOrderCount > 0 },
+                      { key: "pharmacy", active: ind.pharmacy !== null },
+                    ];
+                    return (
+                      <tr key={h.hospitalId}>
+                        <th scope="row" className="px-4 py-2 text-left font-medium">
+                          <span className="block truncate">{h.name}</span>
+                          <span className="text-muted-foreground block text-[10px] font-normal">
+                            {h.region} · {h.code}
+                          </span>
+                        </th>
+                        {cells.map((cell) => (
+                          <td key={cell.key} className="px-3 py-2">
+                            <StatusChip tone={cell.active ? "active" : "muted"} dot>
+                              {cell.active ? t("chips.aggregate") : t("statusPrepared")}
+                            </StatusChip>
+                          </td>
+                        ))}
+                        <td className="px-4 py-2 text-right">
+                          <StatusChip tone={h.isActive ? "ok" : "muted"} dot>
+                            {ind.periodLabel}
+                          </StatusChip>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
           {/* 6.3I — hospital activity comparison (SVG/CSS bars over snapshot aggregates) */}
           <section
             aria-labelledby="central-comparison-title"
@@ -120,19 +219,9 @@ function HospitalCard({
           </p>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1">
-          <span
-            className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10.5px] font-semibold ${
-              h.isActive
-                ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                : "text-muted-foreground bg-muted/40"
-            }`}
-          >
-            <span
-              className={`size-1.5 rounded-full ${h.isActive ? "bg-emerald-500" : "bg-slate-400"}`}
-              aria-hidden
-            />
+          <StatusChip tone={h.isActive ? "ok" : "muted"} dot>
             {h.isActive ? t("statusActive") : t("statusPrepared")}
-          </span>
+          </StatusChip>
           <Badge variant="secondary" className="text-[10.5px]">
             {ind.periodLabel}
           </Badge>
@@ -201,16 +290,9 @@ function HospitalCard({
       <footer className="border-t px-4 py-2.5">
         <div className="flex flex-wrap gap-1.5">
           {modules.map((m) => (
-            <span
-              key={m.key}
-              className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${
-                m.active
-                  ? "border-primary/25 bg-accent text-primary"
-                  : "text-muted-foreground bg-muted/40"
-              }`}
-            >
+            <StatusChip key={m.key} tone={m.active ? "active" : "muted"}>
               {t(`modules.${m.key}`)}
-            </span>
+            </StatusChip>
           ))}
         </div>
         <p className="text-muted-foreground mt-1.5 text-[10.5px]">

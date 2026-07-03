@@ -10,6 +10,7 @@ import {
   Route,
   ScrollText,
   Settings2,
+  ShieldCheck,
   Stethoscope,
   Users,
   type LucideIcon,
@@ -78,6 +79,62 @@ export async function QuickAccessCards({ roles }: { roles: string[] }) {
   );
 }
 
+/**
+ * Administrative-traceability card (S4.2 — scope 7). Governance and control, not
+ * activity: every entry is a REAL existing module (audit trail, role-based access,
+ * payment/diagnostic/stock traceability), capability-filtered like the sidebar.
+ * No compliance claim — it lists what the platform actually traces.
+ */
+const TRACEABILITY_ITEMS: { key: string; href: string; icon: LucideIcon; capability: Capability }[] = [
+  { key: "audit", href: "/journal-audit", icon: ScrollText, capability: "audit.read" },
+  { key: "roles", href: "/administration/utilisateurs", icon: Users, capability: "config.read" },
+  { key: "payments", href: "/rapports-caisse", icon: Banknote, capability: "cashier.report.read" },
+  { key: "diagnostics", href: "/laboratoire", icon: FlaskConical, capability: "diagnostic.read" },
+  { key: "stock", href: "/pharmacie/ajustements", icon: Boxes, capability: "stock.read" },
+];
+
+export async function TraceabilityCard({ roles }: { roles: string[] }) {
+  const t = await getTranslations("dashboard.traceability");
+  const items = TRACEABILITY_ITEMS.filter((i) => can(roles, i.capability));
+  if (items.length === 0) return null;
+
+  return (
+    <section
+      aria-labelledby="traceability-title"
+      className="bg-card rounded-xl border shadow-(--shadow-card)"
+    >
+      <div className="flex items-center gap-2.5 border-b px-4 py-3">
+        <span className="bg-accent text-primary grid size-8 place-items-center rounded-lg">
+          <ShieldCheck className="size-4" aria-hidden />
+        </span>
+        <div className="min-w-0">
+          <h2 id="traceability-title" className="text-[13px] font-bold tracking-tight">
+            {t("title")}
+          </h2>
+          <p className="text-muted-foreground text-[11px]">{t("subtitle")}</p>
+        </div>
+      </div>
+      <ul className="divide-y px-1 py-1">
+        {items.map((item) => (
+          <li key={item.key}>
+            <Link
+              href={item.href}
+              className="hover:bg-accent group flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] transition-colors"
+            >
+              <item.icon className="text-muted-foreground size-4 shrink-0" aria-hidden />
+              <span className="min-w-0 flex-1 truncate font-medium">{t(`items.${item.key}`)}</span>
+              <ChevronRight
+                className="text-muted-foreground size-3.5 shrink-0 transition-transform group-hover:translate-x-0.5"
+                aria-hidden
+              />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 /** Guided demo pathway (6.3F) — static links into existing modules, capability-filtered. */
 const GUIDED_STEPS: { stepKey: string; href: string; capability: Capability }[] = [
   { stepKey: "patients", href: "/patients", capability: "patient.read" },
@@ -128,6 +185,19 @@ export async function GuidedDemoRail({ roles }: { roles: string[] }) {
           </li>
         ))}
       </ol>
+      {/* S4.2 scope 8 — the full presenter script lives on /demo-guide. */}
+      <div className="border-t border-white/15 px-4 py-2.5">
+        <Link
+          href="/demo-guide"
+          className="group flex items-center justify-between gap-2 text-[12px] font-semibold text-white hover:underline"
+        >
+          {t("openFullGuide")}
+          <ChevronRight
+            className="size-3.5 shrink-0 transition-transform group-hover:translate-x-0.5"
+            aria-hidden
+          />
+        </Link>
+      </div>
     </section>
   );
 }

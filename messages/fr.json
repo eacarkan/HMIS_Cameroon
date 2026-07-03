@@ -85,7 +85,10 @@
     "userFallbackName": "Utilisateur",
     "rolePending": "À connecter",
     "authPending": "Authentification — étape 4",
-    "signOut": "Déconnexion"
+    "signOut": "Déconnexion",
+    "oversightContextLabel": "Contexte de supervision",
+    "oversightContextValue": "Multi-sites",
+    "oversightAggregate": "Agrégé"
   },
   "actions": {
     "save": "Enregistrer",
@@ -123,23 +126,87 @@
     },
     "charts": {
       "registrationsTitle": "Flux patients — 30 jours",
-      "registrationsCaption": "Enregistrements par jour · données synthétiques",
-      "registrationsEmpty": "Aucun enregistrement sur la période — les indicateurs s'alimentent au fil de la démonstration.",
+      "registrationsCaption": "Flux patient simulé sur 30 jours · données de démonstration",
+      "registrationsEmpty": "Aucune activité sur la période dans les données de revue. Ouvrir le module Patients pour examiner le parcours.",
       "billingTitle": "Encaissements par mode",
-      "billingCaption": "Aujourd'hui · FCFA · données synthétiques",
-      "billingEmpty": "Aucun encaissement aujourd'hui.",
+      "billingCaption": "Répartition synthétique des encaissements du jour · FCFA",
+      "billingEmpty": "Aucun encaissement aujourd'hui dans les données de revue. Ouvrir le module Caisse pour examiner le parcours.",
       "operationsTitle": "Pharmacie & diagnostics",
-      "syntheticTag": "Données synthétiques",
       "stockAlerts": "Alertes stock / péremption",
       "labRequests": "Demandes laboratoire (jour)",
       "radiologyRequests": "Demandes imagerie (jour)",
-      "pendingDiagnostics": "Examens en cours"
+      "pendingDiagnostics": "Examens en cours",
+      "operationsCaption": "Demandes intégrées au parcours de soins · données de démonstration"
     },
     "quickAccess": {
       "title": "Espaces de travail",
       "subtitle": "Accès direct aux modules de votre rôle"
     },
-    "journeyTitle": "Le parcours patient, de bout en bout"
+    "command": {
+      "title": "Opérations du jour",
+      "caption": "Files de travail actives · données synthétiques de revue",
+      "chipClear": "À jour",
+      "chipTodo": "À traiter",
+      "chipWatch": "Vigilance",
+      "items": {
+        "queue": {
+          "label": "File d'attente consultation",
+          "context": "Patients en attente aujourd'hui"
+        },
+        "openVisits": {
+          "label": "Visites ouvertes",
+          "context": "Dossiers de visite actifs"
+        },
+        "invoicesToCollect": {
+          "label": "Factures à encaisser",
+          "context": "Émises ou partiellement payées"
+        },
+        "pendingDiagnostics": {
+          "label": "Examens en attente",
+          "context": "Labo & imagerie en cours"
+        },
+        "prescriptionsToDispense": {
+          "label": "Ordonnances à dispenser",
+          "context": "En attente à la pharmacie"
+        },
+        "stockAlerts": {
+          "label": "Alertes stock",
+          "context": "Lots en péremption ≤ 90 jours"
+        }
+      }
+    },
+    "journey": {
+      "title": "Le parcours patient, de bout en bout",
+      "caption": "Chaque étape relie un module réel · données de revue",
+      "reviewWorkflow": "Examiner le parcours →",
+      "stagePrepared": "Étape préparée",
+      "counts": {
+        "registration": "enregistrés (jour)",
+        "consultation": "consultations (jour)",
+        "billing": "à encaisser",
+        "diagnostics": "en attente",
+        "pharmacy": "à dispenser",
+        "discharge": "clôturées (jour)"
+      }
+    },
+    "freshness": {
+      "synthetic": "Données synthétiques de revue",
+      "period": "Période : 30 derniers jours",
+      "lastActivity": "Dernière activité simulée : {date}",
+      "recentActivity": "Activité simulée récente",
+      "noIntegrations": "Aucune intégration directe"
+    },
+    "traceability": {
+      "title": "Traçabilité administrative",
+      "subtitle": "Chaque action est journalisée et contrôlée par rôle",
+      "items": {
+        "audit": "Journal d'audit",
+        "roles": "Accès par rôles",
+        "payments": "Traçabilité des paiements",
+        "diagnostics": "Suivi des demandes diagnostiques",
+        "stock": "Mouvements de stock"
+      }
+    }
   },
   "sex": {
     "male": "Masculin",
@@ -1116,7 +1183,7 @@
     "statusPrepared": "Préparé",
     "lastActivity": "Dernière activité synthétique",
     "comparisonTitle": "Activité comparée des hôpitaux",
-    "comparisonCaption": "Consultations sur la période · instantanés synthétiques",
+    "comparisonCaption": "Comparaison agrégée des hôpitaux de revue · instantanés synthétiques",
     "revenueByMethod": "Recettes par mode",
     "modules": {
       "consultations": "Consultations",
@@ -1125,6 +1192,23 @@
       "hospitalization": "Hospitalisation",
       "diagnostics": "Labo / imagerie",
       "pharmacy": "Pharmacie"
+    },
+    "notFilteredNotice": "Cette vue n'est pas filtrée par l'hôpital actif — elle agrège les instantanés de revue des 8 hôpitaux.",
+    "matrixTitle": "Matrice de supervision — modules par hôpital",
+    "matrix": {
+      "hospital": "Hôpital",
+      "patients": "Admin. patients",
+      "billing": "Facturation",
+      "queue": "File d'attente",
+      "hospitalization": "Hospitalisation",
+      "diagnostics": "Labo / imagerie",
+      "pharmacy": "Pharmacie",
+      "snapshot": "Instantané de revue"
+    },
+    "chips": {
+      "synthetic": "Données synthétiques",
+      "noIntegration": "Aucune intégration directe",
+      "aggregate": "Agrégé"
     }
   },
   "uat": {
@@ -1445,7 +1529,8 @@
         "billing": "Facturation & caisse",
         "pharmacy": "Pharmacie & dispensation",
         "oversight": "Supervision multi-sites"
-      }
+      },
+      "openFullGuide": "Ouvrir le guide de démonstration"
     }
   },
   "landing": {
@@ -1643,5 +1728,66 @@
     "includeExpectation": "Le comportement attendu",
     "processTitle": "Traitement des retours",
     "processBody": "Les retours sont reçus par e-mail et examinés par le responsable de la revue. Aucun formulaire en ligne ni base de données de retours n'est utilisé pour cette démonstration."
+  },
+  "demoGuide": {
+    "title": "Guide de démonstration",
+    "subtitle": "Le script du présentateur — huit étapes à travers l'environnement de revue",
+    "badge": "Environnement de revue",
+    "intro": "Chaque étape indique l'objectif, l'action à réaliser et ce que la partie prenante doit observer. Les modules restent contrôlés par le rôle de démonstration actif.",
+    "openModule": "Ouvrir le module",
+    "purposeLabel": "Objectif",
+    "actionLabel": "À faire",
+    "noticeLabel": "À observer",
+    "footerNote": "Environnement de démonstration synthétique — aucune donnée réelle, aucune intégration directe ; ce guide n'implique aucun déploiement opérationnel.",
+    "steps": {
+      "platform": {
+        "title": "Comprendre la plateforme",
+        "purpose": "Situer SantéGrid : un SIGH/DME intégré pour hôpitaux régionaux.",
+        "action": "Parcourir le tableau de bord exécutif de l'hôpital actif.",
+        "notice": "La bande exécutive, les files de travail et le badge de revue."
+      },
+      "role": {
+        "title": "Accéder à un rôle de démonstration",
+        "purpose": "Montrer que chaque profil métier dispose de son espace.",
+        "action": "Ouvrir l'accès démo et choisir un rôle.",
+        "notice": "Le menu et les indicateurs changent selon le rôle."
+      },
+      "patients": {
+        "title": "Examiner l'administration des patients",
+        "purpose": "Identité, recherche et détection de doublons.",
+        "action": "Rechercher un patient synthétique puis ouvrir son dossier.",
+        "notice": "La numérotation HRB-DEMO et la bannière d'identité."
+      },
+      "consultation": {
+        "title": "Suivre le parcours de consultation",
+        "purpose": "De la visite ouverte à la note clinique finalisée.",
+        "action": "Ouvrir une consultation depuis la liste.",
+        "notice": "Les statuts de visite et la traçabilité de chaque acte."
+      },
+      "billing": {
+        "title": "Vérifier la facturation et l'encaissement",
+        "purpose": "Facture → paiement → reçu, sans écart de caisse.",
+        "action": "Ouvrir une facture payée puis son reçu.",
+        "notice": "Les modes d'encaissement et le rapprochement exact."
+      },
+      "pharmacy": {
+        "title": "Examiner pharmacie et stock",
+        "purpose": "Ordonnance, dispensation FEFO et lots en péremption.",
+        "action": "Ouvrir le stock et repérer les alertes.",
+        "notice": "Les alertes de péremption issues des données de démonstration."
+      },
+      "diagnostics": {
+        "title": "Examiner laboratoire et radiologie",
+        "purpose": "Demandes intégrées au parcours et validation séparée.",
+        "action": "Ouvrir la liste de travail labo/imagerie.",
+        "notice": "Le demandeur n'est jamais le validateur du résultat."
+      },
+      "oversight": {
+        "title": "Ouvrir la supervision multi-sites",
+        "purpose": "La vue agrégée des 8 hôpitaux de revue.",
+        "action": "Ouvrir « Supervision centrale » depuis le menu.",
+        "notice": "Agrégats uniquement — aucune donnée patient au niveau central."
+      }
+    }
   }
 }

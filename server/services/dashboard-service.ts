@@ -14,9 +14,12 @@ import {
   countEncountersOpenedSince,
   countExpiringStockLots,
   countInvoicesSince,
+  countInvoicesToCollect,
   countOpenEncounters,
   countPatientsRegisteredSince,
   countPendingDiagnosticOrders,
+  countPrescriptionsToDispense,
+  countWaitingQueueTickets,
   findPatientRegistrationDatesSince,
   findPaymentsSince,
   recentAuditEntries,
@@ -125,6 +128,13 @@ export type DashboardExtras = {
   radiologyRequestsToday: number | null;
   /** Diagnostic orders still in the pipeline — null when not readable. */
   pendingDiagnostics: number | null;
+  // --- S4.2 operational command-strip counts (each null when the role may not read it). ---
+  /** Patients waiting in today's consultation queue. */
+  queueWaiting: number | null;
+  /** Invoices issued / partially paid, awaiting collection. */
+  invoicesToCollect: number | null;
+  /** Prescriptions the pharmacy still has to dispense. */
+  prescriptionsToDispense: number | null;
 };
 
 /**
@@ -148,18 +158,25 @@ export async function getDashboardExtras(
 
   const canStock = can(roles, "stock.read");
   const canDiagnostics = can(roles, "diagnostic.read");
+  const canQueue = can(roles, "queue.read");
+  const canInvoices = can(roles, "invoice.read");
+  const canPrescriptions = can(roles, "prescription.read");
 
-  const [registrations, stockAlerts, labToday, radioToday, pending] = await Promise.all([
-    findPatientRegistrationDatesSince(ctx.hospitalId, trendSince),
-    canStock ? countExpiringStockLots(ctx.hospitalId, expiryBefore) : Promise.resolve(null),
-    canDiagnostics
-      ? countDiagnosticOrdersSince(ctx.hospitalId, today, "lab")
-      : Promise.resolve(null),
-    canDiagnostics
-      ? countDiagnosticOrdersSince(ctx.hospitalId, today, "radiology")
-      : Promise.resolve(null),
-    canDiagnostics ? countPendingDiagnosticOrders(ctx.hospitalId) : Promise.resolve(null),
-  ]);
+  const [registrations, stockAlerts, labToday, radioToday, pending, queue, toCollect, toDispense] =
+    await Promise.all([
+      findPatientRegistrationDatesSince(ctx.hospitalId, trendSince),
+      canStock ? countExpiringStockLots(ctx.hospitalId, expiryBefore) : Promise.resolve(null),
+      canDiagnostics
+        ? countDiagnosticOrdersSince(ctx.hospitalId, today, "lab")
+        : Promise.resolve(null),
+      canDiagnostics
+        ? countDiagnosticOrdersSince(ctx.hospitalId, today, "radiology")
+        : Promise.resolve(null),
+      canDiagnostics ? countPendingDiagnosticOrders(ctx.hospitalId) : Promise.resolve(null),
+      canQueue ? countWaitingQueueTickets(ctx.hospitalId, today) : Promise.resolve(null),
+      canInvoices ? countInvoicesToCollect(ctx.hospitalId) : Promise.resolve(null),
+      canPrescriptions ? countPrescriptionsToDispense(ctx.hospitalId) : Promise.resolve(null),
+    ]);
 
   return {
     registrationsByDay: bucketByDay(
@@ -171,5 +188,8 @@ export async function getDashboardExtras(
     labRequestsToday: labToday,
     radiologyRequestsToday: radioToday,
     pendingDiagnostics: pending,
+    queueWaiting: queue,
+    invoicesToCollect: toCollect,
+    prescriptionsToDispense: toDispense,
   };
 }

@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { ExecutiveHeader } from "@/components/dashboard/executive-header";
+import { SyntheticDataNotice } from "@/components/dashboard/synthetic-data-notice";
 import { DashboardOverview } from "@/features/dashboard/dashboard-overview";
 import { requireActorAndHospital } from "@/server/auth";
 import { getDashboardExtras, getDashboardSummary } from "@/server/services";
@@ -29,6 +30,11 @@ export default async function DashboardPage() {
         roleLabels={roleLabels}
         summary={summary}
       />
+      {/* S4.2 scope 4 — synthetic-data freshness metadata (period · last activity · no
+          integrations), so stakeholders know exactly what the figures represent. */}
+      <div className="-mt-3 mb-5">
+        <SyntheticDataNotice lastActivityAt={summary.recent[0]?.createdAt ?? null} />
+      </div>
       <DashboardOverview summary={summary} extras={extras} roles={roles} />
     </>
   );

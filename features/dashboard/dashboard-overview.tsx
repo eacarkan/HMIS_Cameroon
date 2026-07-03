@@ -1,24 +1,31 @@
 import { Activity } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { CommandStrip } from "@/components/dashboard/command-strip";
 import { DashboardKpis } from "@/components/dashboard/dashboard-kpis";
 import {
   ActivityTrendPanel,
   BillingBreakdownPanel,
   CareOperationsPanel,
 } from "@/components/dashboard/dashboard-panels";
-import { GuidedDemoRail, QuickAccessCards } from "@/components/dashboard/dashboard-rail";
-import { PatientJourneyFlow } from "@/components/public/patient-journey-flow";
+import {
+  GuidedDemoRail,
+  QuickAccessCards,
+  TraceabilityCard,
+} from "@/components/dashboard/dashboard-rail";
+import { JourneyOperational } from "@/components/dashboard/journey-operational";
 import { auditActionLabel } from "@/lib/constants";
 import { formatDateTimeFr } from "@/lib/dates";
 import type { DashboardExtras, DashboardSummary } from "@/server/services";
 
 /**
- * Dashboard overview (06 §11; Phase 1A Batch 5; executive layout 6.3 S4 — hybrid
- * direction). Left: role-gated KPI ledgers + SVG operation panels + the compact patient
- * journey. Right rail: recent activity (oversight), guided demo, role-aware workspaces.
- * All read-only, hospital-scoped, synthetic-only; every optional block is capability-gated
- * so the page renders correctly for every role and on an empty database.
+ * Dashboard overview (06 §11; Phase 1A Batch 5; executive layout 6.3 S4; operations
+ * command layout S4.2). Workflow first, dashboard second: the operational command
+ * strip (work queues) leads, then the role-gated KPI ledgers, the SVG operation
+ * panels and the OPERATIONAL patient journey. Right rail: recent activity
+ * (oversight), workspaces, administrative traceability, guided demo. All read-only,
+ * hospital-scoped, synthetic-only; every optional block is capability-gated so the
+ * page renders correctly for every role and on an empty database.
  */
 export async function DashboardOverview({
   summary,
@@ -36,16 +43,12 @@ export async function DashboardOverview({
     <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
       {/* Operations column */}
       <div className="min-w-0 space-y-5">
+        <CommandStrip summary={summary} extras={extras} roles={roles} />
+        <JourneyOperational summary={summary} extras={extras} roles={roles} />
         <DashboardKpis summary={summary} hideActivity />
         <ActivityTrendPanel extras={extras} />
         {summary.sections.billing ? <BillingBreakdownPanel summary={summary} /> : null}
         <CareOperationsPanel extras={extras} />
-
-        {/* Compact patient journey (bilingual landing.journey keys, reused from S2) */}
-        <section className="bg-card rounded-xl border px-4 py-4 shadow-(--shadow-card)">
-          <h2 className="mb-4 text-[13px] font-bold tracking-tight">{t("journeyTitle")}</h2>
-          <PatientJourneyFlow />
-        </section>
       </div>
 
       {/* Rail */}
@@ -92,6 +95,7 @@ export async function DashboardOverview({
         ) : null}
 
         <QuickAccessCards roles={roles} />
+        <TraceabilityCard roles={roles} />
         <GuidedDemoRail roles={roles} />
       </div>
     </div>

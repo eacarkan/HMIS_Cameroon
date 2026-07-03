@@ -130,7 +130,7 @@ export async function CareOperationsPanel({ extras }: { extras: DashboardExtras 
   if (cells.length === 0) return null;
 
   return (
-    <Panel title={t("operationsTitle")} caption={t("syntheticTag")}>
+    <Panel title={t("operationsTitle")} caption={t("operationsCaption")}>
       <dl className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
         {cells.map((cell) => (
           <div key={cell.key} className="rounded-lg border px-3 py-2.5">
