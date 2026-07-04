@@ -178,7 +178,8 @@
         "diagnosticsAction": "Open diagnostics to review the workflow",
         "clinical": "No clinical activity in the period in review data.",
         "clinicalAction": "Open consultations to review the workflow"
-      }
+      },
+      "centralOrientation": "Multi-site oversight shows aggregate review indicators only. Open central oversight for the consolidated hospital view."
     }
   },
   "language": {

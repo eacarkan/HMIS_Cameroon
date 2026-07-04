@@ -237,7 +237,8 @@
         "diagnosticsAction": "Ouvrir les diagnostics pour examiner le parcours",
         "clinical": "Aucune activité clinique sur la période dans les données de revue.",
         "clinicalAction": "Ouvrir les consultations pour examiner le parcours"
-      }
+      },
+      "centralOrientation": "La supervision multi-sites présente uniquement des indicateurs agrégés de revue. Ouvrez la supervision centrale pour la vue consolidée des hôpitaux."
     }
   },
   "sex": {

@@ -1,8 +1,9 @@
 import { getTranslations } from "next-intl/server";
 
-import { formatDateTimeFr } from "@/lib/dates";
 import type { WorkspaceProfile } from "@/lib/dashboard-workspace";
+import { formatDateTimeFr } from "@/lib/dates";
 import { formatFcfa } from "@/lib/money";
+import { can } from "@/lib/rbac";
 import type { DashboardExtras, DashboardSummary } from "@/server/services";
 
 /**
@@ -20,6 +21,7 @@ export async function ExecutiveHeader({
   hospital,
   userName,
   roleLabels,
+  roles,
   summary,
   extras,
   profile,
@@ -27,6 +29,7 @@ export async function ExecutiveHeader({
   hospital: { name: string; region: string; code: string };
   userName: string;
   roleLabels: string[];
+  roles: string[];
   summary: DashboardSummary;
   extras: DashboardExtras;
   profile: WorkspaceProfile;
@@ -104,14 +107,24 @@ export async function ExecutiveHeader({
         cell("results", tw("resultsAvailable"), n(extras.diagnosticsResultsAvailable)),
       ];
       break;
-    default:
-      // admin / operations — the accepted S4.2 hospital-wide composition.
+    case "central":
+      // Regional supervisor — aggregate-only: NO operational hospital counts in the hero.
+      // The band is an orientation to multi-site oversight; figures live on /central.
+      candidates = [];
+      break;
+    default: {
+      // admin / operations — the accepted S4.2 hospital-wide composition, but each
+      // operational cell is capability-gated so a role lacking patient/encounter access
+      // (e.g. a supervisor) can never see the count. The real administrateur/directeur
+      // hold patient.read + encounter.read, so their accepted hero is unchanged.
+      const canPatient = can(roles, "patient.read");
+      const canEncounter = can(roles, "encounter.read");
       candidates = [
-        cell("patients", t("kpi.patientsToday"), String(summary.patientsToday)),
+        cell("patients", t("kpi.patientsToday"), canPatient ? String(summary.patientsToday) : null),
         cell(
           "open",
           t("kpi.openEncounters"),
-          String(summary.openEncounters),
+          canEncounter ? String(summary.openEncounters) : null,
           t("exec.openedClosed", {
             opened: summary.encountersOpenedToday,
             closed: summary.encountersClosedToday,
@@ -119,7 +132,11 @@ export async function ExecutiveHeader({
         ),
         s.clinical
           ? cell("consult", t("kpi.consultationsToday"), String(summary.consultationsToday))
-          : cell("opened", t("kpi.encountersOpenedToday"), String(summary.encountersOpenedToday)),
+          : cell(
+              "opened",
+              t("kpi.encountersOpenedToday"),
+              canEncounter ? String(summary.encountersOpenedToday) : null,
+            ),
         s.billing
           ? cell(
               "collections",
@@ -127,8 +144,13 @@ export async function ExecutiveHeader({
               formatFcfa(summary.collectionsToday),
               t("exec.invoicesCount", { count: summary.invoicesToday }),
             )
-          : cell("closed", t("kpi.encountersClosedToday"), String(summary.encountersClosedToday)),
+          : cell(
+              "closed",
+              t("kpi.encountersClosedToday"),
+              canEncounter ? String(summary.encountersClosedToday) : null,
+            ),
       ];
+    }
   }
   const cells = candidates.filter((c): c is HeroCell => c !== null);
 
@@ -172,20 +194,28 @@ export async function ExecutiveHeader({
         </div>
       </div>
 
-      <dl className="mt-5 grid grid-cols-2 gap-2.5 lg:grid-cols-4">
-        {cells.map((cell) => (
-          <div
-            key={cell.key}
-            className="rounded-lg border border-white/15 bg-white/8 px-4 py-3"
-          >
-            <dt className="text-[11px] leading-tight text-(--hero-muted)">{cell.label}</dt>
-            <dd className="tnum mt-0.5 text-2xl font-bold tracking-tight">{cell.value}</dd>
-            {cell.sub ? (
-              <dd className="mt-0.5 text-[10.5px] text-(--hero-muted)">{cell.sub}</dd>
-            ) : null}
-          </div>
-        ))}
-      </dl>
+      {cells.length > 0 ? (
+        <dl className="mt-5 grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+          {cells.map((cell) => (
+            <div
+              key={cell.key}
+              className="rounded-lg border border-white/15 bg-white/8 px-4 py-3"
+            >
+              <dt className="text-[11px] leading-tight text-(--hero-muted)">{cell.label}</dt>
+              <dd className="tnum mt-0.5 text-2xl font-bold tracking-tight">{cell.value}</dd>
+              {cell.sub ? (
+                <dd className="mt-0.5 text-[10.5px] text-(--hero-muted)">{cell.sub}</dd>
+              ) : null}
+            </div>
+          ))}
+        </dl>
+      ) : (
+        // No operational cells for this role (e.g. the aggregate-only supervisor) — an
+        // orientation line instead of an empty grid; the figures live on /central.
+        <p className="mt-4 max-w-[60ch] rounded-lg border border-white/15 bg-white/8 px-4 py-3 text-sm text-(--hero-muted)">
+          {tw("centralOrientation")}
+        </p>
+      )}
     </section>
   );
 }

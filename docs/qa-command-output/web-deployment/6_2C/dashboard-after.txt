@@ -1,23 +1,120 @@
 # Phase 6.2C dashboard — English (regression)
 html lang=en
 
-Dashboard
+DASHBOARD · EST · HRB-DEMO
 
-Overview of the active hospital's activity
-
+Dashboard —
 Hôpital Régional de Bertoua — Démo
 
-Est · HRB-DEMO
+Today's overview — synthetic demonstration data
 
-TODAY'S ACTIVITY
+Awa NJOYA
+
+Administrator
+
+Review environment — synthetic data
+
+Last synthetic activity : 04/07/2026 14:02
+
 Patients registered today
 0
 Open visits
 0
-Visits opened today
+0 opened · 0 closed today
+Consultations today
 0
-Visits closed today
+Collections today
+0 FCFA
+no invoices today
+
+Synthetic review data
+·
+Period: last 30 days
+·
+Last simulated activity: 04/07/2026
+·
+No live integrations
+
+TODAY'S OPERATIONS
+
+Active work queues · synthetic review data
+
+Consultation queue
 0
+Up to date
+
+Patients waiting today
+
+Open visits
+0
+Up to date
+
+Active visit records
+
+Invoices to collect
+0
+Up to date
+
+Issued or partially paid
+
+Pending diagnostics
+0
+Up to date
+
+Lab & imaging in progress
+
+Prescriptions to dispense
+0
+Up to date
+
+Awaiting pharmacy
+
+Stock alerts
+1
+Watch
+
+Lots expiring ≤ 90 days
+
+The patient journey, end to end
+
+Each stage links to a real module · review data
+
+01
+
+Registration
+
+0 registered (today)
+
+02
+
+Consultation
+
+0 consultations (today)
+
+03
+
+Billing
+
+0 to collect
+
+04
+
+Lab / Radiology
+
+0 pending
+
+05
+
+Pharmacy
+
+0 to dispense
+
+06
+
+Hospitalization / Discharge
+
+0 closed (today)
+
 CLINICAL ACTIVITY
 Consultations today
 0
@@ -26,10 +123,61 @@ Invoices today
 0
 Collections today
 0 FCFA
+Patient flow — 30 days
+
+Simulated patient flow over 30 days · demonstration data
+
+No activity in the period in the review data. Open the Patients module to review the workflow.
+
+Collections by method
+
+Synthetic collections by payment method · FCFA
+
+No collections today in the review data. Open the cashier module to review the workflow.
+
+Pharmacy & diagnostics
+
+Requests integrated into the care pathway · demonstration data
+
+Stock / expiry alerts
+1
+Lab requests (today)
+0
+Imaging requests (today)
+0
+Exams in progress
+0
 Recent activity
 Hospital selection
 Awa NJOYA
-03/07/2026 00:44
+04/07/2026 14:02
 Sign-in
 Awa NJOYA
-03/07/2026 00:44
+04/07/2026 14:02
+Workspaces
+
+Direct access to your role's modules
+
+Patients
+Consultations
+Billing
+Cashier report
+Pharmacy stock
+Laboratory & imaging
+Administrative traceability
+
+Every action is logged and role-controlled
+
+Audit trail
+Role-based access
+Payment traceability
+Diagnostic request tracking
+Stock movement tracking
+Guided demo
+1
+Patient administration
+2
+Billing & cashiering
+3
+Pharmacy & dispensing
+Open the demo guide

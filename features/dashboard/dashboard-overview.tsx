@@ -1,4 +1,5 @@
-import { Activity } from "lucide-react";
+import { Activity, ChevronRight, Globe2 } from "lucide-react";
+import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { CommandStrip } from "@/components/dashboard/command-strip";
@@ -46,13 +47,43 @@ export async function DashboardOverview({
   profile: WorkspaceProfile;
 }) {
   const t = await getTranslations("dashboard");
+  const tCentral = await getTranslations("central");
   const locale = await getLocale();
   const isCommandCenter = profile === "admin" || profile === "operations";
+  const isCentral = profile === "central";
 
   return (
     <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
       {/* Operations column — lead panels differ per workspace profile. */}
       <div className="min-w-0 space-y-5">
+        {/* Central supervisor — aggregate-only: NO patient/operational widgets here;
+            the workspace points to multi-site oversight. */}
+        {isCentral ? (
+          <section className="bg-card rounded-xl border shadow-(--shadow-card)">
+            <div className="flex items-center gap-2.5 border-b px-4 py-3">
+              <span className="bg-accent text-primary grid size-8 place-items-center rounded-lg">
+                <Globe2 className="size-4" aria-hidden />
+              </span>
+              <div className="min-w-0">
+                <h2 className="text-[13px] font-bold tracking-tight">{tCentral("title")}</h2>
+                <p className="text-muted-foreground text-[11px]">{tCentral("subtitle")}</p>
+              </div>
+            </div>
+            <div className="px-4 py-4">
+              <p className="text-muted-foreground mb-3 max-w-prose text-sm">
+                {tCentral("noPatientNotice")}
+              </p>
+              <Link
+                href="/central"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors"
+              >
+                {tCentral("title")}
+                <ChevronRight className="size-4" aria-hidden />
+              </Link>
+            </div>
+          </section>
+        ) : null}
+
         {isCommandCenter ? (
           <CommandStrip summary={summary} extras={extras} roles={roles} />
         ) : null}
@@ -65,8 +96,13 @@ export async function DashboardOverview({
           <BillingBreakdownPanel summary={summary} />
         ) : null}
 
-        <JourneyOperational summary={summary} extras={extras} roles={roles} />
-        <DashboardKpis summary={summary} hideActivity />
+        {/* Patient-derived operational widgets are hidden from the aggregate-only supervisor. */}
+        {isCentral ? null : (
+          <>
+            <JourneyOperational summary={summary} extras={extras} roles={roles} />
+            <DashboardKpis summary={summary} hideActivity />
+          </>
+        )}
 
         {/* Hospital-wide visuals stay on the command-center profiles only. */}
         {isCommandCenter ? <ActivityTrendPanel extras={extras} /> : null}

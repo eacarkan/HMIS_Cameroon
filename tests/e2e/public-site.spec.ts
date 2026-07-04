@@ -51,11 +51,17 @@ test.describe("public SantéGrid site", () => {
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
       "Fonctionnalités de la plateforme",
     );
-    // Module preview cards (curated, synthetic).
-    await expect(page.getByText("Facturation & caisse")).toBeVisible();
-    await expect(page.getByText("Pharmacie & stock")).toBeVisible();
+    // Module preview cards (curated, synthetic). Target the card HEADINGS specifically —
+    // the guided-demo pathway on /vitrine also lists "Facturation & caisse" as a step,
+    // so a plain getByText would match two elements (strict-mode violation).
     await expect(
-      page.getByText("Multi-hôpitaux & supervision centrale"),
+      page.getByRole("heading", { name: "Facturation & caisse" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Pharmacie & stock" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Multi-hôpitaux & supervision centrale" }),
     ).toBeVisible();
     // Banker/accountant proof section.
     await expect(

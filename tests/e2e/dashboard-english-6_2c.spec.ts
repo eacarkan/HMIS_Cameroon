@@ -71,9 +71,10 @@ test("6.2C — Bertoua Administrator dashboard body renders in English", async (
   await page.screenshot({ path: `${OUT}/dashboard-after.png`, fullPage: true });
 
   // Positive: key English dashboard labels are present. (Section headings are visually
-  // uppercased via CSS; the DOM text keeps its original case.)
-  await expect(main).toContainText("Overview of the active hospital's activity");
-  await expect(main).toContainText("Today's activity");
+  // uppercased via CSS; the DOM text keeps its original case.) Updated for the S4/S4.2
+  // executive layout: the plain page-header subtitle and the "Today's activity" section
+  // (whose KPIs moved into the hero band) were replaced by the executive band + sections.
+  await expect(main).toContainText("Today's overview");
   await expect(main).toContainText("Billing & cashiering");
   await expect(main).toContainText("Recent activity");
 

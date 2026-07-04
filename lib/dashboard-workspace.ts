@@ -13,13 +13,16 @@ export type WorkspaceProfile =
   | "cashier" // billing / collections work queue
   | "pharmacy" // prescriptions / dispensing / stock risk
   | "diagnostics" // lab & imaging work queue
+  | "central" // regional supervisor — aggregate oversight only, NO hospital operational figures
   | "operations"; // reception & other operational roles — registration IS their work
 
 /** Highest-priority profile wins when a user holds several roles at the hospital. */
 const PROFILE_BY_ROLE: Record<string, WorkspaceProfile> = {
   administrateur: "admin",
   directeur: "admin",
-  superviseur_central: "admin",
+  // The regional supervisor is AGGREGATE-ONLY (only dashboard.read + central.aggregate.view);
+  // it must NOT get the operational command-center hero — its home is /central.
+  superviseur_central: "central",
   medecin: "clinical",
   caissier: "cashier",
   pharmacien: "pharmacy",
@@ -29,12 +32,15 @@ const PROFILE_BY_ROLE: Record<string, WorkspaceProfile> = {
   agent_accueil: "operations",
 };
 
+// A user who is BOTH an operational role AND central supervisor gets the operational
+// profile (they legitimately have those capabilities) — so "central" sits low.
 const PRIORITY: WorkspaceProfile[] = [
   "admin",
   "clinical",
   "cashier",
   "pharmacy",
   "diagnostics",
+  "central",
   "operations",
 ];
 

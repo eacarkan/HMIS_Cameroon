@@ -31,6 +31,7 @@ export default async function DashboardPage() {
         hospital={hospital}
         userName={actor.displayName}
         roleLabels={roleLabels}
+        roles={roles}
         summary={summary}
         extras={extras}
         profile={profile}
