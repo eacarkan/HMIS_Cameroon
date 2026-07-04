@@ -916,6 +916,14 @@
         "diagnostics": "Lab / Radiology",
         "pharmacy": "Pharmacy",
         "discharge": "Hospitalization / Discharge"
+      },
+      "stepDetails": {
+        "registration": "Patient identification and record opening at the front desk.",
+        "consultation": "The physician documents the consultation in the patient record.",
+        "billing": "Invoice issued and payment recorded, with a traceable receipt.",
+        "diagnostics": "Test orders tracked from request to validated result.",
+        "pharmacy": "Prescriptions dispensed with stock and batch tracking.",
+        "discharge": "Hospitalization or discharge, with visit record closure."
       }
     },
     "modules": {

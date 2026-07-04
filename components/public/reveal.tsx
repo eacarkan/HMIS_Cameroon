@@ -19,15 +19,23 @@ import { useEffect, useRef, type ReactNode } from "react";
  *
  * `stagger` reveals the element's CHILDREN in a short capped cadence instead of the
  * element itself — used for card grids so the registre "settles into place".
+ *
+ * `each` (6.5B) observes every child INDIVIDUALLY with one shared observer — used for
+ * the journey timeline, where steps sit at different scroll depths and must each settle
+ * as THEY enter the viewport (not when the container does). Same fail-open guards; a
+ * child already in view at hydration is never opted in. Purely passive — the observer
+ * only reads scroll position; it never snaps, pins or intercepts the scroll.
  */
 export function Reveal({
   as = "div",
   stagger = false,
+  each = false,
   className,
   children,
 }: {
   as?: "div" | "ul" | "ol" | "section";
   stagger?: boolean;
+  each?: boolean;
   className?: string;
   children: ReactNode;
 }) {
@@ -46,6 +54,29 @@ export function Reveal({
     ) {
       return;
     }
+    // 6.5B — per-child observation: each child settles as IT enters the viewport.
+    if (each) {
+      const items = Array.from(el.children).filter(
+        // Never hide a child the viewer can already (or nearly) see.
+        (child) => child.getBoundingClientRect().top >= window.innerHeight * 0.85,
+      );
+      if (items.length === 0) return;
+      for (const item of items) item.setAttribute("data-reveal-item", "pending");
+      const itemObserver = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              entry.target.setAttribute("data-reveal-item", "in");
+              itemObserver.unobserve(entry.target);
+            }
+          }
+        },
+        { threshold: 0.3, rootMargin: "0px 0px -6% 0px" },
+      );
+      for (const item of items) itemObserver.observe(item);
+      return () => itemObserver.disconnect();
+    }
+
     // Never hide content the viewer can already (or nearly) see.
     if (el.getBoundingClientRect().top < window.innerHeight * 0.85) return;
 
@@ -63,7 +94,7 @@ export function Reveal({
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [each]);
 
   // Narrow-cast so JSX accepts the dynamic tag with div-style props; the actual
   // element rendered is `as`. Keeps the ref compiler-visible (react-hooks/refs).

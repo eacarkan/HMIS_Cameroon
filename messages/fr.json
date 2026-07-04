@@ -1603,6 +1603,14 @@
         "diagnostics": "Laboratoire / Radiologie",
         "pharmacy": "Pharmacie",
         "discharge": "Hospitalisation / Sortie"
+      },
+      "stepDetails": {
+        "registration": "Identification du patient et ouverture du dossier au guichet.",
+        "consultation": "Le médecin documente la consultation dans le dossier du patient.",
+        "billing": "Facture émise et paiement enregistré, avec reçu traçable.",
+        "diagnostics": "Demandes d'examens suivies, de la prescription au résultat validé.",
+        "pharmacy": "Dispensation des ordonnances avec suivi des stocks et des lots.",
+        "discharge": "Hospitalisation ou sortie, avec clôture du dossier de visite."
       }
     },
     "modules": {

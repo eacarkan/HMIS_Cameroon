@@ -265,6 +265,55 @@
   100% { opacity: 0; }
 }
 
+/* ============================================================================
+   Phase 6.5B — passive journey storytelling. Each timeline step is observed
+   individually (Reveal `each`): it settles in as IT enters the viewport, and
+   its badge "lights up" from muted to the accent state. The DEFAULT (no
+   attribute — server HTML, no-JS, reduced motion) is the FINAL highlighted
+   state, so the muted look only ever exists inside the pending state. The
+   rail itself is a static border — it never fills or animates. Movement is
+   transform/opacity; the badge adds color/ring transitions only (no layout
+   property ever animates).
+   ========================================================================== */
+[data-reveal-item="pending"] {
+  opacity: 0;
+  transform: translateY(14px);
+}
+[data-reveal-item="in"] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.55s cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+/* The badge blooms slightly AFTER the step settles — a quiet "now in focus". */
+.journey-badge {
+  transition:
+    background-color 0.7s ease 0.15s,
+    color 0.7s ease 0.15s,
+    box-shadow 0.7s ease 0.15s;
+}
+.journey-num {
+  transition: color 0.7s ease 0.15s;
+}
+[data-reveal-item="pending"] .journey-badge {
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+  box-shadow: 0 0 0 1px var(--border);
+}
+[data-reveal-item="pending"] .journey-num {
+  color: var(--muted-foreground);
+}
+/* Desktop: the six steps share one row and intersect together — reuse the calm
+   capped cadence so they settle left-to-right. */
+@media (min-width: 1024px) {
+  [data-reveal-item="in"]:nth-child(2) { transition-delay: 70ms; }
+  [data-reveal-item="in"]:nth-child(3) { transition-delay: 140ms; }
+  [data-reveal-item="in"]:nth-child(4) { transition-delay: 210ms; }
+  [data-reveal-item="in"]:nth-child(5) { transition-delay: 280ms; }
+  [data-reveal-item="in"]:nth-child(n + 6) { transition-delay: 350ms; }
+}
+
 /* Reduced motion — global foundation: every animation/transition collapses to a
    no-op app-wide, and reveal-managed content is forced fully visible/static. */
 @media (prefers-reduced-motion: reduce) {
@@ -277,7 +326,8 @@
     scroll-behavior: auto !important;
   }
   [data-reveal],
-  [data-reveal] > * {
+  [data-reveal] > *,
+  [data-reveal-item] {
     opacity: 1 !important;
     transform: none !important;
   }
