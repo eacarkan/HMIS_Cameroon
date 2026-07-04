@@ -1595,7 +1595,7 @@
     },
     "journey": {
       "title": "Le parcours patient, de bout en bout",
-      "subtitle": "Un même dossier suit le patient à chaque étape — chaque acte est tracé, facturé et audité.",
+      "subtitle": "Un même dossier accompagne le parcours du patient — chaque étape est documentée, tracée et vérifiable.",
       "steps": {
         "registration": "Admission / Enregistrement",
         "consultation": "Consultation",
@@ -1606,10 +1606,10 @@
       },
       "stepDetails": {
         "registration": "Identification du patient et ouverture du dossier au guichet.",
-        "consultation": "Le médecin documente la consultation dans le dossier du patient.",
-        "billing": "Facture émise et paiement enregistré, avec reçu traçable.",
-        "diagnostics": "Demandes d'examens suivies, de la prescription au résultat validé.",
-        "pharmacy": "Dispensation des ordonnances avec suivi des stocks et des lots.",
+        "consultation": "Les observations cliniques sont documentées dans le dossier de visite.",
+        "billing": "La facture et le paiement sont enregistrés avec un reçu traçable.",
+        "diagnostics": "Les demandes d'examens sont suivies jusqu'au résultat validé.",
+        "pharmacy": "Les dispensations et mouvements de stock sont suivis par lot.",
         "discharge": "Hospitalisation ou sortie, avec clôture du dossier de visite."
       }
     },

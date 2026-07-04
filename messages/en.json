@@ -908,7 +908,7 @@
     },
     "journey": {
       "title": "The patient journey, end to end",
-      "subtitle": "One record follows the patient through every stage — every act is traced, billed and audited.",
+      "subtitle": "One record supports the patient journey — each stage is documented, traceable, and reviewable.",
       "steps": {
         "registration": "Registration",
         "consultation": "Consultation",
@@ -919,10 +919,10 @@
       },
       "stepDetails": {
         "registration": "Patient identification and record opening at the front desk.",
-        "consultation": "The physician documents the consultation in the patient record.",
-        "billing": "Invoice issued and payment recorded, with a traceable receipt.",
-        "diagnostics": "Test orders tracked from request to validated result.",
-        "pharmacy": "Prescriptions dispensed with stock and batch tracking.",
+        "consultation": "Clinical observations are documented in the visit record.",
+        "billing": "The invoice and payment are recorded with a traceable receipt.",
+        "diagnostics": "Test orders are tracked through to the validated result.",
+        "pharmacy": "Dispensations and stock movements are tracked by batch.",
         "discharge": "Hospitalization or discharge, with visit record closure."
       }
     },
