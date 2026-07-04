@@ -99,7 +99,7 @@ export default async function AccueilPage() {
       {/* ============ A · Hero — direction « Réseau » ============ */}
       <section className="relative overflow-hidden text-(--hero-foreground) [background:linear-gradient(148deg,var(--hero)_0%,var(--primary)_58%,#10677b_100%)]">
         <HeroConstellation className="text-hero-muted pointer-events-none absolute top-1/2 right-8 hidden w-[340px] -translate-y-1/2 lg:block" />
-        <div className="relative mx-auto w-full max-w-screen-xl px-4 py-16 lg:px-8 lg:py-20">
+        <div className="relative mx-auto w-full max-w-screen-xl px-4 py-12 sm:py-16 lg:px-8 lg:py-20">
           <div className="max-w-2xl">
             {/* Chip row reserves the taller (2-line FR) height on narrow screens so the
                 FR/EN switch never shifts the hero (6.2B stability rule). */}
@@ -112,7 +112,10 @@ export default async function AccueilPage() {
             <h1 className="font-heading mt-6 min-h-[10rem] text-[34px] leading-[1.1] font-bold tracking-tight text-balance sm:min-h-[10rem] sm:text-5xl">
               {t("hero.title")}
             </h1>
-            <p className="mt-4 min-h-[14.5rem] max-w-[56ch] text-base leading-relaxed text-(--hero-muted) sm:min-h-[9rem] lg:min-h-[7rem]">
+            {/* 6.4 tune: the mobile reserve is trimmed from 14.5rem→13rem. FR and EN wrap to
+                the SAME height (208px) at 375/390px, so a 13rem reserve still matches the tallest
+                content exactly and keeps zero FR/EN shift while shrinking the hero. */}
+            <p className="mt-4 min-h-[13rem] max-w-[56ch] text-base leading-relaxed text-(--hero-muted) sm:min-h-[9rem] lg:min-h-[7rem]">
               {t("hero.description")}
             </p>
             {/* 6.4 (scope 5): most viewers browse first — "explore" is the PRIMARY action,

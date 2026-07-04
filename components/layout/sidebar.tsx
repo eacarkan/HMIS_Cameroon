@@ -28,9 +28,12 @@ export function Sidebar({ roles }: { roles: string[] }) {
   })).filter((group) => group.items.length > 0);
 
   return (
-    <aside className="bg-sidebar text-sidebar-foreground hidden w-64 shrink-0 flex-col md:flex">
+    // 6.4 fix: `min-h-0` on the column lets the nav's own `min-h-0 overflow-y-auto`
+    // engage, so a tall menu scrolls INSIDE the nav and the footer badge (a real
+    // flex sibling, never an overlay) always sits below the last reachable item.
+    <aside className="bg-sidebar text-sidebar-foreground hidden min-h-0 w-64 shrink-0 flex-col md:flex">
       {/* Brand */}
-      <div className="border-sidebar-border flex h-14 items-center gap-3 border-b px-5">
+      <div className="border-sidebar-border flex h-14 shrink-0 items-center gap-3 border-b px-5">
         <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-white/10 text-white">
           <Hospital className="size-5" aria-hidden />
         </span>
@@ -46,8 +49,9 @@ export function Sidebar({ roles }: { roles: string[] }) {
         </span>
       </div>
 
-      {/* Navigation — grouped by section (each capability-permitted item still appears) */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4">
+      {/* Navigation — grouped by section (each capability-permitted item still appears).
+          `min-h-0` is what makes `overflow-y-auto` actually scroll inside the column. */}
+      <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
         {groups.map((group) => (
           <div key={group.key} className="mb-3 last:mb-0">
             <p className="text-sidebar-foreground/55 px-3 pb-2 text-xs font-medium tracking-wider uppercase">

@@ -104,6 +104,45 @@ test.describe("public SantéGrid site", () => {
     expect(JSON.stringify(body)).not.toMatch(/postgres(ql)?:\/\//i);
   });
 
+  // Phase 6.4 fix #1 — on narrow viewports the inline public nav overflowed and clipped
+  // « Se connecter ». The header must instead collapse to Logo + a single compact menu
+  // button, and the menu must expose the same links (features / demo access / sign-in) with
+  // no horizontal overflow. Checked at the three target widths in both locales.
+  for (const width of [375, 390, 430]) {
+    for (const locale of ["fr", "en"] as const) {
+      test(`6.4 — mobile public header is a compact menu with no overflow (${width}px ${locale})`, async ({
+        page,
+      }) => {
+        await page.setViewportSize({ width, height: 844 });
+        await page.context().addCookies([
+          { name: "locale", value: locale, domain: "localhost", path: "/" },
+        ]);
+        await page.goto("/accueil");
+
+        // The inline desktop nav is hidden below `sm`; the compact menu button is shown.
+        const menuButton = page.getByRole("button", {
+          name: locale === "fr" ? "Menu" : "Menu",
+        });
+        await expect(menuButton).toBeVisible();
+        await expect(page.locator("header nav")).toBeHidden();
+
+        // No horizontal overflow of the document at this width.
+        const overflows = await page.evaluate(
+          () => document.documentElement.scrollWidth > window.innerWidth,
+        );
+        expect(overflows).toBe(false);
+
+        // Opening the menu reveals the sign-in link (the item that used to clip).
+        await menuButton.click();
+        await expect(
+          page.getByRole("menuitem", {
+            name: locale === "fr" ? "Se connecter" : "Sign in",
+          }),
+        ).toBeVisible();
+      });
+    }
+  }
+
   test("6F — feedback page is email-only (warning, no form)", async ({ page }) => {
     await page.goto("/retours");
     await expect(page.getByRole("heading", { level: 1 })).toContainText(

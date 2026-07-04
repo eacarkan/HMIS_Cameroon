@@ -1541,7 +1541,8 @@
       "home": "Accueil",
       "features": "Fonctionnalités",
       "demo": "Accès démo",
-      "signIn": "Se connecter"
+      "signIn": "Se connecter",
+      "menu": "Menu"
     },
     "footer": {
       "tagline": "SantéGrid — Plateforme synthétique de démonstration SIGH / DME",

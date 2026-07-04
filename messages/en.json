@@ -854,7 +854,8 @@
       "home": "Home",
       "features": "Features",
       "demo": "Demo access",
-      "signIn": "Sign in"
+      "signIn": "Sign in",
+      "menu": "Menu"
     },
     "footer": {
       "tagline": "SantéGrid — Synthetic HMIS / EMR Demonstration Platform",
