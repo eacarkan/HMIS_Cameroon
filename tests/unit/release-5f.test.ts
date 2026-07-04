@@ -11,14 +11,16 @@ describe("unit: Phase 5F release-candidate marker", () => {
     expect(RELEASE_CANDIDATE).toMatch(/^v\d+\.\d+\.\d+-rc\.\d+$/);
   });
 
-  it("labels the build a synthetic review environment, with no production / Gate-7 claim", () => {
-    // Phase 6.3 S3 (mentor-approved wording): review-environment + synthetic + outside-Gate-7.
+  it("labels the build a synthetic review environment — no production claim and (6.5B) no public Gate 7", () => {
+    // Phase 6.5B (mentor-mandated public wording): review-environment + synthetic only.
     expect(RELEASE_LABEL).toMatch(/environnement de revue/i);
     expect(RELEASE_LABEL).toMatch(/synth[ée]tiques/i);
-    expect(RELEASE_LABEL).toMatch(/hors Gate 7/i);
+    // The public label must NOT carry the internal deployment-governance wording.
+    expect(RELEASE_LABEL).not.toMatch(/gate\s*7/i);
     // Never a production claim (the word "production" must not appear at all).
     expect(RELEASE_LABEL.toLowerCase()).not.toMatch(/production|autoris/);
-    // The formal archival marker (sr-only banner + print docs) still carries the full wording.
+    // The formal archival marker (sr-only banner + print docs) still carries the full wording —
+    // it is an accessibility/privacy safeguard, kept per the mentor's "keep privacy checks".
     expect(PROTOTYPE_LABEL).toMatch(/non destiné à la production/i);
   });
 });

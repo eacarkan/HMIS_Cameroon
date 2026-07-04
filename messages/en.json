@@ -860,16 +860,14 @@
     "footer": {
       "tagline": "SantéGrid — Synthetic HMIS / EMR Demonstration Platform",
       "synthetic": "Synthetic data only · no real patient data.",
-      "notProduction": "Review environment · outside Gate 7 · no live integrations.",
       "notGovernment": "Demonstration platform — not an official government website.",
-      "release": "Review environment — synthetic data · outside Gate 7 · no live integrations"
+      "release": "Review environment — synthetic data"
     },
     "disclaimer": {
       "syntheticTitle": "Synthetic demonstration",
       "syntheticBody": "This platform shows entirely fictional data for demonstration and stakeholder review only. No real patient data is used.",
       "notGovernmentTitle": "This is not an official government website",
-      "notGovernmentBody": "SantéGrid is an independent demonstration platform. It is not an official Ministry of Public Health website, and it is neither an authorization (Gate 7) nor a production deployment.",
-      "notProduction": "Review environment · outside Gate 7 · no real data · no live integrations."
+      "notGovernmentBody": "SantéGrid is an independent demonstration platform. It is not an official Ministry of Public Health website; it is a synthetic demonstration environment."
     },
     "guided": {
       "title": "Guided demo",

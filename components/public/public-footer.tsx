@@ -4,9 +4,11 @@ import { getTranslations } from "next-intl/server";
 import { SanteGridLogo } from "@/components/public/santegrid-logo";
 
 /**
- * Public site footer (Phase 6). Restates the mandatory boundaries in a calm band:
- * synthetic data only, not for production / Gate 7, and — explicitly — that this is
- * not an official government website. Server component; no operational data.
+ * Public site footer (Phase 6; 6.5B wording correction). A calm band restating the two
+ * public-facing signals a visitor needs: synthetic data only, and that this is not an
+ * official government website. The internal deployment-governance wording (Gate 7,
+ * "not for production", "no live integrations") was removed from public labels — it is
+ * project-control language, not useful to visitors. Server component; no operational data.
  */
 export async function PublicFooter() {
   const t = await getTranslations("publicSite.footer");
@@ -18,7 +20,6 @@ export async function PublicFooter() {
         <p className="text-muted-foreground">{t("tagline")}</p>
         <ul className="text-muted-foreground space-y-1">
           <li>{t("synthetic")}</li>
-          <li>{t("notProduction")}</li>
           <li className="font-medium">{t("notGovernment")}</li>
         </ul>
         <p className="pt-1">

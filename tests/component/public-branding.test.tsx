@@ -24,12 +24,17 @@ describe("component: Phase 6A public branding + disclaimers", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows the 'not an official government website' disclaimer (not Gate 7, not production)", () => {
-    renderWithIntl(<PublicDisclaimers />);
+  it("shows the 'not an official government website' disclaimer with NO public Gate 7 / production wording (6.5B)", () => {
+    const { container } = renderWithIntl(<PublicDisclaimers />);
     expect(
       screen.getByText("Ce n'est pas un site officiel du gouvernement"),
     ).toBeInTheDocument();
-    expect(screen.getByText(/Gate 7/)).toBeInTheDocument();
+    // The not-official-government + synthetic signals are kept…
+    expect(container.textContent).toMatch(/site officiel du Ministère/i);
+    expect(container.textContent).toMatch(/synth[ée]tique/i);
+    // …but the internal deployment-governance wording is gone from the public disclaimer.
+    expect(container.textContent).not.toMatch(/gate\s*7/i);
+    expect(container.textContent).not.toMatch(/production/i);
   });
 
   it("contains no operational/patient identifiers", () => {

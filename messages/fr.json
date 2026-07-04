@@ -1547,16 +1547,14 @@
     "footer": {
       "tagline": "SantéGrid — Plateforme synthétique de démonstration SIGH / DME",
       "synthetic": "Données synthétiques uniquement · aucune donnée réelle de patient.",
-      "notProduction": "Environnement de revue · hors Gate 7 · aucune intégration en direct.",
       "notGovernment": "Plateforme de démonstration — pas un site officiel du gouvernement.",
-      "release": "Environnement de revue — données synthétiques · hors Gate 7 · aucune intégration directe"
+      "release": "Environnement de revue — données synthétiques"
     },
     "disclaimer": {
       "syntheticTitle": "Démonstration synthétique",
       "syntheticBody": "Cette plateforme présente uniquement des données fictives, à des fins de démonstration et de revue par les parties prenantes. Aucune donnée réelle de patient n'est utilisée.",
       "notGovernmentTitle": "Ce n'est pas un site officiel du gouvernement",
-      "notGovernmentBody": "SantéGrid est une plateforme de démonstration indépendante. Ce n'est pas un site officiel du Ministère de la Santé Publique ; elle ne constitue ni une autorisation (Gate 7) ni une mise en production.",
-      "notProduction": "Environnement de revue · hors Gate 7 · aucune donnée réelle · aucune intégration en direct."
+      "notGovernmentBody": "SantéGrid est une plateforme de démonstration indépendante. Ce n'est pas un site officiel du Ministère de la Santé Publique ; il s'agit d'un environnement de démonstration synthétique."
     },
     "guided": {
       "title": "Parcours de démonstration",
