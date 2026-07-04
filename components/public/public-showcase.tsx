@@ -132,16 +132,17 @@ export function PublicShowcase({
       {/* Governance / traceability (server slot, 6.4) */}
       {governance}
 
-      {/* Scope / deployment-readiness boundary — restyled as a bounded card (6.4) */}
+      {/* Scope / readiness — 6.5B mentor correction: one positive RC statement for public
+          visitors; the defensive/technical boundary wording (Gate 7, "not for production",
+          go-live prerequisites) moved OUT of the public card. Internal safeguards are
+          unchanged: /api/health, check:release, QA reports, access control. */}
       <section className="border-primary/15 bg-primary/5 mt-10 rounded-xl border p-6 lg:p-8">
         <h2 className="font-heading text-lg font-semibold">
           {t("readiness.title")}
         </h2>
-        <ul className="text-muted-foreground mt-3 space-y-1.5 text-sm">
-          <li>{t("readiness.software")}</li>
-          <li>{t("readiness.administrative")}</li>
-          <li className="text-foreground font-medium">{t("readiness.boundary")}</li>
-        </ul>
+        <p className="text-muted-foreground mt-3 text-sm">
+          {t("readiness.software")}
+        </p>
       </section>
 
       {/* Mandatory disclaimers */}

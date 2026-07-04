@@ -1102,9 +1102,7 @@
     },
     "readiness": {
       "title": "Scope & readiness",
-      "software": "Software prepared as a release candidate (RC) on synthetic data.",
-      "administrative": "Real-data go-live requires administrative steps: infrastructure, cybersecurity, procedures, training, signed UAT and MINSANTE authorization (Gate 7).",
-      "boundary": "Not for production · outside Gate 7 · no real data · no live integrations."
+      "software": "Software prepared as a release candidate (RC) on synthetic data."
     },
     "demo": {
       "title": "Try the demonstration",

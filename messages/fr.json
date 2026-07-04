@@ -1789,9 +1789,7 @@
     },
     "readiness": {
       "title": "Périmètre & préparation",
-      "software": "Logiciel préparé comme candidat de version (RC) sur données synthétiques.",
-      "administrative": "La mise en service sur données réelles requiert des étapes administratives : infrastructure, cybersécurité, procédures, formation, UAT signée et autorisation MINSANTE (Gate 7).",
-      "boundary": "Non destiné à la production · hors Gate 7 · aucune donnée réelle · aucune intégration en direct."
+      "software": "Logiciel préparé comme version candidate (RC) sur données synthétiques."
     },
     "demo": {
       "title": "Essayez la démonstration",

@@ -19,14 +19,21 @@ describe("component: Phase 6B public feature showcase", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders the banker/accountant proof section and the readiness boundary", () => {
+  it("renders the banker/accountant proof section and the positive RC readiness line", () => {
     renderWithIntl(<PublicShowcase />);
     expect(
       screen.getByText("Environnement de revue en ligne et vérifié"),
     ).toBeInTheDocument();
+    // 6.5B mentor correction — ONE positive RC statement; the defensive boundary
+    // wording (Gate 7 / "not for production" / no-real-data) must NOT appear on the
+    // public showcase card.
     expect(
-      screen.getByText(/hors Gate 7 · aucune donnée réelle/i),
+      screen.getByText(
+        "Logiciel préparé comme version candidate (RC) sur données synthétiques.",
+      ),
     ).toBeInTheDocument();
+    const main = screen.getByText("Périmètre & préparation").closest("section");
+    expect(main?.textContent).not.toMatch(/Gate 7|production|donnée réelle/i);
   });
 
   it("exposes no write actions (no forms, no submit buttons) and no patient identifiers", () => {
