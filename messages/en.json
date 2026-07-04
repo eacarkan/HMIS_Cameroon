@@ -8,7 +8,8 @@
     "reviewEnvironmentNote": "This environment uses synthetic demonstration data only. It is not connected to real hospital systems.",
     "reviewScope": "Review environment for regional hospitals",
     "languageShort": "EN",
-    "languageLabel": "English"
+    "languageLabel": "English",
+    "reviewShort": "Review — synthetic data"
   },
   "auth": {
     "title": "Sign in",
@@ -32,7 +33,9 @@
     "signOut": "Sign out",
     "oversightContextLabel": "Oversight context",
     "oversightContextValue": "Multi-site",
-    "oversightAggregate": "Aggregate"
+    "oversightAggregate": "Aggregate",
+    "publicSite": "Public site",
+    "leaveDemo": "Leave demo"
   },
   "hospital": {
     "selectTitle": "Hospital selection",
@@ -935,10 +938,116 @@
       "governanceBody": "Role-based access, per-hospital separation, aggregate regional oversight and audit logging."
     },
     "cta": {
-      "title": "Try the demonstration",
-      "body": "Open the synthetic demonstration environment to explore the features across different roles.",
-      "primary": "Demo access",
-      "secondary": "See the features"
+      "title": "Explore SantéGrid in detail",
+      "body": "Browse the platform's capabilities, then access the synthetic demonstration environment by role if needed.",
+      "primary": "Explore platform features",
+      "secondary": "Open demo access",
+      "contact": "Request a presentation"
+    },
+    "why": {
+      "title": "Why an integrated platform",
+      "subtitle": "The operational challenges SantéGrid addresses in a regional hospital.",
+      "items": {
+        "workflows": {
+          "title": "Unified hospital workflows",
+          "desc": "Reception, consultation, billing, diagnostics and pharmacy in one record — no re-entry between departments."
+        },
+        "billing": {
+          "title": "Collection traceability",
+          "desc": "Every invoice, payment and receipt is numbered, reconciled and logged."
+        },
+        "coordination": {
+          "title": "Diagnostics & pharmacy coordination",
+          "desc": "Exam requests and prescriptions integrated into the care pathway, with separate validation."
+        },
+        "oversight": {
+          "title": "Multi-site oversight",
+          "desc": "An aggregate view of the regional hospitals, snapshot-fed — no patient data at the central level."
+        },
+        "audit": {
+          "title": "Role-based access & audit",
+          "desc": "Ten business roles, server-side capability control and a timestamped audit trail for every action."
+        }
+      }
+    },
+    "governance": {
+      "title": "Governance and traceability",
+      "subtitle": "Controls designed for public administration and financing partners.",
+      "items": {
+        "rbac": {
+          "title": "Role-based access",
+          "desc": "Each profile sees and performs only what its role allows."
+        },
+        "audit": {
+          "title": "Audit trail",
+          "desc": "Timestamped, attributable, reviewable actions."
+        },
+        "payments": {
+          "title": "Payment traceability",
+          "desc": "Exact reconciliation of invoices ↔ collections ↔ receipts."
+        },
+        "stock": {
+          "title": "Stock movement tracking",
+          "desc": "Lots, expiry and dual-validated adjustments."
+        },
+        "central": {
+          "title": "Aggregate central view",
+          "desc": "Consolidated indicators with no access to patient records."
+        },
+        "synthetic": {
+          "title": "Synthetic review data",
+          "desc": "No real data and no live integrations in this environment."
+        }
+      }
+    },
+    "stakeholders": {
+      "title": "Designed for different review stakeholders",
+      "subtitle": "Each stakeholder can assess the platform from their own angle.",
+      "items": {
+        "leadership": {
+          "title": "Hospital leadership",
+          "desc": "Operations steering, work queues and daily indicators."
+        },
+        "ministry": {
+          "title": "Public administration",
+          "desc": "Governance, traceability and multi-site rollout preparation."
+        },
+        "clinical": {
+          "title": "Clinical teams",
+          "desc": "Integrated consultation, diagnostics and prescription workflows."
+        },
+        "finance": {
+          "title": "Financial partners",
+          "desc": "Visibility into functional scope, governance, and rollout requirements."
+        },
+        "technical": {
+          "title": "Technical partners",
+          "desc": "Capability-based architecture, aggregate exports and DHIS2 readiness."
+        }
+      }
+    },
+    "preview": {
+      "title": "A preview of the application",
+      "subtitle": "The workspaces demonstration roles explore — no sign-in required.",
+      "note": "Illustrative previews · synthetic review data",
+      "items": {
+        "command": {
+          "title": "Hospital command dashboard",
+          "desc": "Today's work queues, indicators and recent activity."
+        },
+        "pharmacy": {
+          "title": "Pharmacy workspace",
+          "desc": "Prescriptions to dispense, expiry alerts and lot-level stock."
+        },
+        "diagnostics": {
+          "title": "Diagnostics workflow",
+          "desc": "Lab/imaging requests, result entry and separate validation."
+        },
+        "central": {
+          "title": "Multi-site supervision",
+          "desc": "Aggregate matrix of the eight review hospitals."
+        }
+      }
     }
   },
   "showcase": {
@@ -1053,7 +1162,8 @@
       "pharmacist_chief": "Pharmacist-in-charge (Bertoua)",
       "director": "Director (Bertoua)",
       "validator": "Diagnostic validator (Bertoua)"
-    }
+    },
+    "groupsHelper": "Pick the role matching your review angle — each workspace shows that profile's queues and indicators."
   },
   "feedback": {
     "title": "Stakeholder feedback",

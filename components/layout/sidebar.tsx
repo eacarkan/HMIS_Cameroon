@@ -85,9 +85,13 @@ export function Sidebar({ roles }: { roles: string[] }) {
         ))}
       </nav>
 
-      {/* Foot */}
-      <div className="border-sidebar-border text-sidebar-foreground/70 border-t px-5 py-3 text-xs">
-        {tApp("longName")}
+      {/* Foot — Phase 6.4 (scope 2): a compact one-line review badge instead of the
+          bulky descriptive block, so the nav scrollbar stays fully clear. */}
+      <div className="border-sidebar-border shrink-0 border-t px-3 py-2">
+        <p className="text-sidebar-foreground/75 flex items-center gap-1.5 truncate text-[11px] leading-tight">
+          <span className="size-1.5 shrink-0 rounded-full bg-emerald-300/90" aria-hidden />
+          <span className="truncate">{tApp("reviewShort")}</span>
+        </p>
       </div>
     </aside>
   );

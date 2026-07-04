@@ -52,7 +52,10 @@ export async function signOutAction() {
     });
   }
   cookieStore.delete(ACTIVE_HOSPITAL_COOKIE);
-  await signOut({ redirectTo: "/connexion" });
+  // Phase 6.4 (scope 1) — leaving the demo returns the reviewer to the PUBLIC site,
+  // not to a login dead-end. The session is fully cleared either way; /connexion
+  // stays one click away from /accueil.
+  await signOut({ redirectTo: "/accueil" });
 }
 
 /** Set the active hospital (validated + audited in the service layer). */

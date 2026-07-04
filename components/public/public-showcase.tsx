@@ -58,23 +58,31 @@ const PROOF: { key: string; icon: LucideIcon }[] = [
 export function PublicShowcase({
   journey,
   guided,
+  governance,
+  hideHeader = false,
 }: {
   /** Server-rendered patient-journey section (RSC slot from the page). */
   journey?: ReactNode;
   /** Server-rendered guided-demo pathway (RSC slot from the page). */
   guided?: ReactNode;
+  /** 6.4 — server-rendered governance/traceability section (RSC slot). */
+  governance?: ReactNode;
+  /** 6.4 — the page renders its own full-bleed hero band instead of this header. */
+  hideHeader?: boolean;
 }) {
   const t = useTranslations("showcase");
   return (
     <div className="mx-auto w-full max-w-screen-xl px-4 py-14 lg:px-8">
-      <header className="max-w-3xl">
-        <div className="bg-primary mb-5 h-0.75 w-14" aria-hidden />
-        <h1 className="font-heading text-3xl font-bold tracking-tight text-balance sm:text-4xl">
-          {t("title")}
-        </h1>
-        <p className="text-foreground/80 mt-3 text-lg">{t("subtitle")}</p>
-        <p className="text-muted-foreground mt-2 leading-relaxed">{t("intro")}</p>
-      </header>
+      {hideHeader ? null : (
+        <header className="max-w-3xl">
+          <div className="bg-primary mb-5 h-0.75 w-14" aria-hidden />
+          <h1 className="font-heading text-3xl font-bold tracking-tight text-balance sm:text-4xl">
+            {t("title")}
+          </h1>
+          <p className="text-foreground/80 mt-3 text-lg">{t("subtitle")}</p>
+          <p className="text-muted-foreground mt-2 leading-relaxed">{t("intro")}</p>
+        </header>
+      )}
 
       {/* Patient journey (server slot) */}
       {journey}
@@ -119,12 +127,15 @@ export function PublicShowcase({
         </div>
       </section>
 
-      {/* Scope / readiness boundary */}
-      <section className="mt-10 space-y-3">
+      {/* Governance / traceability (server slot, 6.4) */}
+      {governance}
+
+      {/* Scope / deployment-readiness boundary — restyled as a bounded card (6.4) */}
+      <section className="border-primary/15 bg-primary/5 mt-10 rounded-xl border p-6 lg:p-8">
         <h2 className="font-heading text-lg font-semibold">
           {t("readiness.title")}
         </h2>
-        <ul className="text-muted-foreground space-y-1 text-sm">
+        <ul className="text-muted-foreground mt-3 space-y-1.5 text-sm">
           <li>{t("readiness.software")}</li>
           <li>{t("readiness.administrative")}</li>
           <li className="text-foreground font-medium">{t("readiness.boundary")}</li>

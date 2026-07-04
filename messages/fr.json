@@ -8,7 +8,8 @@
     "reviewEnvironmentNote": "Cet environnement utilise uniquement des données synthétiques de démonstration. Il n'est connecté à aucun système hospitalier réel.",
     "reviewScope": "Environnement de revue pour hôpitaux régionaux",
     "languageShort": "FR",
-    "languageLabel": "Français"
+    "languageLabel": "Français",
+    "reviewShort": "Revue — données synthétiques"
   },
   "auth": {
     "title": "Connexion",
@@ -88,7 +89,9 @@
     "signOut": "Déconnexion",
     "oversightContextLabel": "Contexte de supervision",
     "oversightContextValue": "Multi-sites",
-    "oversightAggregate": "Agrégé"
+    "oversightAggregate": "Agrégé",
+    "publicSite": "Site public",
+    "leaveDemo": "Quitter la démonstration"
   },
   "actions": {
     "save": "Enregistrer",
@@ -1622,10 +1625,116 @@
       "governanceBody": "Accès basé sur les rôles, cloisonnement par hôpital, supervision régionale agrégée et journalisation d'audit."
     },
     "cta": {
-      "title": "Essayez la démonstration",
-      "body": "Accédez à l'environnement de démonstration synthétique pour parcourir les fonctionnalités selon différents rôles.",
-      "primary": "Accès démo",
-      "secondary": "Voir les fonctionnalités"
+      "title": "Explorer SantéGrid en détail",
+      "body": "Parcourez les fonctionnalités de la plateforme, puis accédez si besoin à l'environnement de démonstration synthétique selon différents rôles.",
+      "primary": "Découvrir les fonctionnalités",
+      "secondary": "Ouvrir l'accès démo",
+      "contact": "Demander une présentation"
+    },
+    "why": {
+      "title": "Pourquoi une plateforme intégrée",
+      "subtitle": "Les enjeux opérationnels auxquels répond SantéGrid dans un hôpital régional.",
+      "items": {
+        "workflows": {
+          "title": "Parcours hospitaliers unifiés",
+          "desc": "Accueil, consultation, facturation, examens et pharmacie dans un seul dossier — sans ressaisie entre services."
+        },
+        "billing": {
+          "title": "Traçabilité des encaissements",
+          "desc": "Chaque facture, paiement et reçu est numéroté, rapproché et journalisé."
+        },
+        "coordination": {
+          "title": "Coordination diagnostics & pharmacie",
+          "desc": "Demandes d'examens et ordonnances intégrées au parcours de soins, avec validation séparée."
+        },
+        "oversight": {
+          "title": "Supervision multi-sites",
+          "desc": "Une vue agrégée des hôpitaux régionaux, alimentée par instantanés — sans données patient au niveau central."
+        },
+        "audit": {
+          "title": "Accès par rôles & audit",
+          "desc": "Dix rôles métier, capacités contrôlées côté serveur et journal d'audit horodaté pour chaque action."
+        }
+      }
+    },
+    "governance": {
+      "title": "Gouvernance et traçabilité",
+      "subtitle": "Des contrôles pensés pour l'administration publique et les partenaires financiers.",
+      "items": {
+        "rbac": {
+          "title": "Accès par rôles",
+          "desc": "Chaque profil ne voit et n'exécute que ce que son rôle autorise."
+        },
+        "audit": {
+          "title": "Journal d'audit",
+          "desc": "Actions horodatées, imputables et consultables."
+        },
+        "payments": {
+          "title": "Traçabilité des paiements",
+          "desc": "Rapprochement exact factures ↔ encaissements ↔ reçus."
+        },
+        "stock": {
+          "title": "Mouvements de stock",
+          "desc": "Lots, péremptions et ajustements à double validation."
+        },
+        "central": {
+          "title": "Vue centrale agrégée",
+          "desc": "Indicateurs consolidés sans accès aux dossiers patients."
+        },
+        "synthetic": {
+          "title": "Données de revue synthétiques",
+          "desc": "Aucune donnée réelle, aucune intégration directe dans cet environnement."
+        }
+      }
+    },
+    "stakeholders": {
+      "title": "Conçu pour plusieurs profils de décision",
+      "subtitle": "Chaque partie prenante peut évaluer la plateforme selon son angle.",
+      "items": {
+        "leadership": {
+          "title": "Directions hospitalières",
+          "desc": "Pilotage des opérations, files de travail et indicateurs quotidiens."
+        },
+        "ministry": {
+          "title": "Administration publique",
+          "desc": "Gouvernance, traçabilité et préparation d'un déploiement multi-sites."
+        },
+        "clinical": {
+          "title": "Équipes cliniques",
+          "desc": "Parcours de consultation, examens et prescription intégrés."
+        },
+        "finance": {
+          "title": "Partenaires financiers",
+          "desc": "Visibilité sur le périmètre fonctionnel, la gouvernance et les besoins de déploiement."
+        },
+        "technical": {
+          "title": "Partenaires techniques",
+          "desc": "Architecture par capacités, exports agrégés et préparation DHIS2."
+        }
+      }
+    },
+    "preview": {
+      "title": "Un aperçu de l'application",
+      "subtitle": "Les espaces de travail que les rôles de démonstration explorent — sans connexion requise.",
+      "note": "Aperçus illustratifs · données synthétiques de revue",
+      "items": {
+        "command": {
+          "title": "Poste de commandement hospitalier",
+          "desc": "Files de travail du jour, indicateurs et activité récente."
+        },
+        "pharmacy": {
+          "title": "Espace pharmacie",
+          "desc": "Ordonnances à dispenser, alertes de péremption et stock par lots."
+        },
+        "diagnostics": {
+          "title": "Parcours diagnostics",
+          "desc": "Demandes labo/imagerie, saisie et validation séparée des résultats."
+        },
+        "central": {
+          "title": "Supervision multi-sites",
+          "desc": "Matrice agrégée des huit hôpitaux de revue."
+        }
+      }
     }
   },
   "showcase": {
@@ -1740,7 +1849,8 @@
       "pharmacist_chief": "Pharmacien-chef (Bertoua)",
       "director": "Directeur (Bertoua)",
       "validator": "Validateur d'examens (Bertoua)"
-    }
+    },
+    "groupsHelper": "Choisissez le rôle correspondant à votre angle d'évaluation — chaque espace de travail montre les files et indicateurs de ce métier."
   },
   "feedback": {
     "title": "Retours des parties prenantes",

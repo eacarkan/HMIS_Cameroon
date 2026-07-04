@@ -52,24 +52,35 @@ export default async function AccesDemoPage() {
     t("passwordHintFallback"),
   );
 
-  return (
-    <div className="mx-auto w-full max-w-screen-lg px-4 py-14 lg:px-8">
-      <header className="max-w-3xl">
-        <div className="bg-primary mb-5 h-0.75 w-14" aria-hidden />
-        <h1 className="font-heading text-3xl font-bold tracking-tight text-balance sm:text-4xl">
-          {t("title")}
-        </h1>
-        <p className="text-foreground/80 mt-3 text-lg">{t("subtitle")}</p>
-        <p className="text-muted-foreground mt-2">{t("intro")}</p>
-      </header>
+  const tApp = await getTranslations("app");
 
+  return (
+    <div>
+      {/* Full-bleed teal hero band — same public language as /accueil and /vitrine (6.4). */}
+      <section className="relative overflow-hidden text-(--hero-foreground) [background:linear-gradient(150deg,var(--hero)_0%,var(--primary)_80%)]">
+        <div className="relative mx-auto w-full max-w-screen-lg px-4 py-12 lg:px-8 lg:py-14">
+          <p className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase">
+            <span className="size-1.5 shrink-0 rounded-full bg-emerald-300" aria-hidden />
+            {tApp("reviewEnvironmentBadge")}
+          </p>
+          <h1 className="font-heading mt-5 max-w-3xl text-3xl font-bold tracking-tight text-balance sm:text-4xl">
+            {t("title")}
+          </h1>
+          <p className="mt-3 max-w-3xl text-lg text-(--hero-muted)">{t("subtitle")}</p>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-(--hero-muted)">
+            {t("intro")}
+          </p>
+        </div>
+      </section>
+
+      <div className="mx-auto w-full max-w-screen-lg px-4 pb-14 lg:px-8">
       {/* Synthetic-data warning */}
-      <div className="mt-6 flex gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+      <div className="mt-8 flex gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
         <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
         <p>{t("warning")}</p>
       </div>
 
-      {/* Role groups — what each role demonstrates */}
+      {/* Role groups — the « which role should I choose? » helper (6.4, scope 4) */}
       <section className="mt-12" aria-labelledby="role-groups-title">
         <h2
           id="role-groups-title"
@@ -77,6 +88,9 @@ export default async function AccesDemoPage() {
         >
           {t("groupsTitle")}
         </h2>
+        <p className="text-muted-foreground mt-2 max-w-[70ch] text-sm">
+          {t("groupsHelper")}
+        </p>
         <div className="border-border mt-6 grid grid-cols-1 border-t border-l sm:grid-cols-2 lg:grid-cols-3">
           {ROLE_GROUPS.map((g) => (
             <div
@@ -136,6 +150,7 @@ export default async function AccesDemoPage() {
       <section className="mt-12">
         <PublicDisclaimers />
       </section>
+      </div>
     </div>
   );
 }

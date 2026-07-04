@@ -165,10 +165,29 @@ export function Topbar({
               </span>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            {/* Phase 6.4 (scope 1) — a reviewer can always get back to the public site:
+                a plain link (session kept) and a leave-demo action (signs out → /accueil). */}
+            <a
+              href="/accueil"
+              className="hover:bg-accent flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm"
+            >
+              <Globe2 className="size-4" aria-hidden />
+              {t("publicSite")}
+            </a>
             <form action={signOutAction}>
               <button
                 type="submit"
                 className="hover:bg-accent flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm"
+              >
+                <LogOut className="size-4" aria-hidden />
+                {t("leaveDemo")}
+              </button>
+            </form>
+            <DropdownMenuSeparator />
+            <form action={signOutAction}>
+              <button
+                type="submit"
+                className="text-muted-foreground hover:bg-accent flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm"
               >
                 <LogOut className="size-4" aria-hidden />
                 {t("signOut")}
