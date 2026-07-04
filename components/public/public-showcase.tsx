@@ -25,6 +25,7 @@ import type { ReactNode } from "react";
 
 import { ModuleCapabilityCard } from "@/components/public/module-capability-card";
 import { PublicDisclaimers } from "@/components/public/public-disclaimers";
+import { Reveal } from "@/components/public/reveal";
 import { Button } from "@/components/ui/button";
 
 const MODULES: { key: string; icon: LucideIcon }[] = [
@@ -92,7 +93,8 @@ export function PublicShowcase({
         <h2 className="font-heading mb-5 text-2xl font-bold tracking-tight">
           {t("modulesTitle")}
         </h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {/* 6.5A — staggered settle on the capability cards (visible-by-default reveal). */}
+        <Reveal stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {MODULES.map((m) => (
             <ModuleCapabilityCard
               key={m.key}
@@ -101,7 +103,7 @@ export function PublicShowcase({
               body={t(`modules.${m.key}Body`)}
             />
           ))}
-        </div>
+        </Reveal>
       </section>
 
       {/* Banker / accountant proof section */}

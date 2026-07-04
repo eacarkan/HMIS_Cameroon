@@ -8,12 +8,17 @@ import {
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { Reveal } from "@/components/public/reveal";
+
 /**
  * Patient journey stepper (Phase 6.3). The six-stage hospital journey — Registration →
  * Consultation → Billing → Lab/Radiology → Pharmacy → Hospitalization/Discharge — as an
  * accessible ordered list. The visual order IS the information (a real sequence), so the
  * connector arrows are decorative only. Bilingual via `landing.journey.*`. Server component,
  * reused on /accueil and /vitrine.
+ *
+ * 6.5A — the steps settle in left-to-right via the staggered reveal, quietly underlining
+ * the sequence. This is the PLAIN reveal only; the sticky scroll-story is deferred to 6.5B.
  */
 const STEPS = [
   { key: "registration", icon: ClipboardList },
@@ -27,7 +32,11 @@ const STEPS = [
 export async function PatientJourneyFlow() {
   const t = await getTranslations("landing.journey");
   return (
-    <ol className="grid list-none grid-cols-2 gap-y-6 sm:grid-cols-3 lg:grid-cols-6 lg:gap-y-0">
+    <Reveal
+      as="ol"
+      stagger
+      className="grid list-none grid-cols-2 gap-y-6 sm:grid-cols-3 lg:grid-cols-6 lg:gap-y-0"
+    >
       {STEPS.map((step, i) => (
         <li key={step.key} className="relative flex flex-col items-center px-2 text-center">
           {/* connector (decorative) */}
@@ -48,6 +57,6 @@ export async function PatientJourneyFlow() {
           </span>
         </li>
       ))}
-    </ol>
+    </Reveal>
   );
 }

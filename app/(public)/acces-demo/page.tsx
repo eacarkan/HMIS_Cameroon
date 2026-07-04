@@ -15,6 +15,7 @@ import { DemoAccountDirectory } from "@/components/public/demo-account-directory
 import { DemoLoginButtons } from "@/components/public/demo-login-buttons";
 import { GuidedDemoCard } from "@/components/public/guided-demo-card";
 import { PublicDisclaimers } from "@/components/public/public-disclaimers";
+import { Reveal } from "@/components/public/reveal";
 import { Button } from "@/components/ui/button";
 import { canStartOneClickDemo } from "@/lib/deployment-mode";
 import { resolvePublicDemoPasswordHint } from "@/lib/public-demo-hint";
@@ -91,7 +92,12 @@ export default async function AccesDemoPage() {
         <p className="text-muted-foreground mt-2 max-w-[70ch] text-sm">
           {t("groupsHelper")}
         </p>
-        <div className="border-border mt-6 grid grid-cols-1 border-t border-l sm:grid-cols-2 lg:grid-cols-3">
+        {/* 6.5A — same settle rhythm as /accueil and /vitrine; the functional content
+            below (warning, directory, one-click) stays deliberately static. */}
+        <Reveal
+          stagger
+          className="border-border mt-6 grid grid-cols-1 border-t border-l sm:grid-cols-2 lg:grid-cols-3"
+        >
           {ROLE_GROUPS.map((g) => (
             <div
               key={g.key}
@@ -108,7 +114,7 @@ export default async function AccesDemoPage() {
               </p>
             </div>
           ))}
-        </div>
+        </Reveal>
       </section>
 
       {/* Public account directory */}

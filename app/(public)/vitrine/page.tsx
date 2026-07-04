@@ -13,6 +13,7 @@ import { getTranslations } from "next-intl/server";
 import { GuidedDemoCard } from "@/components/public/guided-demo-card";
 import { PatientJourneyFlow } from "@/components/public/patient-journey-flow";
 import { PublicShowcase } from "@/components/public/public-showcase";
+import { Reveal } from "@/components/public/reveal";
 
 export const metadata: Metadata = {
   title: "SantéGrid — Fonctionnalités",
@@ -88,7 +89,11 @@ export default async function VitrinePage() {
             <p className="text-muted-foreground mt-2 mb-6 max-w-[70ch] text-sm">
               {tGov("subtitle")}
             </p>
-            <ul className="grid list-none grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+            <Reveal
+              as="ul"
+              stagger
+              className="grid list-none grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3"
+            >
               {GOVERNANCE.map((item) => (
                 <li
                   key={item.key}
@@ -107,12 +112,14 @@ export default async function VitrinePage() {
                   </div>
                 </li>
               ))}
-            </ul>
+            </Reveal>
           </section>
         }
         guided={
           <section className="mt-14">
-            <GuidedDemoCard />
+            <Reveal>
+              <GuidedDemoCard />
+            </Reveal>
           </section>
         }
       />

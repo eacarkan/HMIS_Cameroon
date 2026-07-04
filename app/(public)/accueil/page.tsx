@@ -21,12 +21,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
+import { CountUp } from "@/components/public/count-up";
 import { GuidedDemoCard } from "@/components/public/guided-demo-card";
 import { HeroConstellation } from "@/components/public/hero-constellation";
 import { HospitalNetworkGrid } from "@/components/public/hospital-network-grid";
 import { ModuleCapabilityCard } from "@/components/public/module-capability-card";
 import { PatientJourneyFlow } from "@/components/public/patient-journey-flow";
 import { PublicDisclaimers } from "@/components/public/public-disclaimers";
+import { Reveal } from "@/components/public/reveal";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
@@ -138,9 +140,12 @@ export default async function AccueilPage() {
               </Button>
             </div>
             <dl className="mt-10 flex flex-wrap gap-3">
+              {/* 6.5A — count-up on the two INTEGER metrics only; « 100 % » snaps
+                  (bounded reassurance value, not a score). Final values are in the
+                  server HTML — the tween only ever replaces text after hydration. */}
               {[
-                { value: "8", label: t("stats.hospitals") },
-                { value: "10", label: t("stats.roles") },
+                { value: <CountUp value={8} />, label: t("stats.hospitals") },
+                { value: <CountUp value={10} />, label: t("stats.roles") },
                 { value: "100 %", label: t("stats.synthetic") },
               ].map((s) => (
                 <div
@@ -168,7 +173,11 @@ export default async function AccueilPage() {
           <p className="text-muted-foreground mt-2 mb-7 max-w-[70ch] text-sm">
             {t("why.subtitle")}
           </p>
-          <ul className="border-border grid list-none grid-cols-1 border-t border-l sm:grid-cols-2 lg:grid-cols-5">
+          <Reveal
+            as="ul"
+            stagger
+            className="border-border grid list-none grid-cols-1 border-t border-l sm:grid-cols-2 lg:grid-cols-5"
+          >
             {why.map((item) => (
               <li
                 key={item.key}
@@ -185,7 +194,7 @@ export default async function AccueilPage() {
                 </p>
               </li>
             ))}
-          </ul>
+          </Reveal>
         </section>
 
         {/* ============ C · Platform modules ============ */}
@@ -199,11 +208,11 @@ export default async function AccueilPage() {
           <p className="text-muted-foreground mt-2 mb-7 max-w-[70ch] text-sm">
             {t("modules.subtitle")}
           </p>
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          <Reveal stagger className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
             {modules.map((m) => (
               <ModuleCapabilityCard key={m.title} icon={m.icon} title={m.title} />
             ))}
-          </div>
+          </Reveal>
           <p className="mt-5">
             <Link
               href="/vitrine"
@@ -263,7 +272,11 @@ export default async function AccueilPage() {
           <p className="text-muted-foreground mt-2 mb-7 max-w-[70ch] text-sm">
             {t("governance.subtitle")}
           </p>
-          <ul className="grid list-none grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+          <Reveal
+            as="ul"
+            stagger
+            className="grid list-none grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3"
+          >
             {governance.map((item) => (
               <li
                 key={item.key}
@@ -282,7 +295,7 @@ export default async function AccueilPage() {
                 </div>
               </li>
             ))}
-          </ul>
+          </Reveal>
         </div>
       </section>
 
@@ -298,7 +311,11 @@ export default async function AccueilPage() {
           <p className="text-muted-foreground mt-2 mb-7 max-w-[70ch] text-sm">
             {t("stakeholders.subtitle")}
           </p>
-          <ul className="border-border grid list-none grid-cols-1 border-t border-l sm:grid-cols-2 lg:grid-cols-5">
+          <Reveal
+            as="ul"
+            stagger
+            className="border-border grid list-none grid-cols-1 border-t border-l sm:grid-cols-2 lg:grid-cols-5"
+          >
             {stakeholders.map((item) => (
               <li
                 key={item.key}
@@ -315,7 +332,7 @@ export default async function AccueilPage() {
                 </p>
               </li>
             ))}
-          </ul>
+          </Reveal>
         </section>
 
         {/* ============ H · App preview (illustrative, no login required) ============ */}
@@ -332,7 +349,11 @@ export default async function AccueilPage() {
           <p className="text-muted-foreground mt-2 mb-7 max-w-[70ch] text-sm">
             {t("preview.subtitle")}
           </p>
-          <ul className="grid list-none grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+          <Reveal
+            as="ul"
+            stagger
+            className="grid list-none grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4"
+          >
             {previews.map((item) => (
               <li
                 key={item.key}
@@ -364,21 +385,26 @@ export default async function AccueilPage() {
                 </div>
               </li>
             ))}
-          </ul>
+          </Reveal>
         </section>
 
-        {/* ============ Mandatory disclaimers ============ */}
+        {/* ============ Mandatory disclaimers — NEVER animated (6.5A) ============ */}
         <section className="pt-14">
           <PublicDisclaimers />
         </section>
 
         {/* ============ Guided demo pathway ============ */}
         <section className="pt-14">
-          <GuidedDemoCard />
+          <Reveal>
+            <GuidedDemoCard />
+          </Reveal>
         </section>
 
         {/* ============ I · Closing CTA — explore first, demo second ============ */}
-        <section className="border-primary/20 bg-primary/5 my-16 rounded-xl border p-8 text-center">
+        <Reveal
+          as="section"
+          className="border-primary/20 bg-primary/5 my-16 rounded-xl border p-8 text-center"
+        >
           <h2 className="font-heading text-xl font-semibold">{t("cta.title")}</h2>
           <p className="text-muted-foreground mx-auto mt-2 max-w-xl text-sm">
             {t("cta.body")}
@@ -399,7 +425,7 @@ export default async function AccueilPage() {
               {t("cta.contact")} →
             </Link>
           </p>
-        </section>
+        </Reveal>
       </div>
     </div>
   );
