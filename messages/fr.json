@@ -129,14 +129,20 @@
       "registrationsCaption": "Flux patient simulé sur 30 jours · données de démonstration",
       "registrationsEmpty": "Aucune activité sur la période dans les données de revue. Ouvrir le module Patients pour examiner le parcours.",
       "billingTitle": "Encaissements par mode",
-      "billingCaption": "Répartition synthétique des encaissements du jour · FCFA",
+      "billingCaption": "Encaissements synthétiques par moyen de paiement · FCFA",
       "billingEmpty": "Aucun encaissement aujourd'hui dans les données de revue. Ouvrir le module Caisse pour examiner le parcours.",
       "operationsTitle": "Pharmacie & diagnostics",
       "stockAlerts": "Alertes stock / péremption",
       "labRequests": "Demandes laboratoire (jour)",
       "radiologyRequests": "Demandes imagerie (jour)",
       "pendingDiagnostics": "Examens en cours",
-      "operationsCaption": "Demandes intégrées au parcours de soins · données de démonstration"
+      "operationsCaption": "Demandes intégrées au parcours de soins · données de démonstration",
+      "clinicalTitle": "Activité clinique — 30 jours",
+      "clinicalCaption": "Activité clinique simulée sur la période de revue",
+      "diagnosticsTitle": "Demandes diagnostiques — 30 jours",
+      "diagnosticsCaption": "Demandes diagnostiques intégrées au parcours de soins · données de revue",
+      "pharmacyTitle": "Ordonnances et stock — données de revue",
+      "pharmacyCaption": "Activité pharmacie issue des données synthétiques de revue"
     },
     "quickAccess": {
       "title": "Espaces de travail",
@@ -205,6 +211,32 @@
         "payments": "Traçabilité des paiements",
         "diagnostics": "Suivi des demandes diagnostiques",
         "stock": "Mouvements de stock"
+      }
+    },
+    "workspace": {
+      "dispensedToday": "Délivrances du jour",
+      "activeLots": "Lots en stock",
+      "stockAlertsSub": "péremption ≤ 90 jours",
+      "resultsToEnter": "Résultats à saisir",
+      "resultsToValidate": "Résultats à valider",
+      "resultsAvailable": "Résultats disponibles",
+      "requestsToday": "Demandes du jour",
+      "requestsTodaySub": "{lab} labo · {radio} imagerie",
+      "partiallyPaid": "Factures partiellement payées",
+      "patientsWaiting": "Patients en attente",
+      "worklist": {
+        "toDispense": "Ordonnances à dispenser",
+        "expiry": "Alertes de péremption",
+        "lots": "Lots en stock",
+        "dispensed": "Délivrances du jour"
+      },
+      "empty": {
+        "pharmacy": "Aucune ordonnance en attente dans les données de revue.",
+        "pharmacyAction": "Ouvrir la pharmacie pour examiner le parcours",
+        "diagnostics": "Aucune demande diagnostique en attente dans les données de revue.",
+        "diagnosticsAction": "Ouvrir les diagnostics pour examiner le parcours",
+        "clinical": "Aucune activité clinique sur la période dans les données de revue.",
+        "clinicalAction": "Ouvrir les consultations pour examiner le parcours"
       }
     }
   },
@@ -1208,8 +1240,10 @@
     "chips": {
       "synthetic": "Données synthétiques",
       "noIntegration": "Aucune intégration directe",
-      "aggregate": "Agrégé"
-    }
+      "aggregate": "Agrégé",
+      "review": "Revue"
+    },
+    "matrixLegend": "Les indicateurs sont issus d'instantanés agrégés de revue — aucune connexion directe aux modules des hôpitaux."
   },
   "uat": {
     "title": "Recette (UAT) + préparation Gate 7",

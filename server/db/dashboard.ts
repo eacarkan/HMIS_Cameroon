@@ -142,3 +142,46 @@ export function countPrescriptionsToDispense(hospitalId: string) {
     },
   });
 }
+
+// --- Phase 6.3 S4.2B — role-workspace counts & series (read-only, hospital-scoped).
+//     ("Dispensed today" reuses the 2D-8 countDispenseRecordsSince from pharmacy-reports.) ---
+
+/** Stock lots still holding quantity (pharmacy "active lots"). */
+export function countActiveStockLots(hospitalId: string) {
+  return prisma.medicationStockBatch.count({
+    where: { hospitalId, quantityOnHand: { gt: 0 } },
+  });
+}
+
+/** Diagnostic orders currently in the given statuses (results to enter / validate / available). */
+export function countDiagnosticOrdersByStatus(
+  hospitalId: string,
+  statuses: ("requested" | "payment_confirmed" | "in_progress" | "result_entered" | "validated")[],
+) {
+  return prisma.diagnosticOrder.count({
+    where: { hospitalId, status: { in: statuses } },
+  });
+}
+
+/** Invoices partially paid (cashier work queue). */
+export function countPartiallyPaidInvoices(hospitalId: string) {
+  return prisma.invoice.count({
+    where: { hospitalId, deletedAt: null, status: "partially_paid" },
+  });
+}
+
+/** Consultation timestamps since a moment — for the clinical 30-day series. */
+export function findConsultationDatesSince(hospitalId: string, since: Date) {
+  return prisma.consultation.findMany({
+    where: { hospitalId, deletedAt: null, createdAt: { gte: since } },
+    select: { createdAt: true },
+  });
+}
+
+/** Diagnostic-order timestamps since a moment — for the diagnostics 30-day series. */
+export function findDiagnosticOrderDatesSince(hospitalId: string, since: Date) {
+  return prisma.diagnosticOrder.findMany({
+    where: { hospitalId, status: { not: "cancelled" }, createdAt: { gte: since } },
+    select: { createdAt: true },
+  });
+}

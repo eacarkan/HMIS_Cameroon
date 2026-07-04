@@ -70,14 +70,20 @@
       "registrationsCaption": "Simulated patient flow over 30 days · demonstration data",
       "registrationsEmpty": "No activity in the period in the review data. Open the Patients module to review the workflow.",
       "billingTitle": "Collections by method",
-      "billingCaption": "Synthetic collections by payment method today · FCFA",
+      "billingCaption": "Synthetic collections by payment method · FCFA",
       "billingEmpty": "No collections today in the review data. Open the cashier module to review the workflow.",
       "operationsTitle": "Pharmacy & diagnostics",
       "stockAlerts": "Stock / expiry alerts",
       "labRequests": "Lab requests (today)",
       "radiologyRequests": "Imaging requests (today)",
       "pendingDiagnostics": "Exams in progress",
-      "operationsCaption": "Requests integrated into the care pathway · demonstration data"
+      "operationsCaption": "Requests integrated into the care pathway · demonstration data",
+      "clinicalTitle": "Clinical activity — 30 days",
+      "clinicalCaption": "Simulated clinical activity over the review period",
+      "diagnosticsTitle": "Diagnostic requests — 30 days",
+      "diagnosticsCaption": "Diagnostic requests integrated into the care pathway · review data",
+      "pharmacyTitle": "Prescriptions and stock — review data",
+      "pharmacyCaption": "Pharmacy activity from synthetic review data"
     },
     "quickAccess": {
       "title": "Workspaces",
@@ -146,6 +152,32 @@
         "payments": "Payment traceability",
         "diagnostics": "Diagnostic request tracking",
         "stock": "Stock movement tracking"
+      }
+    },
+    "workspace": {
+      "dispensedToday": "Dispensed today",
+      "activeLots": "Lots in stock",
+      "stockAlertsSub": "expiry ≤ 90 days",
+      "resultsToEnter": "Results to enter",
+      "resultsToValidate": "Results to validate",
+      "resultsAvailable": "Results available",
+      "requestsToday": "Requests today",
+      "requestsTodaySub": "{lab} lab · {radio} imaging",
+      "partiallyPaid": "Partially paid invoices",
+      "patientsWaiting": "Patients waiting",
+      "worklist": {
+        "toDispense": "Prescriptions to dispense",
+        "expiry": "Expiry alerts",
+        "lots": "Lots in stock",
+        "dispensed": "Dispensed today"
+      },
+      "empty": {
+        "pharmacy": "No pending prescription in review data.",
+        "pharmacyAction": "Open pharmacy to review the workflow",
+        "diagnostics": "No pending diagnostic request in review data.",
+        "diagnosticsAction": "Open diagnostics to review the workflow",
+        "clinical": "No clinical activity in the period in review data.",
+        "clinicalAction": "Open consultations to review the workflow"
       }
     }
   },
@@ -521,8 +553,10 @@
     "chips": {
       "synthetic": "Synthetic data",
       "noIntegration": "No live integration",
-      "aggregate": "Aggregate"
-    }
+      "aggregate": "Aggregate",
+      "review": "Review"
+    },
+    "matrixLegend": "Indicators are derived from aggregate review snapshots — no direct connection to hospital modules."
   },
   "uat": {
     "title": "UAT + Gate 7 readiness",

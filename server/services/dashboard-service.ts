@@ -12,14 +12,20 @@ import {
   countDiagnosticOrdersSince,
   countEncountersClosedSince,
   countEncountersOpenedSince,
+  countActiveStockLots,
+  countDiagnosticOrdersByStatus,
+  countDispenseRecordsSince,
   countExpiringStockLots,
   countInvoicesSince,
   countInvoicesToCollect,
   countOpenEncounters,
+  countPartiallyPaidInvoices,
   countPatientsRegisteredSince,
   countPendingDiagnosticOrders,
   countPrescriptionsToDispense,
   countWaitingQueueTickets,
+  findConsultationDatesSince,
+  findDiagnosticOrderDatesSince,
   findPatientRegistrationDatesSince,
   findPaymentsSince,
   recentAuditEntries,
@@ -135,6 +141,23 @@ export type DashboardExtras = {
   invoicesToCollect: number | null;
   /** Prescriptions the pharmacy still has to dispense. */
   prescriptionsToDispense: number | null;
+  // --- S4.2B role-workspace figures (each null when the role may not read it). ---
+  /** Dispense records today (pharmacy). */
+  dispensedToday: number | null;
+  /** Stock lots still holding quantity (pharmacy). */
+  activeStockLots: number | null;
+  /** Diagnostic orders awaiting a result (paid / in progress). */
+  diagnosticsToEnter: number | null;
+  /** Diagnostic results entered, awaiting validation. */
+  diagnosticsToValidate: number | null;
+  /** Validated diagnostic results (available to clinicians). */
+  diagnosticsResultsAvailable: number | null;
+  /** Invoices partially paid (cashier). */
+  partiallyPaidInvoices: number | null;
+  /** Consultations per day, oldest → today (TREND_DAYS buckets) — clinical series. */
+  consultationsByDay: number[] | null;
+  /** Diagnostic requests per day, oldest → today — diagnostics series. */
+  diagnosticsByDay: number[] | null;
 };
 
 /**
@@ -161,22 +184,58 @@ export async function getDashboardExtras(
   const canQueue = can(roles, "queue.read");
   const canInvoices = can(roles, "invoice.read");
   const canPrescriptions = can(roles, "prescription.read");
+  const canDispense = can(roles, "dispense.read");
+  const canConsultations = can(roles, "consultation.read");
 
-  const [registrations, stockAlerts, labToday, radioToday, pending, queue, toCollect, toDispense] =
-    await Promise.all([
-      findPatientRegistrationDatesSince(ctx.hospitalId, trendSince),
-      canStock ? countExpiringStockLots(ctx.hospitalId, expiryBefore) : Promise.resolve(null),
-      canDiagnostics
-        ? countDiagnosticOrdersSince(ctx.hospitalId, today, "lab")
-        : Promise.resolve(null),
-      canDiagnostics
-        ? countDiagnosticOrdersSince(ctx.hospitalId, today, "radiology")
-        : Promise.resolve(null),
-      canDiagnostics ? countPendingDiagnosticOrders(ctx.hospitalId) : Promise.resolve(null),
-      canQueue ? countWaitingQueueTickets(ctx.hospitalId, today) : Promise.resolve(null),
-      canInvoices ? countInvoicesToCollect(ctx.hospitalId) : Promise.resolve(null),
-      canPrescriptions ? countPrescriptionsToDispense(ctx.hospitalId) : Promise.resolve(null),
-    ]);
+  const [
+    registrations,
+    stockAlerts,
+    labToday,
+    radioToday,
+    pending,
+    queue,
+    toCollect,
+    toDispense,
+    dispensedToday,
+    activeLots,
+    toEnter,
+    toValidate,
+    resultsAvailable,
+    partiallyPaid,
+    consultationDates,
+    diagnosticDates,
+  ] = await Promise.all([
+    findPatientRegistrationDatesSince(ctx.hospitalId, trendSince),
+    canStock ? countExpiringStockLots(ctx.hospitalId, expiryBefore) : Promise.resolve(null),
+    canDiagnostics
+      ? countDiagnosticOrdersSince(ctx.hospitalId, today, "lab")
+      : Promise.resolve(null),
+    canDiagnostics
+      ? countDiagnosticOrdersSince(ctx.hospitalId, today, "radiology")
+      : Promise.resolve(null),
+    canDiagnostics ? countPendingDiagnosticOrders(ctx.hospitalId) : Promise.resolve(null),
+    canQueue ? countWaitingQueueTickets(ctx.hospitalId, today) : Promise.resolve(null),
+    canInvoices ? countInvoicesToCollect(ctx.hospitalId) : Promise.resolve(null),
+    canPrescriptions ? countPrescriptionsToDispense(ctx.hospitalId) : Promise.resolve(null),
+    canDispense ? countDispenseRecordsSince(ctx.hospitalId, today) : Promise.resolve(null),
+    canStock ? countActiveStockLots(ctx.hospitalId) : Promise.resolve(null),
+    canDiagnostics
+      ? countDiagnosticOrdersByStatus(ctx.hospitalId, ["payment_confirmed", "in_progress"])
+      : Promise.resolve(null),
+    canDiagnostics
+      ? countDiagnosticOrdersByStatus(ctx.hospitalId, ["result_entered"])
+      : Promise.resolve(null),
+    canDiagnostics
+      ? countDiagnosticOrdersByStatus(ctx.hospitalId, ["validated"])
+      : Promise.resolve(null),
+    canInvoices ? countPartiallyPaidInvoices(ctx.hospitalId) : Promise.resolve(null),
+    canConsultations
+      ? findConsultationDatesSince(ctx.hospitalId, trendSince)
+      : Promise.resolve(null),
+    canDiagnostics
+      ? findDiagnosticOrderDatesSince(ctx.hospitalId, trendSince)
+      : Promise.resolve(null),
+  ]);
 
   return {
     registrationsByDay: bucketByDay(
@@ -191,5 +250,25 @@ export async function getDashboardExtras(
     queueWaiting: queue,
     invoicesToCollect: toCollect,
     prescriptionsToDispense: toDispense,
+    dispensedToday,
+    activeStockLots: activeLots,
+    diagnosticsToEnter: toEnter,
+    diagnosticsToValidate: toValidate,
+    diagnosticsResultsAvailable: resultsAvailable,
+    partiallyPaidInvoices: partiallyPaid,
+    consultationsByDay: consultationDates
+      ? bucketByDay(
+          consultationDates.map((r) => r.createdAt),
+          TREND_DAYS,
+          today,
+        )
+      : null,
+    diagnosticsByDay: diagnosticDates
+      ? bucketByDay(
+          diagnosticDates.map((r) => r.createdAt),
+          TREND_DAYS,
+          today,
+        )
+      : null,
   };
 }

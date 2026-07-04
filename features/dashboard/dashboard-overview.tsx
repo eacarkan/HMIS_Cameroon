@@ -7,6 +7,9 @@ import {
   ActivityTrendPanel,
   BillingBreakdownPanel,
   CareOperationsPanel,
+  ClinicalTrendPanel,
+  DiagnosticsTrendPanel,
+  PharmacyWorklistPanel,
 } from "@/components/dashboard/dashboard-panels";
 import {
   GuidedDemoRail,
@@ -15,40 +18,64 @@ import {
 } from "@/components/dashboard/dashboard-rail";
 import { JourneyOperational } from "@/components/dashboard/journey-operational";
 import { auditActionLabel } from "@/lib/constants";
+import type { WorkspaceProfile } from "@/lib/dashboard-workspace";
 import { formatDateTimeFr } from "@/lib/dates";
 import type { DashboardExtras, DashboardSummary } from "@/server/services";
 
 /**
- * Dashboard overview (06 §11; Phase 1A Batch 5; executive layout 6.3 S4; operations
- * command layout S4.2). Workflow first, dashboard second: the operational command
- * strip (work queues) leads, then the role-gated KPI ledgers, the SVG operation
- * panels and the OPERATIONAL patient journey. Right rail: recent activity
- * (oversight), workspaces, administrative traceability, guided demo. All read-only,
- * hospital-scoped, synthetic-only; every optional block is capability-gated so the
- * page renders correctly for every role and on an empty database.
+ * Dashboard overview (06 §11; executive layout S4; operations command S4.2; role
+ * workspaces S4.2B). Composition is selected per workspace profile so the first
+ * screen answers "what work should this user handle now?":
+ *  - admin/operations — the accepted command-center layout (strip, hospital trend);
+ *  - clinical — clinical trend leads; no hospital-wide command strip;
+ *  - cashier — collections-by-method leads;
+ *  - pharmacy — pharmacy worklist leads (no fake chart);
+ *  - diagnostics — diagnostic-requests trend leads.
+ * All read-only, hospital-scoped, synthetic-only; every figure stays capability-gated
+ * so no profile can reveal a number its role may not read.
  */
 export async function DashboardOverview({
   summary,
   extras,
   roles,
+  profile,
 }: {
   summary: DashboardSummary;
   extras: DashboardExtras;
   roles: string[];
+  profile: WorkspaceProfile;
 }) {
   const t = await getTranslations("dashboard");
   const locale = await getLocale();
+  const isCommandCenter = profile === "admin" || profile === "operations";
 
   return (
     <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-      {/* Operations column */}
+      {/* Operations column — lead panels differ per workspace profile. */}
       <div className="min-w-0 space-y-5">
-        <CommandStrip summary={summary} extras={extras} roles={roles} />
+        {isCommandCenter ? (
+          <CommandStrip summary={summary} extras={extras} roles={roles} />
+        ) : null}
+
+        {/* Role lead panel (the first thing under the hero for operational roles). */}
+        {profile === "pharmacy" ? <PharmacyWorklistPanel extras={extras} /> : null}
+        {profile === "diagnostics" ? <DiagnosticsTrendPanel extras={extras} /> : null}
+        {profile === "clinical" ? <ClinicalTrendPanel extras={extras} /> : null}
+        {profile === "cashier" && summary.sections.billing ? (
+          <BillingBreakdownPanel summary={summary} />
+        ) : null}
+
         <JourneyOperational summary={summary} extras={extras} roles={roles} />
         <DashboardKpis summary={summary} hideActivity />
-        <ActivityTrendPanel extras={extras} />
-        {summary.sections.billing ? <BillingBreakdownPanel summary={summary} /> : null}
-        <CareOperationsPanel extras={extras} />
+
+        {/* Hospital-wide visuals stay on the command-center profiles only. */}
+        {isCommandCenter ? <ActivityTrendPanel extras={extras} /> : null}
+        {isCommandCenter && summary.sections.billing ? (
+          <BillingBreakdownPanel summary={summary} />
+        ) : null}
+        {isCommandCenter || profile === "clinical" ? (
+          <CareOperationsPanel extras={extras} />
+        ) : null}
       </div>
 
       {/* Rail */}

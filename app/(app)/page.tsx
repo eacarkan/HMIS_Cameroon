@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { ExecutiveHeader } from "@/components/dashboard/executive-header";
 import { SyntheticDataNotice } from "@/components/dashboard/synthetic-data-notice";
+import { resolveWorkspaceProfile } from "@/lib/dashboard-workspace";
 import { DashboardOverview } from "@/features/dashboard/dashboard-overview";
 import { requireActorAndHospital } from "@/server/auth";
 import { getDashboardExtras, getDashboardSummary } from "@/server/services";
@@ -21,6 +22,8 @@ export default async function DashboardPage() {
   const tRoles = await getTranslations("roles");
   const roles = actor.rolesByHospital[hospital.hospitalId] ?? [];
   const roleLabels = roles.map((code) => (tRoles.has(code) ? tRoles(code) : code));
+  // S4.2B — first screen composed per role workspace (figures stay capability-gated).
+  const profile = resolveWorkspaceProfile(roles);
 
   return (
     <>
@@ -29,13 +32,15 @@ export default async function DashboardPage() {
         userName={actor.displayName}
         roleLabels={roleLabels}
         summary={summary}
+        extras={extras}
+        profile={profile}
       />
       {/* S4.2 scope 4 — synthetic-data freshness metadata (period · last activity · no
           integrations), so stakeholders know exactly what the figures represent. */}
       <div className="-mt-3 mb-5">
         <SyntheticDataNotice lastActivityAt={summary.recent[0]?.createdAt ?? null} />
       </div>
-      <DashboardOverview summary={summary} extras={extras} roles={roles} />
+      <DashboardOverview summary={summary} extras={extras} roles={roles} profile={profile} />
     </>
   );
 }

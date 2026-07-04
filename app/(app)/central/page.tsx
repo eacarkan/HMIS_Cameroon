@@ -120,16 +120,18 @@ export default async function CentralOversightPage() {
                             {h.region} · {h.code}
                           </span>
                         </th>
+                        {/* S4.2B scope 7 — compact readiness cells (Revue/Préparé);
+                            «Agrégé» appears once per row, in the snapshot column. */}
                         {cells.map((cell) => (
                           <td key={cell.key} className="px-3 py-2">
                             <StatusChip tone={cell.active ? "active" : "muted"} dot>
-                              {cell.active ? t("chips.aggregate") : t("statusPrepared")}
+                              {cell.active ? t("chips.review") : t("statusPrepared")}
                             </StatusChip>
                           </td>
                         ))}
                         <td className="px-4 py-2 text-right">
                           <StatusChip tone={h.isActive ? "ok" : "muted"} dot>
-                            {ind.periodLabel}
+                            {t("chips.aggregate")} · {ind.periodLabel}
                           </StatusChip>
                         </td>
                       </tr>
@@ -138,6 +140,10 @@ export default async function CentralOversightPage() {
                 </tbody>
               </table>
             </div>
+            {/* S4.2B scope 7 — legend: where these indicators come from. */}
+            <p className="text-muted-foreground border-t px-4 py-2 text-[10.5px]">
+              {t("matrixLegend")}
+            </p>
           </section>
 
           {/* 6.3I — hospital activity comparison (SVG/CSS bars over snapshot aggregates) */}

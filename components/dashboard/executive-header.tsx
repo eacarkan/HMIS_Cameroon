@@ -1,57 +1,136 @@
 import { getTranslations } from "next-intl/server";
 
 import { formatDateTimeFr } from "@/lib/dates";
+import type { WorkspaceProfile } from "@/lib/dashboard-workspace";
 import { formatFcfa } from "@/lib/money";
-import type { DashboardSummary } from "@/server/services";
+import type { DashboardExtras, DashboardSummary } from "@/server/services";
 
 /**
- * Executive dashboard header (Phase 6.3 S4 — hybrid direction, band «A»). The deep-teal
- * institutional band from the public hero, carried into the authenticated app: hospital
- * identity (name · region · code), the signed-in role, the review-environment badge, the
- * last synthetic activity, and up to four hero KPIs. Server component; presentation only —
- * every figure comes from the capability-gated dashboard summary.
+ * Executive dashboard header (Phase 6.3 S4 — hybrid band; role-aware heroes S4.2B).
+ * The deep-teal institutional band: hospital identity, signed-in role, review badge,
+ * last synthetic activity, and up to four hero KPIs COMPOSED PER WORKSPACE PROFILE —
+ * a pharmacist leads with prescriptions/stock, a cashier with collections, a doctor
+ * with the clinical queue; only admin/operations keep the hospital-wide figures.
+ * Server component; every figure comes from the capability-gated dashboard service
+ * (a null figure — capability not held — simply drops its cell, never a fake number).
  */
+type HeroCell = { key: string; label: string; value: string; sub?: string };
+
 export async function ExecutiveHeader({
   hospital,
   userName,
   roleLabels,
   summary,
+  extras,
+  profile,
 }: {
   hospital: { name: string; region: string; code: string };
   userName: string;
   roleLabels: string[];
   summary: DashboardSummary;
+  extras: DashboardExtras;
+  profile: WorkspaceProfile;
 }) {
   const t = await getTranslations("dashboard");
+  const tw = await getTranslations("dashboard.workspace");
+
   const tApp = await getTranslations("app");
 
   const lastActivity = summary.recent[0]?.createdAt ?? null;
   const s = summary.sections;
 
-  // Up to four hero cells; the third/fourth adapt to what the role may see.
-  const cells: { key: string; label: string; value: string; sub?: string }[] = [
-    { key: "patients", label: t("kpi.patientsToday"), value: String(summary.patientsToday) },
-    {
-      key: "open",
-      label: t("kpi.openEncounters"),
-      value: String(summary.openEncounters),
-      sub: t("exec.openedClosed", {
-        opened: summary.encountersOpenedToday,
-        closed: summary.encountersClosedToday,
-      }),
-    },
-    s.clinical
-      ? { key: "consult", label: t("kpi.consultationsToday"), value: String(summary.consultationsToday) }
-      : { key: "opened", label: t("kpi.encountersOpenedToday"), value: String(summary.encountersOpenedToday) },
-    s.billing
-      ? {
-          key: "collections",
-          label: t("kpi.collectionsToday"),
-          value: formatFcfa(summary.collectionsToday),
-          sub: t("exec.invoicesCount", { count: summary.invoicesToday }),
-        }
-      : { key: "closed", label: t("kpi.encountersClosedToday"), value: String(summary.encountersClosedToday) },
-  ];
+  const n = (v: number | null): string | null => (v === null ? null : String(v));
+  const cell = (key: string, label: string, value: string | null, sub?: string): HeroCell | null =>
+    value === null ? null : { key, label, value, sub };
+
+  let candidates: (HeroCell | null)[];
+  switch (profile) {
+    case "pharmacy":
+      candidates = [
+        cell("toDispense", t("command.items.prescriptionsToDispense.label"), n(extras.prescriptionsToDispense)),
+        cell("dispensed", tw("dispensedToday"), n(extras.dispensedToday)),
+        cell("stockAlerts", t("command.items.stockAlerts.label"), n(extras.stockAlerts), tw("stockAlertsSub")),
+        cell("activeLots", tw("activeLots"), n(extras.activeStockLots)),
+      ];
+      break;
+    case "diagnostics":
+      candidates = [
+        cell("pending", t("command.items.pendingDiagnostics.label"), n(extras.pendingDiagnostics)),
+        cell("toEnter", tw("resultsToEnter"), n(extras.diagnosticsToEnter)),
+        cell("toValidate", tw("resultsToValidate"), n(extras.diagnosticsToValidate)),
+        cell(
+          "requestsToday",
+          tw("requestsToday"),
+          extras.labRequestsToday === null && extras.radiologyRequestsToday === null
+            ? null
+            : String((extras.labRequestsToday ?? 0) + (extras.radiologyRequestsToday ?? 0)),
+          tw("requestsTodaySub", {
+            lab: extras.labRequestsToday ?? 0,
+            radio: extras.radiologyRequestsToday ?? 0,
+          }),
+        ),
+      ];
+      break;
+    case "cashier":
+      candidates = [
+        cell("toCollect", t("command.items.invoicesToCollect.label"), n(extras.invoicesToCollect)),
+        cell(
+          "collections",
+          t("kpi.collectionsToday"),
+          s.billing ? formatFcfa(summary.collectionsToday) : null,
+          t("exec.invoicesCount", { count: summary.invoicesToday }),
+        ),
+        cell("partiallyPaid", tw("partiallyPaid"), n(extras.partiallyPaidInvoices)),
+        cell("invoicesToday", t("kpi.invoicesToday"), s.billing ? String(summary.invoicesToday) : null),
+      ];
+      break;
+    case "clinical":
+      candidates = [
+        cell("waiting", tw("patientsWaiting"), n(extras.queueWaiting)),
+        cell(
+          "open",
+          t("kpi.openEncounters"),
+          String(summary.openEncounters),
+          t("exec.openedClosed", {
+            opened: summary.encountersOpenedToday,
+            closed: summary.encountersClosedToday,
+          }),
+        ),
+        cell(
+          "consult",
+          t("kpi.consultationsToday"),
+          s.clinical ? String(summary.consultationsToday) : null,
+        ),
+        cell("results", tw("resultsAvailable"), n(extras.diagnosticsResultsAvailable)),
+      ];
+      break;
+    default:
+      // admin / operations — the accepted S4.2 hospital-wide composition.
+      candidates = [
+        cell("patients", t("kpi.patientsToday"), String(summary.patientsToday)),
+        cell(
+          "open",
+          t("kpi.openEncounters"),
+          String(summary.openEncounters),
+          t("exec.openedClosed", {
+            opened: summary.encountersOpenedToday,
+            closed: summary.encountersClosedToday,
+          }),
+        ),
+        s.clinical
+          ? cell("consult", t("kpi.consultationsToday"), String(summary.consultationsToday))
+          : cell("opened", t("kpi.encountersOpenedToday"), String(summary.encountersOpenedToday)),
+        s.billing
+          ? cell(
+              "collections",
+              t("kpi.collectionsToday"),
+              formatFcfa(summary.collectionsToday),
+              t("exec.invoicesCount", { count: summary.invoicesToday }),
+            )
+          : cell("closed", t("kpi.encountersClosedToday"), String(summary.encountersClosedToday)),
+      ];
+  }
+  const cells = candidates.filter((c): c is HeroCell => c !== null);
 
   return (
     <section

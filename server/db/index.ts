@@ -98,6 +98,11 @@ export {
   countWaitingQueueTickets,
   countInvoicesToCollect,
   countPrescriptionsToDispense,
+  countActiveStockLots,
+  countDiagnosticOrdersByStatus,
+  countPartiallyPaidInvoices,
+  findConsultationDatesSince,
+  findDiagnosticOrderDatesSince,
 } from "./dashboard";
 
 // Phase 1 (Gate 2 + Gate 3) — additive hospital-scoped data-access for the new models.
