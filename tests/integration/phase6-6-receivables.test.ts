@@ -79,6 +79,27 @@ describe("integration: Phase 6.6 receivables aging", () => {
     expect(aging.reconciles).toBe(true);
   });
 
+  it("excludes cancelled/paid invoices and settled/waived emergency debts", async () => {
+    // A cancelled invoice (billed then voided) — excluded from aging.
+    const { invoice } = await agedInvoice(5000, 10, 0);
+    await prisma.invoice.update({ where: { id: invoice.id }, data: { status: "cancelled" } });
+    // A fully-paid invoice — excluded (0 outstanding, status paid).
+    const { patient, enc } = await agedInvoice(1000, 5, 1000);
+    // Settled + waived emergency debts — excluded (only `outstanding` counts).
+    await prisma.emergencyDebt.create({
+      data: { hospitalId: HRB, encounterId: enc.id, patientId: patient.id, amount: 3000, source: "Soins d'urgence", status: "settled", createdAt: new Date() },
+    });
+    await prisma.emergencyDebt.create({
+      data: { hospitalId: HRB, encounterId: enc.id, patientId: patient.id, amount: 2000, source: "Soins d'urgence", status: "waived", createdAt: new Date() },
+    });
+
+    const cashier = await loginAndSelect(ACCOUNTS.cashier);
+    const aging = await getReceivablesAging(cashier.actor, cashier.ctx);
+    expect(aging.total).toBe(0); // everything above is excluded
+    expect(aging.detail.length).toBe(0);
+    expect(aging.reconciles).toBe(true);
+  });
+
   it("denies aging to a role without receivables.view", async () => {
     const doctor = await loginAndSelect(ACCOUNTS.doctor);
     await expect(getReceivablesAging(doctor.actor, doctor.ctx)).rejects.toBeInstanceOf(AuthorizationError);

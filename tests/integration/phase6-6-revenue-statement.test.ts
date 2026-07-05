@@ -71,6 +71,54 @@ describe("integration: Phase 6.6 numbered monthly revenue statement", () => {
     expect(await moneySnapshot()).toEqual(before);
   });
 
+  it("reports total invoiced, collected, net and arrears movement (facturé − encaissé)", async () => {
+    await paidInvoice(5000, "cash"); // billed 5000, collected 5000
+    // a partially-paid invoice: billed 4000, collected 1000
+    const reception = await loginAndSelect(ACCOUNTS.reception);
+    const patient = await createPatientForActor(reception.actor, reception.ctx, {
+      familyName: "ARR", givenName: "Probe", sex: "male", dateOfBirth: new Date("1990-01-01"), phone: null, residence: null,
+    });
+    const enc = await openEncounter(reception.actor, reception.ctx, patient.id, { serviceLabel: "Médecine générale", reason: "Bilan" });
+    const cashier = await loginAndSelect(ACCOUNTS.cashier);
+    const inv = await createInvoice(cashier.actor, cashier.ctx, enc.id, [{ label: "Consultation", unitAmount: 4000, quantity: 1 }]);
+    await recordPayment(cashier.actor, cashier.ctx, inv.id, { amount: 1000, method: "cash" });
+
+    const st = await getRevenueStatement(cashier.actor, cashier.ctx);
+    expect(st.totalInvoiced).toBe(9000); // 5000 + 4000 billed
+    expect(st.total).toBe(6000); // 5000 + 1000 collected
+    expect(st.refundsTotal).toBe(0);
+    expect(st.netCollected).toBe(6000);
+    expect(st.arrearsMovement).toBe(3000); // 9000 invoiced − 6000 collected
+    // byMethod reconciles to total collected.
+    expect(st.byMethod.reduce((s, m) => s + m.total, 0)).toBe(st.total);
+  });
+
+  it("includes executed refunds in refundsTotal and net collected", async () => {
+    await paidInvoice(5000, "cash");
+    const cashier = await loginAndSelect(ACCOUNTS.cashier);
+    const inv = await prisma.invoice.findFirstOrThrow({ where: { hospitalId: HRB } });
+    const cr = await prisma.invoiceCancellationRequest.create({
+      data: { hospitalId: HRB, invoiceId: inv.id, status: "approved", reason: "synthétique", requestedById: cashier.actor.id },
+    });
+    await prisma.refundVoucher.create({
+      data: {
+        hospitalId: HRB, voucherNumber: "HRB-DEMO-A-2026-000001", invoiceId: inv.id, cancellationRequestId: cr.id,
+        amount: 2000, status: "paid", reason: "synthétique", requestedById: cashier.actor.id, executedAt: new Date(),
+      },
+    });
+    const st = await getRevenueStatement(cashier.actor, cashier.ctx);
+    expect(st.refundsTotal).toBe(2000);
+    expect(st.netCollected).toBe(st.total - 2000);
+  });
+
+  it("statement wording is audit-trace + synthetic only (no certificate/attestation language)", async () => {
+    const fr = (await import("@/messages/fr.json")).default;
+    const s = JSON.stringify(fr.finance.statement);
+    expect(s).not.toMatch(/certif|attestation/i);
+    expect(fr.finance.statement.footerNote).toMatch(/journal d.audit/i);
+    expect(fr.finance.statement.footerNote).toMatch(/synth[ée]tiques/i);
+  });
+
   it("denies the statement to a role without revenue_statement.read", async () => {
     const doctor = await loginAndSelect(ACCOUNTS.doctor);
     await expect(getRevenueStatement(doctor.actor, doctor.ctx)).rejects.toBeInstanceOf(AuthorizationError);

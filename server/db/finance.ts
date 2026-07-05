@@ -71,16 +71,32 @@ export function findRecordedPaymentsInRange(hospitalId: string, start: Date, end
   });
 }
 
-/** Count invoices ISSUED (not draft) in a [start, end) window (by createdAt) — context for the statement. */
+/** Count LIVE billed invoices (issued/partially_paid/paid — excludes draft + cancelled) created in a
+ * [start, end) window. Context for the revenue statement. */
 export function countInvoicesIssuedInRange(hospitalId: string, start: Date, end: Date) {
   return prisma.invoice.count({
     where: {
       hospitalId,
       deletedAt: null,
-      status: { not: "draft" },
+      status: { in: ["issued", "partially_paid", "paid"] },
       createdAt: { gte: start, lt: end },
     },
   });
+}
+
+/** Σ of LIVE billed invoice totals (issued/partially_paid/paid — excludes draft + cancelled) created in a
+ * [start, end) window. The statement's "total invoiced" (gross billed, not counting voided invoices). */
+export async function sumInvoicedInRange(hospitalId: string, start: Date, end: Date): Promise<number> {
+  const agg = await prisma.invoice.aggregate({
+    _sum: { totalAmount: true },
+    where: {
+      hospitalId,
+      deletedAt: null,
+      status: { in: ["issued", "partially_paid", "paid"] },
+      createdAt: { gte: start, lt: end },
+    },
+  });
+  return agg._sum.totalAmount ?? 0;
 }
 
 // ================= Unit 4 — Deposit / bank reconciliation (overlay CRUD; no money mutation) =================

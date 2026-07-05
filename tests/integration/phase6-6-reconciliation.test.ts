@@ -12,6 +12,7 @@ import {
   matchBankLineToSlip,
   openEncounter,
   recordPayment,
+  unlinkPaymentFromSlip,
 } from "@/server/services";
 import { ACCOUNTS, loginAndSelect } from "../helpers/actors";
 import { prisma, resetTestDb } from "../helpers/db";
@@ -119,6 +120,28 @@ describe("integration: Phase 6.6 deposit/bank reconciliation", () => {
       _sum: { matchedAmountFcfa: true }, where: { hospitalId: HRB, bankStatementLineId: line.id },
     });
     expect(agg._sum.matchedAmountFcfa ?? 0).toBeLessThanOrEqual(10000);
+  });
+
+  it("unlinking a payment removes the membership, recomputes the slip, frees re-linking, and mutates no money", async () => {
+    const p = await recordedPayment(4000);
+    const slip = await createDepositSlip(p.cashier.actor, p.cashier.ctx, { declaredTotalFcfa: 4000 });
+    const before = await moneySnapshot();
+
+    await linkPaymentToSlip(p.cashier.actor, p.cashier.ctx, { slipId: slip.id, paymentId: p.payment.id });
+    expect((await prisma.depositSlip.findUniqueOrThrow({ where: { id: slip.id } })).computedPaymentTotalFcfa).toBe(4000);
+
+    await unlinkPaymentFromSlip(p.cashier.actor, p.cashier.ctx, { slipId: slip.id, paymentId: p.payment.id });
+    expect(await prisma.depositSlipPayment.count({ where: { depositSlipId: slip.id } })).toBe(0);
+    expect((await prisma.depositSlip.findUniqueOrThrow({ where: { id: slip.id } })).computedPaymentTotalFcfa).toBe(0);
+
+    // The freed payment can be re-linked (the membership hard-delete releases the @@unique).
+    await expect(
+      linkPaymentToSlip(p.cashier.actor, p.cashier.ctx, { slipId: slip.id, paymentId: p.payment.id }),
+    ).resolves.toBeTruthy();
+
+    // No Invoice/Payment money field changed by link → unlink → re-link.
+    expect(await moneySnapshot()).toEqual(before);
+    expect(await prisma.auditLog.count({ where: { hospitalId: HRB, action: "deposit_slip.payment_unlinked" } })).toBe(1);
   });
 
   it("prevents a payment from being on two active deposit slips", async () => {

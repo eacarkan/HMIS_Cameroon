@@ -3,7 +3,9 @@ import { frMonthLabel, monthRange, parsePeriod, periodKey } from "@/lib/dates";
 import { sumFcfa } from "@/lib/money";
 import {
   countInvoicesIssuedInRange,
+  findExecutedRefundsForWindow,
   findRecordedPaymentsInRange,
+  sumInvoicedInRange,
   type HospitalContext,
 } from "@/server/db";
 
@@ -24,9 +26,19 @@ export type RevenueStatement = {
   period: string;
   periodLabel: string;
   byMethod: RevenueMethodRow[];
+  /** Total collected in the period (Σ recorded payments). `byMethod` sums to this. */
   total: number;
   paymentCount: number;
+  /** Count of LIVE billed invoices (issued/partially_paid/paid) in the period. */
   invoiceCount: number;
+  /** Total invoiced (gross billed, excludes draft + cancelled) in the period. */
+  totalInvoiced: number;
+  /** Refunds/reversals executed in the period (Σ paid RefundVoucher). */
+  refundsTotal: number;
+  /** Net collected = total collected − refunds. */
+  netCollected: number;
+  /** Arrears movement = total invoiced − total collected (positive = arrears grew this period). */
+  arrearsMovement: number;
   hospitalName: string;
   generatedAt: Date;
 };
@@ -40,9 +52,11 @@ export async function getRevenueStatement(
   const { year, month } = parsePeriod(opts.period);
   const { start, end } = monthRange(year, month);
 
-  const [payments, invoiceCount] = await Promise.all([
+  const [payments, invoiceCount, totalInvoiced, refunds] = await Promise.all([
     findRecordedPaymentsInRange(ctx.hospitalId, start, end),
     countInvoicesIssuedInRange(ctx.hospitalId, start, end),
+    sumInvoicedInRange(ctx.hospitalId, start, end),
+    findExecutedRefundsForWindow(ctx.hospitalId, start, end),
   ]);
 
   const byMethodMap = new Map<string, { count: number; total: number }>();
@@ -56,13 +70,20 @@ export async function getRevenueStatement(
     .map(([method, v]) => ({ method, methodLabel: PAYMENT_METHOD_FR[method] ?? method, count: v.count, total: v.total }))
     .sort((a, b) => b.total - a.total || a.method.localeCompare(b.method));
 
+  const total = sumFcfa(payments.map((p) => p.amount));
+  const refundsTotal = sumFcfa(refunds.map((r) => r.amount));
+
   return {
     period: periodKey(year, month),
     periodLabel: frMonthLabel(year, month),
     byMethod,
-    total: sumFcfa(payments.map((p) => p.amount)),
+    total,
     paymentCount: payments.length,
     invoiceCount,
+    totalInvoiced,
+    refundsTotal,
+    netCollected: total - refundsTotal,
+    arrearsMovement: totalInvoiced - total,
     hospitalName: ctx.name,
     generatedAt: new Date(),
   };

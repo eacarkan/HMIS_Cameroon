@@ -510,6 +510,7 @@ export {
   listOutstandingEmergencyDebts,
   findRecordedPaymentsInRange,
   countInvoicesIssuedInRange,
+  sumInvoicedInRange,
   createDepositSlipRow,
   listDepositSlips,
   findDepositSlipById,

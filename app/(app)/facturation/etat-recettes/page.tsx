@@ -83,9 +83,20 @@ export default async function RevenueStatementPage({
               </table>
             </div>
           )}
-          <p className="text-muted-foreground mt-3 text-xs">
-            {t("statement.invoiceCount")} : {statement.invoiceCount}
-          </p>
+          <dl className="mt-4 grid max-w-md grid-cols-[1fr_auto] gap-x-6 gap-y-1 text-sm">
+            <dt className="text-muted-foreground">{t("statement.totalInvoiced")}</dt>
+            <dd className="tnum text-right">{formatFcfa(statement.totalInvoiced)}</dd>
+            <dt className="text-muted-foreground">{t("statement.totalCollected")}</dt>
+            <dd className="tnum text-right">{formatFcfa(statement.total)}</dd>
+            <dt className="text-muted-foreground">{t("statement.refunds")}</dt>
+            <dd className="tnum text-right">{formatFcfa(statement.refundsTotal)}</dd>
+            <dt className="font-medium">{t("statement.netCollected")}</dt>
+            <dd className="tnum text-right font-medium">{formatFcfa(statement.netCollected)}</dd>
+            <dt className="text-muted-foreground">{t("statement.arrearsMovement")}</dt>
+            <dd className="tnum text-right">{formatFcfa(statement.arrearsMovement)}</dd>
+            <dt className="text-muted-foreground">{t("statement.invoiceCount")}</dt>
+            <dd className="tnum text-right">{statement.invoiceCount}</dd>
+          </dl>
         </CardContent>
       </Card>
 
@@ -100,6 +111,10 @@ export default async function RevenueStatementPage({
               total: statement.total,
               paymentCount: statement.paymentCount,
               invoiceCount: statement.invoiceCount,
+              totalInvoiced: statement.totalInvoiced,
+              refundsTotal: statement.refundsTotal,
+              netCollected: statement.netCollected,
+              arrearsMovement: statement.arrearsMovement,
               generatedAtLabel: formatDateTimeFr(new Date(statement.generatedAt)),
             }}
           />

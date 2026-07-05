@@ -11,6 +11,10 @@ export type RevenueStatementDocData = {
   total: number;
   paymentCount: number;
   invoiceCount: number;
+  totalInvoiced: number;
+  refundsTotal: number;
+  netCollected: number;
+  arrearsMovement: number;
   generatedAtLabel: string;
 };
 
@@ -67,11 +71,24 @@ export function RevenueStatementDocument({ data }: { data: RevenueStatementDocDa
         </tbody>
         <tfoot>
           <tr className="font-semibold">
-            <td className="py-2" colSpan={2}>{t("statement.total")}</td>
+            <td className="py-2" colSpan={2}>{t("statement.totalCollected")}</td>
             <td className="tnum py-2 text-right">{formatFcfa(data.total)}</td>
           </tr>
         </tfoot>
       </table>
+
+      <dl className="mx-auto mt-6 grid max-w-md grid-cols-[1fr_auto] gap-x-6 gap-y-1 text-sm">
+        <dt className="text-neutral-600">{t("statement.totalInvoiced")}</dt>
+        <dd className="tnum text-right">{formatFcfa(data.totalInvoiced)}</dd>
+        <dt className="text-neutral-600">{t("statement.totalCollected")}</dt>
+        <dd className="tnum text-right">{formatFcfa(data.total)}</dd>
+        <dt className="text-neutral-600">{t("statement.refunds")}</dt>
+        <dd className="tnum text-right">{formatFcfa(data.refundsTotal)}</dd>
+        <dt className="font-medium">{t("statement.netCollected")}</dt>
+        <dd className="tnum text-right font-medium">{formatFcfa(data.netCollected)}</dd>
+        <dt className="text-neutral-600">{t("statement.arrearsMovement")}</dt>
+        <dd className="tnum text-right">{formatFcfa(data.arrearsMovement)}</dd>
+      </dl>
 
       <footer className="mt-10 border-t border-neutral-300 pt-3 text-center text-[11px] text-neutral-600">
         <p>{t("statement.footerNote")}</p>

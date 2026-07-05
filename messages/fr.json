@@ -2071,7 +2071,12 @@
       "print": "Imprimer",
       "hospital": "Hôpital",
       "footerNote": "Document interne — chaque montant est traçable dans le journal d’audit. Données synthétiques ; ce document n’a pas de valeur comptable, bancaire ou légale officielle et ne saurait tenir lieu de pièce justificative.",
-      "empty": "Aucune recette enregistrée pour cette période."
+      "empty": "Aucune recette enregistrée pour cette période.",
+      "totalInvoiced": "Total facturé",
+      "totalCollected": "Total encaissé",
+      "refunds": "Remboursements",
+      "netCollected": "Net encaissé (encaissé − remboursements)",
+      "arrearsMovement": "Variation des créances (facturé − encaissé)"
     },
     "continuity": {
       "title": "Continuité de service (fonctionnement en ligne)",
