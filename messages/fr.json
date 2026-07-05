@@ -9,7 +9,8 @@
     "reviewScope": "Environnement de revue pour hôpitaux régionaux",
     "languageShort": "FR",
     "languageLabel": "Français",
-    "reviewShort": "Revue — données synthétiques"
+    "reviewShort": "Revue — données synthétiques",
+    "techCredit": "Conception technique et développement de la démonstration : ACN Engineering Co. — Erdem ACARKAN"
   },
   "auth": {
     "title": "Connexion",

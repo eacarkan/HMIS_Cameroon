@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import type { HospitalContext } from "@/lib/hospital-context";
 import type { AuthenticatedActor } from "@/server/services";
+import { AppCredit } from "./app-credit";
 import { PrototypeBanner } from "./prototype-banner";
 import { Sidebar } from "./sidebar";
 import { Topbar, type HospitalOption } from "./topbar";
@@ -35,6 +36,11 @@ export function AppShell({
             <div className="mx-auto w-full max-w-screen-2xl p-6 lg:p-8">
               {children}
             </div>
+            {/* Discreet authorship / technical credit at the bottom of the content area —
+                distinct from the sidebar's review-environment / synthetic-data marker. */}
+            <footer className="mx-auto w-full max-w-screen-2xl px-6 pb-6 lg:px-8">
+              <AppCredit className="border-border/60 border-t pt-3" />
+            </footer>
           </main>
         </div>
       </div>

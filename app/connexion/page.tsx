@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { LoginForm } from "@/components/auth/login-form";
+import { AppCredit } from "@/components/layout/app-credit";
 import { LanguageToggle } from "@/components/layout/language-toggle";
 import { PrototypeBanner } from "@/components/layout/prototype-banner";
 import { HeroConstellation } from "@/components/public/hero-constellation";
@@ -128,6 +129,8 @@ export default async function ConnexionPage() {
               ) : null}
             </div>
           </div>
+          {/* Discreet authorship / technical credit at the foot of the sign-in column. */}
+          <AppCredit className="pt-2 text-center" />
         </main>
       </div>
     </div>

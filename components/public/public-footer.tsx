@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
+import { AppCredit } from "@/components/layout/app-credit";
 import { SanteGridLogo } from "@/components/public/santegrid-logo";
 
 /**
@@ -28,6 +29,8 @@ export async function PublicFooter() {
           </Link>
         </p>
         <p className="text-muted-foreground/80 pt-1">{t("release")}</p>
+        {/* Discreet authorship / technical credit — separate from the safety wording above. */}
+        <AppCredit className="border-border/60 mt-3 border-t pt-3" />
       </div>
     </footer>
   );

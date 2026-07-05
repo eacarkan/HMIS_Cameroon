@@ -9,7 +9,8 @@
     "reviewScope": "Review environment for regional hospitals",
     "languageShort": "EN",
     "languageLabel": "English",
-    "reviewShort": "Review — synthetic data"
+    "reviewShort": "Review — synthetic data",
+    "techCredit": "Technical design and demonstration development: ACN Engineering Co. — Erdem ACARKAN"
   },
   "auth": {
     "title": "Sign in",
