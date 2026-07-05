@@ -39,6 +39,17 @@ const eslintConfig = defineConfig([
     },
   },
 
+  // Intentionally-unused bindings prefixed with `_` are allowed (e.g. the (_prev, _formData)
+  // signature that `useActionState` requires of a server action even when it reads neither).
+  {
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_" },
+      ],
+    },
+  },
+
   // Override default ignores of eslint-config-next. Also ignore generated test artifacts —
   // Playwright writes minified vendor bundles into playwright-report/ (and traces into
   // test-results/) when a run retains traces; both are gitignored build output, not source.
