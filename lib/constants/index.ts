@@ -227,6 +227,13 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "diagnostic.validated": "Résultat d'examen validé",
   "diagnostic.cancelled": "Examen annulé",
   "diagnostic.pdf_generated": "Compte rendu d'examen imprimé",
+  "deposit_slip.created": "Bordereau de versement créé",
+  "deposit_slip.payment_linked": "Paiement rattaché au bordereau",
+  "deposit_slip.payment_unlinked": "Paiement détaché du bordereau",
+  "deposit_slip.status_changed": "Statut du bordereau modifié",
+  "bank_statement.imported": "Relevé bancaire synthétique importé",
+  "bank_line.matched": "Ligne bancaire rapprochée",
+  "revenue_statement.generated": "État mensuel des recettes généré",
 };
 
 /**
@@ -371,6 +378,13 @@ export const AUDIT_ACTION_LABELS_EN: Record<string, string> = {
   "diagnostic.validated": "Exam result validated",
   "diagnostic.cancelled": "Exam cancelled",
   "diagnostic.pdf_generated": "Exam report printed",
+  "deposit_slip.created": "Deposit slip created",
+  "deposit_slip.payment_linked": "Payment linked to deposit slip",
+  "deposit_slip.payment_unlinked": "Payment unlinked from deposit slip",
+  "deposit_slip.status_changed": "Deposit slip status changed",
+  "bank_statement.imported": "Synthetic bank statement imported",
+  "bank_line.matched": "Bank line reconciled",
+  "revenue_statement.generated": "Monthly revenue statement generated",
 };
 
 /**

@@ -231,6 +231,14 @@ export const AUDIT_ACTIONS = {
   patientMatchDecisionRecorded: "patient_match.review_decision_recorded",
   patientMatchDismissed: "patient_match.dismissed",
   patientMatchMockMpiChecked: "patient_match.mock_mpi_checked",
+  // Phase 6.6 — finance / bank reconciliation (metadata-overlay actions; never a money-field write).
+  depositSlipCreated: "deposit_slip.created",
+  depositSlipPaymentLinked: "deposit_slip.payment_linked",
+  depositSlipPaymentUnlinked: "deposit_slip.payment_unlinked",
+  depositSlipStatusChanged: "deposit_slip.status_changed",
+  bankStatementImported: "bank_statement.imported",
+  bankLineMatched: "bank_line.matched",
+  revenueStatementGenerated: "revenue_statement.generated",
 } as const;
 
 /**
