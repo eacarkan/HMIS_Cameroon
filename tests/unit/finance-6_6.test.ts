@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  AGING_BUCKETS,
+  agingBucket,
   assertBankLineMatch,
   assertDepositSlipTransition,
   assertSameHospital,
@@ -103,5 +105,21 @@ describe("unit: 6.6 numbering (bordereau de versement + état des recettes)", ()
     expect(
       formatDocumentNumber({ hospitalCode: "HRB-DEMO", kind: "revenue_statement", year: 2026, counter: 42 }),
     ).toBe("HRB-DEMO-ETAT-2026-000042");
+  });
+});
+
+describe("unit: 6.6 receivables aging buckets", () => {
+  it("classifies ages into 0-30 / 31-60 / 61-90 / 90+ (inclusive upper bounds)", () => {
+    expect(AGING_BUCKETS).toEqual(["0-30", "31-60", "61-90", "90+"]);
+    expect(agingBucket(0)).toBe("0-30");
+    expect(agingBucket(30)).toBe("0-30");
+    expect(agingBucket(31)).toBe("31-60");
+    expect(agingBucket(60)).toBe("31-60");
+    expect(agingBucket(61)).toBe("61-90");
+    expect(agingBucket(90)).toBe("61-90");
+    expect(agingBucket(91)).toBe("90+");
+    expect(agingBucket(365)).toBe("90+");
+    // A negative age (future createdAt — shouldn't happen) falls into the youngest bucket, never crashes.
+    expect(agingBucket(-5)).toBe("0-30");
   });
 });

@@ -426,6 +426,7 @@ export { recordDemoSessionRequest } from "./demo-service";
 
 // Phase 6.6 — finance / bank reconciliation (Mobile-Money report; aging; deposit reconciliation; statement).
 export { getMobileMoneyReport } from "./momo-report-service";
+export { getReceivablesAging } from "./receivables-service";
 
 /** Marker for a use-case that is intentionally not built yet. */
 export function notImplemented(useCase: string): never {

@@ -151,3 +151,19 @@ export function assertSameHospital(
     );
   }
 }
+
+// ---------------------------------------------------------------------------------------------------
+// Receivables aging (Step-0 §5): buckets 0–30 / 31–60 / 61–90 / 90+ days, anchored on the item's
+// createdAt. Pure classifier so the service, the seed and the tests bucket identically.
+// ---------------------------------------------------------------------------------------------------
+
+export const AGING_BUCKETS = ["0-30", "31-60", "61-90", "90+"] as const;
+export type AgingBucket = (typeof AGING_BUCKETS)[number];
+
+/** Classify an age in whole days into a receivables-aging bucket (negatives fall into 0–30). */
+export function agingBucket(days: number): AgingBucket {
+  if (days <= 30) return "0-30";
+  if (days <= 60) return "31-60";
+  if (days <= 90) return "61-90";
+  return "90+";
+}
