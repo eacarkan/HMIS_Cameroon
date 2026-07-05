@@ -2052,7 +2052,7 @@
     },
     "statement": {
       "title": "État mensuel numéroté des recettes",
-      "subtitle": "Document interne de traçabilité des recettes — données synthétiques. Ni certificat, ni attestation, ni pièce comptable officielle.",
+      "subtitle": "Document interne de traçabilité des recettes — données synthétiques. Sans valeur comptable, bancaire ou légale officielle.",
       "period": "Période",
       "generate": "Générer l’état numéroté",
       "number": "N° d’état",
@@ -2064,7 +2064,7 @@
       "generatedAt": "Établi le",
       "print": "Imprimer",
       "hospital": "Hôpital",
-      "footerNote": "Document interne — chaque montant est traçable dans le journal d’audit. Données synthétiques ; ce document ne constitue ni un certificat, ni une attestation, ni une pièce comptable officielle.",
+      "footerNote": "Document interne — chaque montant est traçable dans le journal d’audit. Données synthétiques ; ce document n’a pas de valeur comptable, bancaire ou légale officielle et ne saurait tenir lieu de pièce justificative.",
       "empty": "Aucune recette enregistrée pour cette période."
     },
     "continuity": {

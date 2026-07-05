@@ -437,6 +437,7 @@ export {
   matchBankLineToSlip,
   changeDepositSlipStatus,
 } from "./reconciliation-service";
+export { getRevenueStatement, generateRevenueStatementNumber } from "./revenue-statement-service";
 
 /** Marker for a use-case that is intentionally not built yet. */
 export function notImplemented(useCase: string): never {
