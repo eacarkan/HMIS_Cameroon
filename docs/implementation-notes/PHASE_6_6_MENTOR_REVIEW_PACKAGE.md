@@ -3,20 +3,26 @@
 **Branch:** `feature/phase6-6-unit1-finance-schema-seed` (all Phase 6.6 work), from `deploy/santegrid-webdemo` = `0caf1dcc`.
 **Scope delivered:** Units 1–7 (schema/seed, Mobile Money, receivables aging, deposit/bank reconciliation,
 numbered monthly revenue statement, finance workspace + demo guide + continuity note).
-**Not merged, not pushed. Neon untouched.** 51 files, +4279/−33.
+**Not merged, not pushed. Neon untouched.** 52 files changed (excl. screenshots), +4647/−33.
 
-## 1. Final commit list (9)
+## 1. Final commit list (13, chronological — `git log --oneline --reverse 0caf1dcc..HEAD`)
 ```
-4f3a5f59 Phase 6.6: finance workspace screenshots (evidence)
-fb82c64e Phase 6.6: finance e2e (workspace, reconciliation, revenue statement, RBAC)
-1acd9919 Phase 6.6 Unit 6+7: finance workspace, demo-guide path, continuity note
-8167e3d1 Phase 6.6 Unit 5: numbered monthly revenue statement
-c7265dca Phase 6.6: eslint — ignore _-prefixed intentionally-unused args
-d4be9416 Phase 6.6 Unit 4: deposit / bank reconciliation
-80849f5d Phase 6.6 Unit 3: receivables aging (read-only, reconciling)
-3659e19a Phase 6.6 Unit 2: Mobile Money operator/reference + per-operator report
-800bc9c8 Phase 6.6 Unit 1: add finance reconciliation schema and synthetic seed support
+800bc9c8  Phase 6.6 Unit 1: add finance reconciliation schema and synthetic seed support
+3659e19a  Phase 6.6 Unit 2: Mobile Money operator/reference + per-operator report
+80849f5d  Phase 6.6 Unit 3: receivables aging (read-only, reconciling)
+d4be9416  Phase 6.6 Unit 4: deposit / bank reconciliation
+c7265dca  Phase 6.6: eslint — ignore _-prefixed intentionally-unused args
+8167e3d1  Phase 6.6 Unit 5: numbered monthly revenue statement
+1acd9919  Phase 6.6 Unit 6+7: finance workspace, demo-guide path, continuity note
+fb82c64e  Phase 6.6: finance e2e (workspace, reconciliation, revenue statement, RBAC)
+4f3a5f59  Phase 6.6: finance workspace screenshots (evidence)
+553e07b5  Phase 6.6: atomic bank-line matching (close over-match race)   ← over-match concurrency fix
+6a324de5  Phase 6.6: mentor review package
+389a1db5  Phase 6.6: statement completeness + aging/unlink test hardening
+(HEAD)    Phase 6.6: review-package consistency (this commit — final HEAD in the returned status)
 ```
+The over-match concurrency fix (`553e07b5`) IS in this list. The final HEAD hash is confirmed in the
+returned status after the package-consistency commit lands.
 
 ## 2. Schema / migration summary
 The **single additive migration** ships in Unit 1 — [migration.sql](../../prisma/migrations/20260705120000_phase6_6_finance_reconciliation/migration.sql)
@@ -47,11 +53,28 @@ Under [docs/qa-command-output/web-deployment/6_6-finance/](../qa-command-output/
 20 slip↔payment links, 17 MoMo payments tagged (MTN/ORANGE), 4 synthetic bank lines (1 matched, 3 gaps), 6 arrears
 across all aging buckets. Zero invoice/payment money mutated.
 
-## 6. QA results (full gate)
+## 6. QA results
 - `prisma generate` ✓ · typecheck ✓ · lint ✓ (0/0) · build ✓ (all finance routes emitted)
 - `check:arch` ✓ · `check:privacy` ✓ · `check:release` ✓ · `check:i18n` ✓ (34)
-- **unit + component: 507/507** ✓ · **integration: 380/380** ✓ (Phase 6.6 adds 18 integration + finance unit/component)
+- **unit + component: 507/507** ✓ · **integration: 385/385** ✓ (Phase 6.6 adds 23 integration + finance unit/component)
 - **finance e2e: 4/4** ✓ (workspace, deposit-slip creation, numbered statement, RBAC redirect)
+
+### 6a. Monthly revenue statement — contents confirmed (item 6)
+The statement (`getRevenueStatement` + `RevenueStatementDocument`) reports: **total invoiced** (gross billed,
+excl. draft + cancelled), **collected by method** (`byMethod`, sums to total collected), **refunds/reversals**
+(Σ executed `RefundVoucher`, `status=paid`), **net collected** (collected − refunds), **arrears movement**
+(invoiced − collected), a **numbered reference** (`HRB-DEMO-ETAT-YYYY-NNNNNN`), **audit-trace wording** ("chaque
+montant est traçable dans le journal d'audit"), and the **synthetic marker** (PROTOTYPE_LABEL + "données
+synthétiques"). It contains **no** certificate/certified/attestation/official-accounting language (asserted by
+a test that greps `finance.statement` i18n for `/certif|attestation/i`). Tests:
+`tests/integration/phase6-6-revenue-statement.test.ts` (figures + refunds + wording, 7 cases).
+
+### 6b. Receivables aging — exclusions + reconciliation confirmed (item 7)
+`listOpenInvoicesWithPayments` filters `status ∈ {issued, partially_paid}` → **excludes draft, paid, cancelled**;
+`listOutstandingEmergencyDebts` filters `status = outstanding` → **excludes settled, waived**; the service loop
+skips `outstanding ≤ 0`; and `reconciles` asserts **Σ bucket totals == Σ invoice outstanding + Σ emergency
+outstanding** (exact). New test `phase6-6-receivables.test.ts` asserts a cancelled invoice + a settled + a waived
+emergency debt are all excluded (aging total 0, reconciles true).
 
 ## 7. Money-path guardrails (proven)
 - Payment creation stays **only** through `recordPayment → recordPaymentTx` (F-01 atomic). The MoMo snapshot is
@@ -73,8 +96,8 @@ Money-path, RBAC/scoping, and public-safety-wording came back **confirmed_ok**. 
   matches on a 10000 line and asserts exactly one succeeds and Σ ≤ 10000.
 - **[nit — documented]** a 0-declared slip can reach `cleared` with no bank matches (`depositSlipReconciles(0,0)=true`);
   consistent with the zero-tolerance `cleared == declared` rule; no money moved.
-- **[nit]** `unlinkPaymentFromSlip` has no direct test (structurally overlay-only; verified safe — deletes only the
-  membership row, recomputes only the slip snapshot).
+- **[nit — now fixed]** `unlinkPaymentFromSlip` now has a direct integration test (membership removed, slip
+  recomputed to 0, re-link freed, zero invoice/payment money mutation, `deposit_slip.payment_unlinked` audited).
 - **[nit]** public i18n mentions billing vocabulary as feature copy only — no revenue figures/amounts (permitted).
 
 ## 9. Known limitations
@@ -86,7 +109,24 @@ Money-path, RBAC/scoping, and public-safety-wording came back **confirmed_ok**. 
   from a disputed slip hard-deletes the membership row (kept as a Unit-4 decision from the Unit-1 review).
 - Bank statement lines are **synthetic** (`isMock`); no real bank feed (by design).
 
-## 10. Production deployment / migration instructions (operator-only)
+## 10. Production migration checklist (operator-only — do NOT run without explicit operator confirmation)
+Apply the additive migration to Neon **before** this code merges (Step-0 §2d — migrate-before-code):
+- [ ] **1. Back up / snapshot Neon first** (branch snapshot or `pg_dump`) — recoverable rollback point.
+- [ ] **2. Point `DATABASE_URL` at the Neon DIRECT (non-pooler) URL** (not the pooled connection).
+- [ ] **3. `prisma migrate deploy` ONLY** — applies the reviewed additive migration; the new `SequenceType`
+      values are unused in-migration → transaction-safe on PG15/16.
+- [ ] **4. NO `db push`.**
+- [ ] **5. NO reset / `--force` / drop.**
+- [ ] **6. Post-migration verification:** confirm the 4 tables exist (`\dt "DepositSlip" "DepositSlipPayment"
+      "BankStatementLine" "BankReconciliationMatch"`), the 2 `Payment` columns (`mobileMoneyOperator`,
+      `mobileMoneyReference`), the 2 new `SequenceType` enum values, and the 5 FCFA CHECK constraints. Capture
+      before/after `\dt`.
+- [ ] **7. `db:seed:demo` is OPTIONAL and only after explicit operator confirmation** (synthetic demo data;
+      never required for the migration itself).
+- [ ] **8. Only after Neon is verified:** ff-merge → push `deploy` → manual Vercel Promote → live-verify. The
+      schema-dependent code never reaches prod before its tables exist.
+
+### Reference sequence
 The additive migration must be applied to Neon **before** this code merges (Step-0 §2d — migrate-before-code):
 1. **Review** `migration.sql` (this package §2). It is additive (new enums/values/columns/tables + CHECKs); zero data loss.
 2. Point `DATABASE_URL` at the Neon **direct (non-pooler)** URL. Do **not** use `db push`, `--force`, or reset.
