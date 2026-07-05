@@ -1254,6 +1254,12 @@
         "purpose": "The aggregate view of the 8 review hospitals.",
         "action": "Open “Central oversight” from the menu.",
         "notice": "Aggregates only — no patient-level data centrally."
+      },
+      "finance": {
+        "title": "Finance workspace & reconciliation",
+        "purpose": "Track revenue, receivables and bank reconciliation, in CFA francs.",
+        "action": "Open Billing → Finance workspace, then Mobile Money, Receivables, Reconciliation and Revenue statement.",
+        "notice": "Reconciliation is a metadata layer — it never changes an invoice, payment or receipt."
       }
     }
   }

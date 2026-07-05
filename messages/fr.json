@@ -1946,6 +1946,12 @@
         "purpose": "La vue agrégée des 8 hôpitaux de revue.",
         "action": "Ouvrir « Supervision centrale » depuis le menu.",
         "notice": "Agrégats uniquement — aucune donnée patient au niveau central."
+      },
+      "finance": {
+        "title": "Espace financier & rapprochement",
+        "purpose": "Suivre les recettes, les créances et le rapprochement bancaire, en francs CFA.",
+        "action": "Ouvrez Facturation → Espace financier, puis Mobile Money, Créances, Rapprochement et État des recettes.",
+        "notice": "Le rapprochement est une couche de métadonnées : il ne modifie jamais une facture, un paiement ou un reçu."
       }
     }
   },
