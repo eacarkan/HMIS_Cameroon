@@ -87,6 +87,10 @@ enum SequenceType {
   admission
   // Phase 2I — lab / radiology diagnostic order number (examen).
   diagnostic
+  // Phase 6.6 — deposit slip (bordereau de versement) + numbered monthly revenue statement (état).
+  // `revenue_statement` is added now (unused until Unit 5) so ALL Phase 6.6 schema ships in ONE migration.
+  deposit_slip
+  revenue_statement
 }
 
 /// Phase 2D-2 — structured prescription lifecycle. Dispensing transitions (partially_dispensed /
@@ -288,6 +292,13 @@ model Hospital {
   // Phase 4G (patient-matching / MPI readiness) — per-hospital duplicate-candidate review (additive;
   // local + warning-only + manual review; NO auto-merge; NO cross-hospital pairs).
   patientMatchCandidates PatientMatchCandidate[]
+
+  // Phase 6.6 (finance / bank reconciliation) — deposit slips, slip↔payment links, synthetic bank
+  // statement lines, and reconciliation matches (additive; metadata overlay; hospital-scoped).
+  depositSlips              DepositSlip[]
+  depositSlipPayments       DepositSlipPayment[]
+  bankStatementLines        BankStatementLine[]
+  bankReconciliationMatches BankReconciliationMatch[]
 }
 
 // ===================== Users / RBAC =====================
@@ -546,24 +557,32 @@ model InvoiceItem {
 
 /// Money received against an invoice. amount is integer FCFA. Partial payments allowed.
 model Payment {
-  id            String        @id @default(cuid())
-  hospitalId    String
-  invoiceId     String
-  receiptNumber String
-  amount        Int
-  method        PaymentMethod @default(cash)
-  status        PaymentStatus @default(recorded)
-  paidAt        DateTime      @default(now())
-  cashierId     String?
-  printedAt     DateTime?
-  createdById   String?
-  deletedAt     DateTime?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id                   String        @id @default(cuid())
+  hospitalId           String
+  invoiceId            String
+  receiptNumber        String
+  amount               Int
+  method               PaymentMethod @default(cash)
+  // Phase 6.6 — Mobile Money snapshot (set at payment time when method = mobile_money; NULLABLE metadata,
+  // NOT a money field). Immutable once set (mirrors the InvoiceItem snapshot); reconciliation never rewrites it.
+  mobileMoneyOperator  String?
+  mobileMoneyReference String?
+  status               PaymentStatus @default(recorded)
+  paidAt               DateTime      @default(now())
+  cashierId            String?
+  printedAt            DateTime?
+  createdById          String?
+  deletedAt            DateTime?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
 
   hospital Hospital @relation(fields: [hospitalId], references: [id])
   invoice  Invoice  @relation(fields: [invoiceId], references: [id])
   cashier  User?    @relation("PaymentCashier", fields: [cashierId], references: [id])
+
+  // Phase 6.6 — deposit-slip membership (a payment is on at most one slip; enforced by the
+  // @@unique on DepositSlipPayment). Reconciliation overlay only — never a money-field write.
+  depositSlipLinks DepositSlipPayment[]
 
   @@unique([hospitalId, receiptNumber])
   @@index([hospitalId, invoiceId])
@@ -2212,4 +2231,133 @@ model PatientMatchCandidate {
   // SQL in the migration + scripts/setup-test-db.ts (not expressible in schema.prisma).
   @@index([hospitalId, status])
   @@index([hospitalId, canonicalPairKey])
+}
+
+// ===================================================================================================
+// Phase 6.6 — Finance / bank reconciliation (ADDITIVE; metadata overlay, synthetic, authenticated-only).
+// Deposit slips (bordereaux de versement) group recorded Payments into a bank deposit; SYNTHETIC bank
+// statement lines (isMock) are matched to slips. The overlay NEVER writes Invoice/Payment money fields
+// or status — the only way money is recorded stays recordPayment → recordPaymentTx (F-01). Every table
+// is hospital-scoped + soft-deletable; amounts are integer FCFA. The domain rules (transitions, over-
+// match, cross-hospital, cleared-only-when-reconciled) are encoded purely in lib/finance and enforced by
+// the Unit-4 services; the DB carries the structural + positive-amount invariants (raw-SQL CHECKs
+// mirrored in scripts/setup-test-db.ts, like Phase 4G / 2D-5).
+// ===================================================================================================
+
+/// Deposit-slip lifecycle: `prepared → deposited → cleared` is the normal path; `disputed` is the
+/// exception path reachable from prepared/deposited/cleared. No forward skips; a slip clears ONLY when
+/// its cleared amount reconciles with the declared total (lib/finance.canTransitionDepositSlip).
+enum DepositSlipStatus {
+  prepared
+  deposited
+  cleared
+  disputed
+}
+
+/// Bank-statement-line reconciliation state. `matched` = fully consumed by reconciliation match(es);
+/// `disputed` flags a line under investigation. Over-matching is rejected in lib/finance + the service.
+enum BankLineMatchStatus {
+  unmatched
+  matched
+  disputed
+}
+
+/// A bordereau de versement: groups recorded collections into one bank deposit. Amount snapshots
+/// (integer FCFA): `declaredTotalFcfa` = what the cashier says was deposited; `computedPaymentTotalFcfa`
+/// = Σ linked Payment.amount (recomputed on link/unlink); `clearedAmountFcfa` = Σ matched bank amounts;
+/// `varianceFcfa` = declared − computed. Overlay only — never mutates Payment/Invoice.
+model DepositSlip {
+  id                       String            @id @default(cuid())
+  hospitalId               String
+  slipNumber               String
+  depositDate              DateTime
+  status                   DepositSlipStatus @default(prepared)
+  declaredTotalFcfa        Int               @default(0)
+  computedPaymentTotalFcfa Int               @default(0)
+  clearedAmountFcfa        Int               @default(0)
+  varianceFcfa             Int               @default(0)
+  note                     String?
+  createdById              String?
+  updatedById              String?
+  deletedAt                DateTime?
+  createdAt                DateTime          @default(now())
+  updatedAt                DateTime          @updatedAt
+
+  hospital Hospital                  @relation(fields: [hospitalId], references: [id])
+  payments DepositSlipPayment[]
+  matches  BankReconciliationMatch[]
+
+  @@unique([hospitalId, slipNumber])
+  @@index([hospitalId, status])
+  @@index([hospitalId, depositDate])
+}
+
+/// Link row: which DepositSlip a recorded Payment belongs to. The `@@unique([hospitalId, paymentId])`
+/// makes a Payment a member of AT MOST ONE slip (Step-0 §9); freeing a payment from a disputed slip is a
+/// service-layer act (Unit 4). No money field here — membership is metadata over the Payment.
+model DepositSlipPayment {
+  id            String    @id @default(cuid())
+  hospitalId    String
+  depositSlipId String
+  paymentId     String
+  linkedById    String?
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  hospital    Hospital    @relation(fields: [hospitalId], references: [id])
+  depositSlip DepositSlip @relation(fields: [depositSlipId], references: [id], onDelete: Cascade)
+  payment     Payment     @relation(fields: [paymentId], references: [id])
+
+  @@unique([hospitalId, paymentId])
+  @@index([depositSlipId])
+}
+
+/// A SYNTHETIC imported bank-statement line (isMock=true — like Phase 4D's mock provider): a credit the
+/// bank cleared; reconciliation matches it to a deposit slip. `amountFcfa` is integer FCFA; over-matching
+/// (Σ matches > amount) is rejected in lib/finance + the service.
+model BankStatementLine {
+  id            String              @id @default(cuid())
+  hospitalId    String
+  valueDate     DateTime
+  amountFcfa    Int
+  label         String
+  reference     String?
+  matchStatus   BankLineMatchStatus @default(unmatched)
+  importBatchId String?
+  isMock        Boolean             @default(true)
+  createdById   String?
+  updatedById   String?
+  deletedAt     DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  hospital Hospital                  @relation(fields: [hospitalId], references: [id])
+  matches  BankReconciliationMatch[]
+
+  @@index([hospitalId, matchStatus])
+  @@index([hospitalId, valueDate])
+  @@index([hospitalId, importBatchId])
+}
+
+/// The reconciliation act: links a bank-statement line to a deposit slip for `matchedAmountFcfa`
+/// (integer FCFA, > 0). Metadata only — it never writes Payment/Invoice amounts or status.
+model BankReconciliationMatch {
+  id                  String    @id @default(cuid())
+  hospitalId          String
+  bankStatementLineId String
+  depositSlipId       String
+  matchedAmountFcfa   Int
+  matchedById         String?
+  note                String?
+  deletedAt           DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  hospital          Hospital          @relation(fields: [hospitalId], references: [id])
+  bankStatementLine BankStatementLine @relation(fields: [bankStatementLineId], references: [id])
+  depositSlip       DepositSlip       @relation(fields: [depositSlipId], references: [id])
+
+  @@index([hospitalId, bankStatementLineId])
+  @@index([hospitalId, depositSlipId])
 }

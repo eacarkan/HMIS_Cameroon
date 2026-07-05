@@ -720,6 +720,12 @@ export async function clearOperationalData(
   // encounter FKs; daily charges cascade with the admission but are cleared explicitly first).
   await prisma.admissionDailyCharge.deleteMany();
   await prisma.admission.deleteMany();
+  // Phase 6.6 — clear the finance overlay BEFORE payments (FK order: match → membership → slip/line,
+  // and DepositSlipPayment → Payment). Metadata overlay only; no invoice/payment money touched.
+  await prisma.bankReconciliationMatch.deleteMany();
+  await prisma.depositSlipPayment.deleteMany();
+  await prisma.depositSlip.deleteMany();
+  await prisma.bankStatementLine.deleteMany();
   await prisma.payment.deleteMany();
   await prisma.invoiceItem.deleteMany();
   await prisma.invoice.deleteMany();

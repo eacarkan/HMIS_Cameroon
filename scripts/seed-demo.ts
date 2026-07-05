@@ -1,6 +1,7 @@
 import "dotenv/config";
 
 import { forceGuardError, syntheticContact } from "@/lib/demo-seed-safety";
+import { seedDemoFinance } from "./seed-demo-finance";
 
 /**
  * Phase 6.3 · S1 — synthetic, date-relative demo seed (additive; sentinel-based idempotency).
@@ -322,6 +323,53 @@ async function main() {
     snapshots++;
   }
 
+  // Phase 6.6 — synthetic ARREARS across the receivables-aging buckets (0–30 / 31–60 / 61–90 / 90+):
+  // a few backdated invoices left unpaid or partially paid through the CONTROLLED billing path
+  // (createInvoice → recordPayment). This seeds outstanding receivables for the later aging view without
+  // ever touching an existing paid invoice. Partial payments stay strictly below the invoice total.
+  const arrearsPlan = [
+    { daysAgo: 12, pay: 0 },    // bucket 0–30, unpaid (issued)
+    { daysAgo: 40, pay: 0.5 },  // bucket 31–60, partially paid
+    { daysAgo: 47, pay: 0 },    // bucket 31–60, unpaid
+    { daysAgo: 75, pay: 0.4 },  // bucket 61–90, partially paid
+    { daysAgo: 118, pay: 0 },   // bucket 90+, unpaid
+    { daysAgo: 133, pay: 0.3 }, // bucket 90+, partially paid
+  ];
+  let arrears = 0;
+  for (let a = 0; a < arrearsPlan.length; a++, g++) {
+    const plan = arrearsPlan[a];
+    const when = dayDate(plan.daysAgo, 10, (a * 11) % 60);
+    const patient = await createPatientForActor(reception, ctxR, {
+      familyName: FAMILY[(g + 5) % FAMILY.length], givenName: GIVEN[(g + 7) % GIVEN.length],
+      sex: (a % 2 === 0 ? "male" : "female") as "male" | "female",
+      dateOfBirth: new Date(1955 + (g % 55), (g * 7) % 12, 1 + (g % 26)),
+      phone: syntheticContact(g), residence: RESIDENCES[g % RESIDENCES.length],
+    });
+    await prisma.patient.update({ where: { id: patient.id }, data: { createdAt: when } });
+    const encounter = await openEncounter(reception, ctxR, patient.id, {
+      serviceLabel: SERVICE_LABELS[g % SERVICE_LABELS.length], reason: REASONS[g % REASONS.length],
+    });
+    const invoice = await createInvoice(cashier, ctxC, encounter.id, [
+      { label: "Consultation médecine générale", unitAmount: 2000, quantity: 1 },
+      { label: "Acte de soins", unitAmount: 3000 + 500 * (a % 4), quantity: 1 },
+    ]);
+    await prisma.invoice.update({ where: { id: invoice.id }, data: { createdAt: when } });
+    if (plan.pay > 0) {
+      const amount = Math.min(
+        invoice.totalAmount - 500,
+        Math.max(500, Math.round((invoice.totalAmount * plan.pay) / 500) * 500),
+      );
+      const payment = await recordPayment(cashier, ctxC, invoice.id, { amount, method: "cash" });
+      await prisma.payment.update({ where: { id: payment.id }, data: { paidAt: when, createdAt: when } });
+    }
+    await prisma.encounter.update({ where: { id: encounter.id }, data: { openedAt: when } });
+    arrears++;
+  }
+
+  // Phase 6.6 — synthetic FINANCE overlay (MoMo snapshots + deposit slips + bank statement + one match).
+  // Pure metadata over the recorded payments above — never an Invoice/Payment money mutation.
+  const finance = await seedDemoFinance(prisma, { hospitalId: HRB, hospitalCode: ctxC.code, force: FORCE });
+
   // Sentinel written LAST (single-success idempotency): after a completed run a re-run no-ops;
   // a partial failure before this point leaves partial data → operator review, not a blind re-run.
   await prisma.setting.upsert({
@@ -341,6 +389,8 @@ async function main() {
   console.log("✓ demo seed complete (synthetic, additive). Created (HRB-DEMO):");
   console.log(`  journeys: patients=${counts.patients} encounters=${counts.encounters} (open=${counts.open} closed=${counts.closed})`);
   console.log(`  consultations=${counts.consultations} invoices=${counts.invoices} payments=${counts.payments} diagnostics=${counts.diagnostics} stockBatches=${stockBatches} snapshots=${snapshots}`);
+  console.log(`  arrears (backdated outstanding invoices across aging buckets)=${arrears}`);
+  console.log(`  finance overlay: momoBackfilled=${finance.momoBackfilled} depositSlips=${finance.slips} slipPayments=${finance.slipPayments} bankLines=${finance.bankLines} matches=${finance.matches}${finance.skipped ? " (skipped — already seeded)" : ""}`);
   console.log("  HRB-DEMO row counts before → after:");
   console.log(`    patients   ${before.patients} → ${after.patients}`);
   console.log(`    encounters ${before.encounters} → ${after.encounters}`);

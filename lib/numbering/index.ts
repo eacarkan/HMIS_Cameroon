@@ -23,12 +23,16 @@ export type DocumentKind =
   // Phase 2G — hospitalization admission.
   | "admission"
   // Phase 2I — lab / radiology diagnostic order (examen).
-  | "diagnostic";
+  | "diagnostic"
+  // Phase 6.6 — deposit slip (bordereau de versement) + numbered monthly revenue statement (état).
+  | "deposit_slip"
+  | "revenue_statement";
 
 /**
  * French-mnemonic letter per kind: P patient · V visite · F facture · R reçu ·
  * A avoir (bon de remboursement) · B brouillard de caisse · O ordonnance · D délivrance ·
- * H hospitalisation (admission) · E examen (laboratoire / imagerie).
+ * H hospitalisation (admission) · E examen (laboratoire / imagerie) ·
+ * BV bordereau de versement (dépôt bancaire) · ETAT état mensuel des recettes.
  */
 const KIND_LETTER: Record<DocumentKind, string> = {
   patient: "P",
@@ -41,6 +45,8 @@ const KIND_LETTER: Record<DocumentKind, string> = {
   dispense: "D",
   admission: "H",
   diagnostic: "E",
+  deposit_slip: "BV",
+  revenue_statement: "ETAT",
 };
 
 /** Zero-padded width of the per-year counter (e.g. 1 → "000001"). */

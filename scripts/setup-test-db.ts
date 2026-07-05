@@ -65,6 +65,23 @@ DO $$ BEGIN
   ALTER TABLE "PatientMatchCandidate"
     ADD CONSTRAINT "PatientMatchCandidate_not_self_pair" CHECK ("sourcePatientId" <> "candidatePatientId");
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+-- Phase 6.6: integer-FCFA money invariants for the finance overlay (mirrors the dev migration
+-- 20260705120000_phase6_6_finance_reconciliation). Snapshot totals non-negative; a match is positive.
+DO $$ BEGIN
+  ALTER TABLE "DepositSlip" ADD CONSTRAINT "DepositSlip_declaredTotalFcfa_nonneg" CHECK ("declaredTotalFcfa" >= 0);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  ALTER TABLE "DepositSlip" ADD CONSTRAINT "DepositSlip_computedPaymentTotalFcfa_nonneg" CHECK ("computedPaymentTotalFcfa" >= 0);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  ALTER TABLE "DepositSlip" ADD CONSTRAINT "DepositSlip_clearedAmountFcfa_nonneg" CHECK ("clearedAmountFcfa" >= 0);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  ALTER TABLE "BankStatementLine" ADD CONSTRAINT "BankStatementLine_amountFcfa_nonneg" CHECK ("amountFcfa" >= 0);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  ALTER TABLE "BankReconciliationMatch" ADD CONSTRAINT "BankReconciliationMatch_matchedAmountFcfa_positive" CHECK ("matchedAmountFcfa" > 0);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 `;
 // libpq's connection-URI parser rejects Prisma-specific query params (e.g. `?schema=public`), so pass
 // psql the bare base URL (the schema defaults to "public" anyway).
