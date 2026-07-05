@@ -1690,7 +1690,7 @@
         },
         "synthetic": {
           "title": "Données de revue synthétiques",
-          "desc": "Aucune donnée réelle, aucune intégration directe dans cet environnement."
+          "desc": "Aucune donnée réelle de patient — uniquement des données synthétiques de démonstration."
         }
       }
     },

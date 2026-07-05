@@ -1003,7 +1003,7 @@
         },
         "synthetic": {
           "title": "Synthetic review data",
-          "desc": "No real data and no live integrations in this environment."
+          "desc": "No real patient data — synthetic demonstration data only."
         }
       }
     },

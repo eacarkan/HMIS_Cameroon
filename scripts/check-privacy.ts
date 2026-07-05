@@ -128,6 +128,58 @@ for (const f of [
   }
 }
 
+// Phase 6.5B — PUBLIC visitor-facing wording policy (mentor-mandated). Public pages
+// (incl. sr-only / accessibility text) must carry the clean review-environment +
+// synthetic-data signal and must NOT carry internal deployment-governance language
+// (Gate 7, "not for production", "no live integrations"). Enforced against (a) the
+// public i18n namespaces and (b) the public banner usages that must disable the
+// authenticated-only archival marker. Internal namespaces (uat/gate7/dashboard/admin)
+// and the PROTOTYPE_LABEL constant are deliberately out of scope.
+const PUBLIC_I18N_ROOTS = [
+  "publicSite",
+  "landing",
+  "showcase",
+  "demoAccess",
+  "feedback",
+];
+const BANNED_PUBLIC: [string, RegExp][] = [
+  ["Gate 7", /gate\s*7|hors gate/i],
+  [
+    "not-for-production",
+    /non destin[ée] à la production|not for production|not intended for production/i,
+  ],
+  ["no-live-integrations", /aucune intégration|no live integrations/i],
+];
+for (const mf of ["messages/fr.json", "messages/en.json"]) {
+  const msgs = JSON.parse(readFileSync(mf, "utf8")) as Record<string, unknown>;
+  const publicBlob = [
+    ...PUBLIC_I18N_ROOTS.map((r) => JSON.stringify(msgs[r] ?? {})),
+    // the review-environment banner strings are shared but rendered publicly
+    JSON.stringify(
+      (msgs.app as Record<string, unknown> | undefined)?.reviewEnvironmentBadge ?? "",
+    ),
+    JSON.stringify(
+      (msgs.app as Record<string, unknown> | undefined)?.reviewEnvironmentNote ?? "",
+    ),
+  ].join(" ");
+  if (!/environnement de revue|review environment/i.test(publicBlob) || !/synth/i.test(publicBlob)) {
+    problems.push(`${mf}: public wording must state review-environment + synthetic data`);
+  }
+  for (const [name, re] of BANNED_PUBLIC) {
+    if (re.test(publicBlob)) {
+      problems.push(`${mf}: public wording must not contain ${name} (public visitor-facing)`);
+    }
+  }
+}
+// The public banner must NOT emit the sr-only "not for production" archival marker.
+for (const f of ["app/(public)/layout.tsx", "app/connexion/page.tsx"]) {
+  if (!/PrototypeBanner\s+archivalMarker=\{false\}/.test(readFileSync(f, "utf8"))) {
+    problems.push(
+      `${f} must render <PrototypeBanner archivalMarker={false}> (no not-production marker on public pages)`,
+    );
+  }
+}
+
 // Demo accounts must use the fake hospital domain.
 const seed = readFileSync("prisma/seed-data.ts", "utf8");
 const emails = [...seed.matchAll(/email:\s*"([^"]+)"/g)].map((m) => m[1]);

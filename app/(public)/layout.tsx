@@ -16,7 +16,8 @@ import { PublicHeader } from "@/components/public/public-header";
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
     <div className="bg-background flex min-h-screen flex-col">
-      <PrototypeBanner />
+      {/* 6.5B — public visitor-facing: no sr-only "not for production" marker. */}
+      <PrototypeBanner archivalMarker={false} />
       <PublicHeader />
       <main className="flex-1">{children}</main>
       <PublicFooter />

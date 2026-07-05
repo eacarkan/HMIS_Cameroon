@@ -38,7 +38,8 @@ export default async function ConnexionPage() {
 
   return (
     <div className="bg-background flex min-h-screen flex-col">
-      <PrototypeBanner />
+      {/* 6.5B — public visitor-facing login page: no sr-only "not for production" marker. */}
+      <PrototypeBanner archivalMarker={false} />
       <div className="grid min-h-0 flex-1 lg:grid-cols-[5fr_7fr]">
         {/* Brand panel — hidden on small screens, replaced by the compact header below. */}
         <aside
