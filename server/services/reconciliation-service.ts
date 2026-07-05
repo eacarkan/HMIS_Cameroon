@@ -1,15 +1,12 @@
 import type { DepositSlipStatus } from "@prisma/client";
 
 import {
-  assertBankLineMatch,
   assertDepositSlipTransition,
   assertSameHospital,
-  bankLineMatchStatusFor,
   depositSlipReconciles,
 } from "@/lib/finance";
 import { formatFcfa } from "@/lib/money";
 import {
-  createBankReconciliationMatchRow,
   createBankStatementLines,
   createDepositSlipPaymentRow,
   createDepositSlipRow,
@@ -21,11 +18,10 @@ import {
   listBankStatementLines,
   listDepositSlips,
   listRecordedPaymentsNotOnSlip,
+  matchBankLineTx,
   recomputeDepositSlipTotals,
   recomputeSlipClearedAmount,
-  setBankLineMatchStatusRow,
   setDepositSlipStatusRow,
-  sumMatchedForBankLine,
   type HospitalContext,
 } from "@/server/db";
 
@@ -214,18 +210,15 @@ export async function matchBankLineToSlip(
   assertSameHospital(ctx.hospitalId, slip.hospitalId, line.hospitalId);
 
   const amount = Math.trunc(input.matchedAmountFcfa);
-  const already = await sumMatchedForBankLine(ctx.hospitalId, input.bankLineId);
-  // Rejects a non-positive amount AND over-matching the line (Step-0 §9).
-  assertBankLineMatch({ lineAmountFcfa: line.amountFcfa, alreadyMatchedFcfa: already, newMatchAmountFcfa: amount });
-
-  await createBankReconciliationMatchRow({
+  // ATOMIC (mirrors F-01): the tx locks the bank-line row, re-derives Σ matched under the lock, and rejects
+  // a non-positive amount OR over-match (Step-0 §9) — so concurrent matches can never push Σ above the line.
+  await matchBankLineTx({
     hospitalId: ctx.hospitalId,
     bankStatementLineId: input.bankLineId,
     depositSlipId: input.slipId,
     matchedAmountFcfa: amount,
     matchedById: actor.id,
   });
-  await setBankLineMatchStatusRow(ctx.hospitalId, input.bankLineId, bankLineMatchStatusFor(line.amountFcfa, already + amount));
   const cleared = await recomputeSlipClearedAmount(ctx.hospitalId, input.slipId);
   await recordAudit({
     hospitalId: ctx.hospitalId,

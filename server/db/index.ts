@@ -526,5 +526,6 @@ export {
   sumMatchedForBankLine,
   createBankReconciliationMatchRow,
   setBankLineMatchStatusRow,
+  matchBankLineTx,
   listRecordedPaymentsNotOnSlip,
 } from "./finance";

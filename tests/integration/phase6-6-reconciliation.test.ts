@@ -101,6 +101,26 @@ describe("integration: Phase 6.6 deposit/bank reconciliation", () => {
     ).rejects.toThrow(/surrapprochement|invalide/i);
   });
 
+  it("serialises concurrent matches so a bank line can never be over-matched (row lock)", async () => {
+    const p = await recordedPayment(10000);
+    const slip = await createDepositSlip(p.cashier.actor, p.cashier.ctx, { declaredTotalFcfa: 10000 });
+    await linkPaymentToSlip(p.cashier.actor, p.cashier.ctx, { slipId: slip.id, paymentId: p.payment.id });
+    const line = await prisma.bankStatementLine.create({
+      data: { hospitalId: HRB, valueDate: new Date(), amountFcfa: 10000, label: "concurrent", isMock: true },
+    });
+    // Two concurrent 7000 matches: each fits (≤10000) but together over-match (14000). The row lock must
+    // let exactly ONE through — the total matched can never exceed the line amount.
+    const results = await Promise.allSettled([
+      matchBankLineToSlip(p.cashier.actor, p.cashier.ctx, { slipId: slip.id, bankLineId: line.id, matchedAmountFcfa: 7000 }),
+      matchBankLineToSlip(p.cashier.actor, p.cashier.ctx, { slipId: slip.id, bankLineId: line.id, matchedAmountFcfa: 7000 }),
+    ]);
+    expect(results.filter((r) => r.status === "fulfilled").length).toBe(1);
+    const agg = await prisma.bankReconciliationMatch.aggregate({
+      _sum: { matchedAmountFcfa: true }, where: { hospitalId: HRB, bankStatementLineId: line.id },
+    });
+    expect(agg._sum.matchedAmountFcfa ?? 0).toBeLessThanOrEqual(10000);
+  });
+
   it("prevents a payment from being on two active deposit slips", async () => {
     const p = await recordedPayment(4000);
     const a = await createDepositSlip(p.cashier.actor, p.cashier.ctx, { declaredTotalFcfa: 4000 });

@@ -255,6 +255,51 @@ export function createBankReconciliationMatchRow(data: {
   return prisma.bankReconciliationMatch.create({ data: { ...data, note: data.note ?? null } });
 }
 
+/**
+ * Match a bank line to a slip ATOMICALLY under a row lock — the same discipline as recordPaymentTx (F-01).
+ * It locks the bank-line row (`SELECT … FOR UPDATE`, hospital-scoped, live), re-derives the authoritative
+ * Σ matched INSIDE the lock, rejects a non-positive amount or an over-match (Σ already + new > line amount),
+ * then writes the match row and the line's derived status together. This makes concurrent over-matching
+ * impossible (a stale pre-read can no longer authorise Σ > amount). Metadata-only — no Payment/Invoice write.
+ */
+export function matchBankLineTx(params: {
+  hospitalId: string;
+  bankStatementLineId: string;
+  depositSlipId: string;
+  matchedAmountFcfa: number;
+  matchedById: string;
+}): Promise<{ amountFcfa: number; matchedAfter: number }> {
+  const { hospitalId, bankStatementLineId, depositSlipId, matchedAmountFcfa, matchedById } = params;
+  return prisma.$transaction(async (tx) => {
+    const locked = await tx.$queryRaw<{ id: string; amountFcfa: number }[]>`
+      SELECT "id", "amountFcfa" FROM "BankStatementLine"
+      WHERE "id" = ${bankStatementLineId} AND "hospitalId" = ${hospitalId} AND "deletedAt" IS NULL
+      FOR UPDATE`;
+    if (locked.length === 0) throw new Error("Ligne bancaire introuvable dans cet hôpital.");
+    const amountFcfa = Number(locked[0].amountFcfa);
+
+    const agg = await tx.bankReconciliationMatch.aggregate({
+      _sum: { matchedAmountFcfa: true },
+      where: { hospitalId, bankStatementLineId, deletedAt: null },
+    });
+    const already = agg._sum.matchedAmountFcfa ?? 0;
+    if (!Number.isInteger(matchedAmountFcfa) || matchedAmountFcfa <= 0 || already + matchedAmountFcfa > amountFcfa) {
+      throw new Error(
+        "Rapprochement invalide : montant non positif ou surrapprochement de la ligne bancaire.",
+      );
+    }
+
+    await tx.bankReconciliationMatch.create({
+      data: { hospitalId, bankStatementLineId, depositSlipId, matchedAmountFcfa, matchedById },
+    });
+    const matchedAfter = already + matchedAmountFcfa;
+    const matchStatus = matchedAfter >= amountFcfa && amountFcfa > 0 ? "matched" : "unmatched";
+    await tx.bankStatementLine.updateMany({ where: { id: bankStatementLineId, hospitalId }, data: { matchStatus } });
+
+    return { amountFcfa, matchedAfter };
+  });
+}
+
 /** Set a bank line's derived match status. Hospital-scoped. */
 export function setBankLineMatchStatusRow(hospitalId: string, id: string, matchStatus: "unmatched" | "matched" | "disputed") {
   return prisma.bankStatementLine.updateMany({ where: { id, hospitalId }, data: { matchStatus } });
