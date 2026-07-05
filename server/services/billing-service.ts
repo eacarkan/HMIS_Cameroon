@@ -98,7 +98,13 @@ export async function recordPayment(
   actor: AuthenticatedActor,
   ctx: HospitalContext,
   invoiceId: string,
-  input: { amount: number; method: PaymentMethod },
+  input: {
+    amount: number;
+    method: PaymentMethod;
+    // Phase 6.6 — optional Mobile-Money operator/reference snapshot; kept ONLY for method = mobile_money.
+    mobileMoneyOperator?: string | null;
+    mobileMoneyReference?: string | null;
+  },
 ) {
   await requireCapability(actor, ctx, "payment.record");
 
@@ -114,6 +120,12 @@ export async function recordPayment(
   const year = new Date().getFullYear();
   const receiptNumber = await generateNumber(ctx, "receipt", year);
 
+  // Phase 6.6 — the Mobile-Money snapshot is retained ONLY for a mobile_money payment (cash / card /
+  // transfer never carry an operator or reference). Trimmed; empty strings collapse to null.
+  const isMomo = input.method === "mobile_money";
+  const mobileMoneyOperator = isMomo ? input.mobileMoneyOperator?.trim() || null : null;
+  const mobileMoneyReference = isMomo ? input.mobileMoneyReference?.trim() || null : null;
+
   // ATOMIC (F-01): lock the invoice, re-derive `remaining` from authoritative recorded payments inside
   // the lock, reject an over-amount, then create the payment + update the invoice status together. A
   // stale pre-read can no longer authorise a concurrent double-payment / overpayment.
@@ -125,6 +137,8 @@ export async function recordPayment(
     method: input.method,
     cashierId: actor.id,
     createdById: actor.id,
+    mobileMoneyOperator,
+    mobileMoneyReference,
   });
 
   const methodFr = PAYMENT_METHOD_FR[input.method] ?? input.method;
@@ -134,7 +148,7 @@ export async function recordPayment(
     action: AUDIT_ACTIONS.paymentRecord,
     entityType: "Payment",
     entityId: payment.id,
-    summary: `Paiement enregistré (${formatFcfa(input.amount)}, ${methodFr})`,
+    summary: `Paiement enregistré (${formatFcfa(input.amount)}, ${methodFr}${mobileMoneyOperator ? ` — ${mobileMoneyOperator}` : ""})`,
   });
 
   return payment;

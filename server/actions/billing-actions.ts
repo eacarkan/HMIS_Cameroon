@@ -82,10 +82,16 @@ export async function recordPaymentAction(
   }
   if (!method.success) return { error: "Mode de paiement invalide." };
 
+  // Phase 6.6 — optional Mobile-Money snapshot; the service keeps it only for method = mobile_money.
+  const rawOperator = formData.get("mobileMoneyOperator");
+  const rawReference = formData.get("mobileMoneyReference");
+
   try {
     await recordPayment(actor, hospital, invoiceId, {
       amount,
       method: method.data,
+      mobileMoneyOperator: rawOperator ? String(rawOperator) : null,
+      mobileMoneyReference: rawReference ? String(rawReference) : null,
     });
   } catch (error) {
     if (error instanceof AuthorizationError) {

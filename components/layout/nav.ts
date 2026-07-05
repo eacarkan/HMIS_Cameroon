@@ -24,6 +24,9 @@ import {
   ShieldCheck,
   BarChart3,
   UserSearch,
+  Coins,
+  Landmark,
+  FileText,
   type LucideIcon,
 } from "lucide-react";
 
@@ -95,6 +98,11 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/facturation/paiements-externes", labelKey: "externalPayments", icon: Smartphone, capability: "external_payment.view", section: "billing" },
   // Phase 4E — insurance / mutuelle workflow foundation (manual only).
   { href: "/facturation/assurance", labelKey: "insurance", icon: ShieldCheck, capability: "claim.manage", section: "billing" },
+  // Phase 6.6 — finance / bank reconciliation workspace (metadata-only overlay; francs-first).
+  { href: "/facturation/mobile-money", labelKey: "momoReport", icon: Smartphone, capability: "momo.report.read", section: "billing" },
+  { href: "/facturation/creances", labelKey: "receivables", icon: Coins, capability: "receivables.view", section: "billing" },
+  { href: "/facturation/rapprochement", labelKey: "reconciliation", icon: Landmark, capability: "reconciliation.view", section: "billing" },
+  { href: "/facturation/etat-recettes", labelKey: "revenueStatement", icon: FileText, capability: "revenue_statement.read", section: "billing" },
 
   // Rapports & supervision
   // Phase 2E — operational reports + DHIS2 aggregate CSV export.

@@ -424,6 +424,9 @@ export {
 // Phase 6C / 6.1 — one-click demo login REQUEST audit (synthetic accounts only).
 export { recordDemoSessionRequest } from "./demo-service";
 
+// Phase 6.6 — finance / bank reconciliation (Mobile-Money report; aging; deposit reconciliation; statement).
+export { getMobileMoneyReport } from "./momo-report-service";
+
 /** Marker for a use-case that is intentionally not built yet. */
 export function notImplemented(useCase: string): never {
   throw new Error(`Use-case not implemented yet: ${useCase}`);

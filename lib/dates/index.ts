@@ -52,6 +52,52 @@ export function dayRange(isoDate: string): { start: Date; end: Date } {
   return { start, end };
 }
 
+/** Month names in French (index 0 = janvier). */
+const FR_MONTHS = [
+  "janvier", "février", "mars", "avril", "mai", "juin",
+  "juillet", "août", "septembre", "octobre", "novembre", "décembre",
+];
+
+/** Local-month [start, end) range for a year + 1-based month (1 = janvier). Phase 6.6 finance reports. */
+export function monthRange(year: number, month: number): { start: Date; end: Date } {
+  const start = new Date(year, month - 1, 1, 0, 0, 0, 0);
+  const end = new Date(year, month, 1, 0, 0, 0, 0);
+  return { start, end };
+}
+
+/** A `YYYY-MM` period key (e.g. "2026-07") for a year + 1-based month. */
+export function periodKey(year: number, month: number): string {
+  return `${year}-${String(month).padStart(2, "0")}`;
+}
+
+/** French month label, e.g. "Juillet 2026". */
+export function frMonthLabel(year: number, month: number): string {
+  const name = FR_MONTHS[month - 1] ?? "";
+  return `${name.charAt(0).toUpperCase()}${name.slice(1)} ${year}`;
+}
+
+/** Parse a `YYYY-MM` period key → { year, month } (1-based); falls back to the current month. */
+export function parsePeriod(
+  period: string | undefined,
+  now: Date = new Date(),
+): { year: number; month: number } {
+  const m = /^(\d{4})-(\d{2})$/.exec(period ?? "");
+  if (m) {
+    const year = Number(m[1]);
+    const month = Number(m[2]);
+    if (month >= 1 && month <= 12) return { year, month };
+  }
+  return { year: now.getFullYear(), month: now.getMonth() + 1 };
+}
+
+/** Whole days between `from` and `to` (calendar, UTC-stable). Non-negative for to ≥ from. */
+export function daysBetween(from: Date, to: Date): number {
+  const MS = 24 * 60 * 60 * 1000;
+  const a = Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate());
+  const b = Date.UTC(to.getUTCFullYear(), to.getUTCMonth(), to.getUTCDate());
+  return Math.floor((b - a) / MS);
+}
+
 /**
  * Whole years between `dob` and `now` (age). Uses UTC calendar fields so the result is timezone-stable
  * — a date of birth is a calendar date, and age banding (Phase 2E aggregate reports) must not shift with

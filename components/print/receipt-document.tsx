@@ -14,6 +14,9 @@ export type ReceiptData = {
   total: number;
   amount: number;
   methodLabel: string;
+  /** Phase 6.6 — Mobile-Money snapshot, shown only for a mobile_money payment. */
+  mobileMoneyOperator?: string | null;
+  mobileMoneyReference?: string | null;
   cashierName: string;
   dateLabel: string;
   /** Marked when the receipt has already been printed before (a duplicate). */
@@ -113,6 +116,17 @@ export function ReceiptDocument({ data }: { data: ReceiptData }) {
         <span className="text-neutral-600">{t("method")}</span>
         <span className="font-medium">{data.methodLabel}</span>
       </div>
+      {data.mobileMoneyOperator ? (
+        <div className="mt-0.5 flex justify-between text-xs text-neutral-600">
+          <span>{t("momoOperator")}</span>
+          <span className="font-medium">
+            {data.mobileMoneyOperator}
+            {data.mobileMoneyReference
+              ? ` · ${t("momoReference")} ${data.mobileMoneyReference}`
+              : ""}
+          </span>
+        </div>
+      ) : null}
 
       <div className="mt-10 flex items-end justify-between text-sm">
         <div>

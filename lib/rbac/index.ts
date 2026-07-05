@@ -205,7 +205,18 @@ export type Capability =
   // (optional) admin toggle for the mock MPI adapter. Hospital-scoped; cross-hospital denied; central
   // supervisor can never see patient-level candidates.
   | "patient_match.review"
-  | "patient_match.configure";
+  | "patient_match.configure"
+  // Phase 6.6 — finance / bank reconciliation (authenticated finance workspace; metadata-only overlay).
+  // `reconciliation.view` = read deposit slips + synthetic bank statement lines + matches (finance +
+  // oversight). `reconciliation.manage` = create slips, link payments, import synthetic bank lines, and
+  // match (finance = cashier + admin) — NEVER writes an invoice/payment money field. `receivables.view` =
+  // the read-only aging view. `revenue_statement.read` = generate/read the numbered monthly revenue
+  // statement. `momo.report.read` = the per-operator Mobile-Money collection report. Hospital-scoped.
+  | "reconciliation.view"
+  | "reconciliation.manage"
+  | "receivables.view"
+  | "revenue_statement.read"
+  | "momo.report.read";
 
 export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
   // Hospital administrator — configuration, tariffs, users, service catalogue, and oversight
@@ -292,6 +303,12 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     // records decisions; NOT clinical, NOT central. Warning-only, manual, no auto-merge.
     "patient_match.review",
     "patient_match.configure",
+    // Phase 6.6 — the Hospital Admin manages + reads the finance reconciliation workspace + reports.
+    "reconciliation.view",
+    "reconciliation.manage",
+    "receivables.view",
+    "revenue_statement.read",
+    "momo.report.read",
   ],
   agent_accueil: [
     "dashboard.read",
@@ -385,6 +402,12 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "external_payment.reconcile",
     // Phase 4E — the cashier runs the insurance claim/coverage/pre-auth workflow (billing-linked; manual).
     "claim.manage",
+    // Phase 6.6 — the cashier (finance) runs deposits/reconciliation and reads the finance views.
+    "reconciliation.view",
+    "reconciliation.manage",
+    "receivables.view",
+    "revenue_statement.read",
+    "momo.report.read",
   ],
   directeur: [
     "dashboard.read",
@@ -431,6 +454,11 @@ export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "integration.job.view",
     // Phase 4D — oversight view of the mock payment provider registry + transactions.
     "external_payment.view",
+    // Phase 6.6 — the Director reads the finance views (oversight; no reconciliation management).
+    "reconciliation.view",
+    "receivables.view",
+    "revenue_statement.read",
+    "momo.report.read",
   ],
   // Phase 2D — pharmacy roles. Baseline operational reads + catalogue view; the pharmacy-specific
   // capabilities (dispense, stock, FEFO override, adjustment approval) are added in later 2D sub-batches.

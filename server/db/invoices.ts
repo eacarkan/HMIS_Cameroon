@@ -102,8 +102,15 @@ export function recordPaymentTx(params: {
   method: PaymentMethod;
   cashierId: string;
   createdById: string;
+  // Phase 6.6 — immutable Mobile-Money snapshot (nullable metadata; the caller sets these only for
+  // method = mobile_money). Persisted atomically with the payment; never rewritten afterwards.
+  mobileMoneyOperator?: string | null;
+  mobileMoneyReference?: string | null;
 }): Promise<RecordPaymentTxResult> {
-  const { hospitalId, invoiceId, receiptNumber, amount, method, cashierId, createdById } = params;
+  const {
+    hospitalId, invoiceId, receiptNumber, amount, method, cashierId, createdById,
+    mobileMoneyOperator = null, mobileMoneyReference = null,
+  } = params;
   return prisma.$transaction(async (tx) => {
     // Serialise concurrent payments on THIS invoice: a scoped row lock (skips other hospitals + voids).
     const locked = await tx.$queryRaw<{ id: string; totalAmount: number }[]>`
@@ -125,7 +132,10 @@ export function recordPaymentTx(params: {
     }
 
     const payment = await tx.payment.create({
-      data: { hospitalId, invoiceId, receiptNumber, amount, method, status: "recorded", cashierId, createdById },
+      data: {
+        hospitalId, invoiceId, receiptNumber, amount, method, status: "recorded", cashierId, createdById,
+        mobileMoneyOperator, mobileMoneyReference,
+      },
     });
 
     const paidAfter = paid + amount;

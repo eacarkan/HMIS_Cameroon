@@ -502,3 +502,12 @@ export {
   createMatchCandidate,
   transitionMatchCandidate,
 } from "./patient-match";
+
+// Phase 6.6 — finance / bank reconciliation (hospital-scoped; read + metadata-overlay only; no money mutation).
+export {
+  findMobileMoneyPaymentsInRange,
+  listOpenInvoicesWithPayments,
+  listOutstandingEmergencyDebts,
+  findRecordedPaymentsInRange,
+  countInvoicesIssuedInRange,
+} from "./finance";

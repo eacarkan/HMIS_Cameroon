@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
@@ -13,8 +13,11 @@ import {
 
 const initialState: BillingFormState = {};
 const METHODS = ["cash", "mobile_money", "card", "bank_transfer"] as const;
+// Phase 6.6 — synthetic demo operators (Cameroon Mobile Money). "AUTRE" covers any other wallet.
+const MOMO_OPERATORS = ["MTN", "ORANGE", "AUTRE"] as const;
 
-/** Payment capture (06 §12): montant + mode de paiement → Encaisser. */
+/** Payment capture (06 §12): montant + mode de paiement → Encaisser. Phase 6.6 adds the optional
+ * Mobile-Money operator + reference snapshot, shown only when the method is `mobile_money`. */
 export function PaymentForm({
   invoiceId,
   remaining,
@@ -25,6 +28,7 @@ export function PaymentForm({
   const t = useTranslations("billing");
   const tActions = useTranslations("actions");
   const tMethod = useTranslations("paymentMethod");
+  const [method, setMethod] = useState<(typeof METHODS)[number]>("cash");
   const [state, formAction, pending] = useActionState(
     recordPaymentAction.bind(null, invoiceId),
     initialState,
@@ -49,7 +53,8 @@ export function PaymentForm({
           <select
             id="method"
             name="method"
-            defaultValue="cash"
+            value={method}
+            onChange={(e) => setMethod(e.target.value as (typeof METHODS)[number])}
             className="border-input bg-background h-9 w-44 rounded-md border px-3 text-sm shadow-xs"
           >
             {METHODS.map((m) => (
@@ -63,6 +68,36 @@ export function PaymentForm({
           {tActions("collectPayment")}
         </Button>
       </div>
+
+      {method === "mobile_money" ? (
+        <div className="border-input bg-muted/30 flex flex-wrap items-end gap-3 rounded-md border border-dashed p-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="mobileMoneyOperator">{t("momoOperator")}</Label>
+            <select
+              id="mobileMoneyOperator"
+              name="mobileMoneyOperator"
+              defaultValue="MTN"
+              className="border-input bg-background h-9 w-40 rounded-md border px-3 text-sm shadow-xs"
+            >
+              {MOMO_OPERATORS.map((o) => (
+                <option key={o} value={o}>
+                  {o}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="mobileMoneyReference">{t("momoReference")}</Label>
+            <Input
+              id="mobileMoneyReference"
+              name="mobileMoneyReference"
+              placeholder={t("momoReferencePlaceholder")}
+              className="w-56"
+            />
+          </div>
+        </div>
+      ) : null}
+
       {state.error ? (
         <p role="alert" className="text-destructive text-sm">
           {state.error}

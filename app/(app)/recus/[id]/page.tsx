@@ -36,6 +36,9 @@ export default async function ReceiptPage({
     total: payment.invoice.totalAmount,
     amount: payment.amount,
     methodLabel: tMethod(payment.method),
+    // Phase 6.6 — Mobile-Money snapshot (present only for a mobile_money payment).
+    mobileMoneyOperator: payment.mobileMoneyOperator,
+    mobileMoneyReference: payment.mobileMoneyReference,
     cashierName: payment.cashier?.displayName ?? "",
     dateLabel: formatDateTimeFr(new Date(payment.paidAt)),
     // Batch 3: already-printed → duplicate; cancelled payment → voided receipt.
